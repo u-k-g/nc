@@ -1,0 +1,149 @@
+# =============================================================================
+# WINDOW SETTINGS
+# =============================================================================
+
+window-inherit-working-directory = true
+window-padding-x = 8
+window-padding-y = 4
+window-padding-balance = true
+window-padding-color = background
+fullscreen = false
+window-colorspace = display-p3
+# window-save-state = always
+# window-decoration = none
+
+## macos
+macos-non-native-fullscreen = true
+macos-option-as-alt = true
+macos-secure-input-indication = true
+macos-window-buttons = hidden
+macos-titlebar-style = hidden
+macos-titlebar-proxy-icon = hidden
+
+# =============================================================================
+# QUICK TERMINAL
+# =============================================================================
+
+quick-terminal-screen = mouse
+quick-terminal-animation-duration = 0.05
+quick-terminal-autohide = false
+
+# quick-terminal-position = center
+# quick-terminal-size = 50%,50%
+
+quick-terminal-position = bottom
+quick-terminal-size = 60%,100%
+
+
+# =============================================================================
+# APPEARANCE
+# =============================================================================
+
+theme = nc
+font-size = 16
+# font-thicken = true
+font-family = "Lilex"
+font-feature = -liga
+font-feature = -calt
+font-feature = -dlig
+
+# background-opacity = 0.7
+# background = 000000
+# background-blur = 50
+
+alpha-blending = linear-corrected
+cursor-style = block
+
+## shaders
+# custom-shader = /Users/uzair/.config/ghostty/ghostty-shaders/bettercrt.glsl
+custom-shader = /Users/uzair/.config/ghostty/ghostty-shaders/cursor_blaze.glsl
+
+# =============================================================================
+# ICON
+# =============================================================================
+
+## icon
+# official, glass, holographic, custom-style, paper
+macos-icon = holographic
+# plastic, aluminum, chrome
+# macos-icon-frame = chrome
+
+macos-icon-ghost-color = 4400ff
+macos-icon-screen-color = c9c7ff
+# macos-icon-ghost-color = ffffff
+# macos-icon-screen-color = 000000
+
+# =============================================================================
+# SHELL
+# =============================================================================
+
+# shell-integration = fish
+# shell-integration-features = sudo,title
+# command = /Users/uzair/.nix-profile/bin/fish -l -c "tmux attach-session || tmux new-session"
+command = /Users/uzair/.nix-profile/bin/nu --login --config /Users/uzair/.config/nushell/config.nu
+
+# =============================================================================
+# GENERAL SETTINGS
+# =============================================================================
+
+confirm-close-surface = false
+quit-after-last-window-closed = true
+scrollbar=never
+window-title-font-family="Lilex italic"
+bell-features = system,no-border,no-title,attention
+
+## clipboard
+copy-on-select = clipboard
+clipboard-read = allow
+clipboard-write = allow
+clipboard-paste-protection = false
+
+## updates
+auto-update = download
+auto-update-channel = tip
+
+# =============================================================================
+# KEYBINDINGS
+# =============================================================================
+
+## cmd+s prefix
+keybind = cmd+s>r=reload_config
+keybind = cmd+s>shift+h=new_split:left
+keybind = cmd+s>shift+j=new_split:down
+keybind = cmd+s>shift+k=new_split:up
+keybind = cmd+s>shift+l=new_split:right
+keybind = cmd+s>f=toggle_split_zoom
+keybind = cmd+s>n=new_window
+
+keybind = cmd+s>h=goto_split:left
+keybind = cmd+s>j=goto_split:down
+keybind = cmd+s>k=goto_split:up
+keybind = cmd+s>l=goto_split:right
+
+## other
+keybind = global:opt+grave_accent=toggle_quick_terminal
+keybind = cmd+,=text:hx ~/.config/ghostty/config\r
+keybind = cmd+k=text:clear ; tmux clear-history\r
+keybind = opt+shift+grave_accent=text: ff\r
+
+keybind = shift+enter=text:\x1b\r
+
+keybind = cmd+digit_1=unbind
+keybind = cmd+digit_2=unbind
+keybind = cmd+digit_3=unbind
+keybind = cmd+digit_4=unbind
+keybind = cmd+digit_5=unbind
+keybind = cmd+digit_6=unbind
+keybind = cmd+digit_7=unbind
+keybind = cmd+digit_8=unbind
+keybind = cmd+digit_9=unbind
+
+keybind = cmd+1=text:\x001
+keybind = cmd+2=text:\x002
+keybind = cmd+3=text:\x003
+keybind = cmd+4=text:\x004
+keybind = cmd+5=text:\x005
+keybind = cmd+6=text:\x006
+keybind = cmd+7=text:\x007
+keybind = cmd+8=text:\x008
+keybind = cmd+9=text:\x009

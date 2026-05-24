@@ -1,0 +1,53 @@
+#!/usr/bin/env nu
+
+def current-system-path [host: string] {
+  if $host == "macbook" {
+    "/run/current-system"
+  } else {
+    "/run/current-system"
+  }
+}
+
+def target-attr [host: string] {
+  if $host == "macbook" {
+    $".#darwinConfigurations.($host).system"
+  } else {
+    $".#nixosConfigurations.($host).config.system.build.toplevel"
+  }
+}
+
+def switch-command [host: string] {
+  if $host == "macbook" {
+    [darwin-rebuild switch --flake $".#($host)"]
+  } else {
+    [sudo nixos-rebuild switch --flake $".#($host)"]
+  }
+}
+
+def main [
+  host: string = "macbook"
+  --switch(-s)
+] {
+  let attr = (target-attr $host)
+  let result = ($env.PWD | path join $"result-($host)")
+
+  print $"building ($attr)"
+  nix --extra-experimental-features pipe-operators build $attr --out-link $result
+
+  let current = (current-system-path $host)
+  if ($current | path exists) and ((which dix | is-not-empty)) {
+    print $"\nclosure diff: ($current) -> ($result)"
+    dix $current $result
+  } else {
+    print "\nclosure diff skipped: no current system or dix not installed"
+  }
+
+  if $switch {
+    let cmd = (switch-command $host)
+    print $"\nswitching with: ($cmd | str join ' ')"
+    ^($cmd | get 0) ...($cmd | skip 1)
+  } else {
+    print $"\nbuild complete: ($result)"
+    print "rerun with --switch to activate"
+  }
+}

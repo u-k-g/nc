@@ -1,0 +1,13 @@
+.DS_Store
+*.DS_Store
+.env
+.env.local
+.env.*.local
+node_modules/
+.jj/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.zig-cache/
+

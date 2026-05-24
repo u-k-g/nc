@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# Optimized PaperWM + SketchyBar Configuration
+# Uses pre-created fixed item pool controlled directly from Hammerspoon Lua
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+##### Bar Appearance #####
+bar=(
+  shadow=on
+  height=37
+  color=0x55000000
+  position=top
+  blur_radius=60
+  notch_width=200
+  padding_left=12
+  padding_right=12
+)
+
+sketchybar --bar "${bar[@]}"
+
+##### Changing Defaults #####
+default=(
+  padding_left=4
+  padding_right=4
+  icon.font="DepartureMono Nerd Font Mono:Regular:18.0"
+  label.font="DepartureMono Nerd Font Mono:Regular:15.0"
+  icon.color=0xffffffff
+  label.color=0xffffffff
+  icon.y_offset=0
+  label.y_offset=0
+  icon.padding_left=4
+  icon.padding_right=4
+  label.padding_left=4
+  label.padding_right=4
+)
+sketchybar --default "${default[@]}"
+
+##### PaperWM Fixed Item Pool #####
+# Pre-create 12 items that will be controlled directly from Lua
+# Items start hidden (drawing=off) and are shown/hidden by Hammerspoon
+
+for i in {0..11}; do
+  sketchybar --add item paperwm_$i left \
+    --set paperwm_$i \
+    drawing=off \
+    icon.drawing=on \
+    label.drawing=off \
+    icon.font="sketchybar-app-font:Regular:16.0" \
+    icon.y_offset=0 \
+    icon.color=0x60ffffff \
+    padding_left=4 \
+    padding_right=4
+done
+
+##### Adding Right Items #####
+
+sketchybar --add item clock right \
+  --set clock update_freq=1 script="$PLUGIN_DIR/clock.sh" label.padding_right=10 \
+  --add item timer right \
+  --set timer update_freq=1 script="$PLUGIN_DIR/timer.sh" click_script="$PLUGIN_DIR/timer_menu.sh" icon.drawing=off label="00:00" label.width=54 width=59 padding_right=0 \
+  --add item volume e \
+  --set volume icon.width=34 label.width=58 width=108 script="$PLUGIN_DIR/volume.sh" \
+  --subscribe volume volume_change \
+  --add item battery q \
+  --set battery icon.width=34 label.width=58 width=108 update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+  --subscribe battery system_woke power_source_change
+
+##### Force all scripts to run the first time #####
+sketchybar --update

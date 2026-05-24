@@ -1,0 +1,3 @@
+[[language]]
+name = "nu"
+formatter = { command = "topiary", args = ["format", "--language", "nu"] }

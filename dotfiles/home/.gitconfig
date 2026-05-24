@@ -1,0 +1,42 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	name = uzair khan ghori
+	email = ukghori08@gmail.com
+  signingkey = /Users/uzair/.ssh/id_rsa.pub
+[http]
+	postBuffer = 157286400
+	sslBackend = openssl
+[pull]
+	rebase = false
+[core]
+    excludesfile = /Users/uzair/.config/.gitignore_global
+    attributesfile = /Users/uzair/.config/.gitattributes
+    # pager = delta
+    editor = hx
+    whitespace = trailing-space,space-before-tab
+    fsmonitor = true
+    untrackedCache = true
+[merge]
+  conflictstyle = zdiff3
+  tool = hx
+[init]
+  defaultBranch = main
+[push]
+  autoSetupRemote = true
+  default = current
+[github]
+	user = u-k-g
+[commit]
+  gpgsign = true
+[tag]
+  gpgSign = true
+; [gpg]
+;   program = /Users/uzair/.nix-profile/bin/gpg
+[feature]
+    manyFiles = true
+[diff "fcstd"]
+    textconv = sh -c 'unzip -p \"$1\" Document.xml' --
