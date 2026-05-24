@@ -7,8 +7,7 @@ let
   collect =
     collected: parent:
     foldl' (
-      acc: child:
-      if elem "${child}" acc then acc else collect (singleton "${child}" ++ acc) child
+      acc: child: if elem "${child}" acc then acc else collect (singleton "${child}" ++ acc) child
     ) collected (attrValues (parent.inputs or { }));
 in
 {

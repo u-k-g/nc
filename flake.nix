@@ -74,6 +74,25 @@
         ];
 
         imports = filter (hasSuffix ".mod.nix") (listFilesRecursive ./.);
+
+        perSystem =
+          { pkgs, ... }:
+          {
+            formatter = pkgs.writeShellApplication {
+              name = "nc-fmt";
+              runtimeInputs = [
+                pkgs.git
+                pkgs.nixfmt
+              ];
+              text = ''
+                if [ "$#" -eq 0 ]; then
+                  git ls-files '*.nix' | xargs nixfmt
+                else
+                  nixfmt "$@"
+                fi
+              '';
+            };
+          };
       }
     );
 }

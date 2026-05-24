@@ -17,15 +17,14 @@ in
       inherit inputs self;
     };
 
-    modules =
-      [
-        inputs.home-manager.darwinModules.home-manager
-        inputs.homebrew.darwinModules.nix-homebrew
-      ]
-      ++ attrValues self.commonModules
-      ++ attrValues self.darwinModules
-      ++ [
+    modules = [
+      inputs.home-manager.darwinModules.home-manager
+      inputs.homebrew.darwinModules.nix-homebrew
+    ]
+    ++ attrValues self.commonModules
+    ++ attrValues self.darwinModules
+    ++ [
       ./macbook/default.nix
-      ];
+    ];
   };
 }

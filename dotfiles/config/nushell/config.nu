@@ -40,12 +40,13 @@ $env.config.render_right_prompt_on_last_line = false
 $env.config.float_precision = 2
 $env.config.ls.use_ls_colors = true
 $env.PROMPT_MULTILINE_INDICATOR = ""
-source ($nu.config-path | path dirname | path join "env.nu")
-source ($nu.config-path | path dirname | path join "misc.nu")
+const helper_dir = "@nushellHelperDir@"
+
+source ($helper_dir | path join "misc.nu")
 if (sys host | get name) == "Darwin" {
-  source ($nu.config-path | path dirname | path join "misc-darwin.nu")
+  source ($helper_dir | path join "misc-darwin.nu")
 }
-source ($nu.config-path | path dirname | path join "prompts.nu")
+source ($helper_dir | path join "prompts.nu")
 $env.HAS_DIRENV = (try { ((^which direnv | complete).exit_code == 0) } catch { false })
 def --env load-direnv [] {
   if not ($env.HAS_DIRENV? | default false) {
@@ -121,15 +122,9 @@ $env.config.color_config.bool = "light_green_bold"
 $env.config.color_config.false_bool = "light_red_bold"
 $env.config.color_config.string = {|| (if $in =~ "^(#|0x)[a-fA-F0-9]+$" { ($in | str replace "0x" "#") } else { "white" }) }
 
-if ($env.TMUX? | is-empty) { tmux new -A }
+if ($env.TMUX? | is-empty) { tmux new -A -s main }
 
-source ~/.local/share/atuin/init.nu
-source ($nu.config-path | path dirname | path join "atuin-fix.nu")
-
-source ~/.zoxide.nu
-
-const CARAPACE_FILE = $"($nu.cache-dir)/carapace.nu"
-source $CARAPACE_FILE
+source ($helper_dir | path join "integrations.nu")
 
 $env.NODE_EXTRA_CA_CERTS = "/etc/ssl/cert.pem"
 

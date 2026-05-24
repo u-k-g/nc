@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   inherit (lib) optionals;
@@ -82,11 +87,9 @@ let
 
     ruff
     uv
-    (biome.overrideAttrs (_: {
-      doCheck = false;
-    }))
+    biome
     oxlint
-    nixfmt-rfc-style
+    nixfmt
     topiary
     shfmt
     shellcheck

@@ -3,6 +3,7 @@
 {
   nix-homebrew = {
     enable = true;
+    autoMigrate = true;
     enableRosetta = true;
     user = config.nc.user.name;
 
@@ -26,6 +27,7 @@
     taps = [
       "apple/apple"
       "felixkratz/formulae"
+      "homebrew/cask"
       "homebrew/services"
       "manaflow-ai/cmux"
       "nikitabobko/tap"
@@ -37,7 +39,6 @@
       "espeak-ng"
       "glslviewer"
       "mas"
-      "opencode"
       "ruby"
       "felixkratz/formulae/borders"
       "felixkratz/formulae/sketchybar"
@@ -48,40 +49,17 @@
       "battery"
       "blip"
       "cmux"
-      "freecad"
-      "ghostty"
       "hammerspoon"
       "helium-browser"
       "kicad"
-      "kitty@nightly"
-      "legcord"
-      "obsidian"
-      "opencode-desktop"
       "orcaslicer"
-      "protonvpn"
       "sf-symbols"
-      "t3-code@nightly"
       "thaw"
-      "zed"
+      "vesktop"
       "zed@preview"
-      "zen"
       "zulu@17"
     ];
 
-    masApps = {
-      "Command X" = 6448461551;
-      "CrystalFetch" = 6454431289;
-      "Developer" = 640199958;
-      "Flip Clock" = 1553591814;
-      "Horo" = 1437226581;
-      "Icon Preview" = 6480373509;
-      "Keynote" = 409183694;
-      "LocalSend" = 1661733229;
-      "Numbers" = 409203825;
-      "Pages" = 409201541;
-      "QuickDrop" = 6740147178;
-      "Simplenote" = 692867256;
-      "Xcode" = 497799835;
-    };
+    masApps = { };
   };
 }

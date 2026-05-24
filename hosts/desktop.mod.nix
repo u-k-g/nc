@@ -17,10 +17,11 @@ in
       inherit inputs self;
     };
 
-    modules =
-      [ inputs.home-manager.nixosModules.home-manager ]
-      ++ attrValues self.commonModules
-      ++ attrValues self.nixosModules
-      ++ [ ./desktop/default.nix ];
+    modules = [
+      inputs.home-manager.nixosModules.home-manager
+    ]
+    ++ attrValues self.commonModules
+    ++ attrValues self.nixosModules
+    ++ [ ./desktop/default.nix ];
   };
 }

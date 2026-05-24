@@ -7,7 +7,8 @@ $env.INFOPATH = ($env.INFOPATH? | default [] | prepend "/opt/homebrew/share/info
 $env.PATH = [
   ($nu.home-dir | path join ".platformio" "penv" "bin")
   ($nu.home-dir | path join ".platformio" "packages" "toolchain-gccarmnoneeabi-teensy" "bin")
-  ($nu.home-dir | path join ".nix-profile" "bin")
+  "/etc/profiles/per-user/uzair/bin"
+  "/run/current-system/sw/bin"
   "/nix/var/nix/profiles/default/bin"
   "/opt/homebrew/sbin"
   "/opt/homebrew/bin"
@@ -28,19 +29,20 @@ $env.PATH = ($env.PATH | prepend ($nu.home-dir | path join ".deno" "bin"))
 
 $env.EDITOR = "hx"
 $env.XDG_CONFIG_HOME = $"($env.HOME)/.config"
-$env.NIX_PROFILES = $"/nix/var/nix/profiles/default ($env.HOME)/.nix-profile"
+$env.NIX_PROFILES = $"/nix/var/nix/profiles/default /run/current-system/sw /etc/profiles/per-user/uzair"
 
 # Fixed: $env.?XDG_DATA_DIRS -> $env.XDG_DATA_DIRS?
 if ($env.XDG_DATA_DIRS? | default null) != null {
   let base = (
     $env.XDG_DATA_DIRS | split row (char esep) | prepend [
       "/nix/var/nix/profiles/default/share"
-      $"($env.HOME)/.nix-profile/share"
+      "/run/current-system/sw/share"
+      "/etc/profiles/per-user/uzair/share"
     ]
   )
   $env.XDG_DATA_DIRS = ($base | str join (char esep))
 } else {
-  $env.XDG_DATA_DIRS = $"/nix/var/nix/profiles/default/share:($env.HOME)/.nix-profile/share"
+  $env.XDG_DATA_DIRS = "/nix/var/nix/profiles/default/share:/run/current-system/sw/share:/etc/profiles/per-user/uzair/share"
 }
 
 # Fixed: $env.?XDG_STATE_HOME -> $env.XDG_STATE_HOME?
@@ -98,15 +100,6 @@ $env.FZF_DEFAULT_OPTS = (
   | where {|opt| $opt != "" }
   | str join " "
 )
-mkdir $"($nu.cache-dir)"
-const CARAPACE_FILE = $"($nu.cache-dir)/carapace.nu"
-if not ($CARAPACE_FILE | path exists) {
-  ^carapace _carapace nushell | save --raw $CARAPACE_FILE
-}
-let zoxide_file = ($nu.home-dir | path join ".zoxide.nu")
-if not ($zoxide_file | path exists) {
-  zoxide init nushell | save -f $zoxide_file
-}
 $env.PATH = ($env.PATH | split row (char esep) | prepend ($nu.home-dir | path join ".bun" "bin"))
 
 $env.PNPM_HOME = ($nu.home-dir | path join "Library" "pnpm")

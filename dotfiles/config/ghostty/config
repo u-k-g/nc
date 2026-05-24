@@ -56,7 +56,7 @@ cursor-style = block
 
 ## shaders
 # custom-shader = /Users/uzair/.config/ghostty/ghostty-shaders/bettercrt.glsl
-custom-shader = /Users/uzair/.config/ghostty/ghostty-shaders/cursor_blaze.glsl
+# custom-shader = /Users/uzair/.config/ghostty/ghostty-shaders/cursor_blaze.glsl
 
 # =============================================================================
 # ICON
@@ -80,7 +80,7 @@ macos-icon-screen-color = c9c7ff
 # shell-integration = fish
 # shell-integration-features = sudo,title
 # command = /Users/uzair/.nix-profile/bin/fish -l -c "tmux attach-session || tmux new-session"
-command = /Users/uzair/.nix-profile/bin/nu --login --config /Users/uzair/.config/nushell/config.nu
+command = @nushellCommand@
 
 # =============================================================================
 # GENERAL SETTINGS

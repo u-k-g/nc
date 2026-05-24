@@ -11,7 +11,6 @@
   system.primaryUser = config.nc.user.name;
 
   nixpkgs.hostPlatform = "aarch64-darwin";
-  nixpkgs.config.allowUnfree = true;
 
   users.users.${config.nc.user.name} = {
     home = config.nc.user.homeDirectory;
