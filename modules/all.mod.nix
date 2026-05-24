@@ -13,15 +13,25 @@
     theme = ./theme.nix;
     user = ./user.nix;
     version-control = ./version-control.nix;
+    secrets = ./secrets.nix;
   };
 
   flake.darwinModules = {
     darwin-desktop = ./darwin-desktop.nix;
+    darwin-defaults = ./darwin-defaults.nix;
     fonts = ./fonts.nix;
     homebrew = ./homebrew.nix;
+    paperwm = ./paperwm.nix;
+    secrets = ./secrets-darwin.nix;
+    sudo = ./sudo.nix;
+  };
+
+  flake.homeModules = {
+    base = ./home/base.nix;
   };
 
   flake.nixosModules = {
     nixos = ./nixos.nix;
+    secrets = ./secrets-nixos.nix;
   };
 }

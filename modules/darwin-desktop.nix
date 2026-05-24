@@ -15,10 +15,13 @@ let
   '';
 in
 {
-  home-manager.users.${user.name}.xdg.configFile = {
-    "ghostty".source = ghosttyConfig;
-    "hammerspoon".source = dotfiles + /config/hammerspoon;
-    "paperwm".source = dotfiles + /config/paperwm;
-    "sketchybar".source = dotfiles + /config/sketchybar;
+  home-manager.users.${user.name} = {
+    home.file.".hammerspoon/init.lua".source = dotfiles + /config/hammerspoon/init.lua;
+
+    xdg.configFile = {
+      "ghostty".source = ghosttyConfig;
+      "hammerspoon".source = dotfiles + /config/hammerspoon;
+      "sketchybar".source = dotfiles + /config/sketchybar;
+    };
   };
 }

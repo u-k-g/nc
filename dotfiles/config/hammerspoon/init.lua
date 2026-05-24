@@ -167,6 +167,20 @@ hs.window.animationDuration = 0
 
 PaperWM.window_filter = PaperWM.window_filter:rejectApp("Antinote")
 
+do
+	local addWindow = PaperWM.windows.addWindow
+	PaperWM.windows.addWindow = function(window)
+		local spaces = hs.spaces.windowSpaces(window)
+		if not spaces or not spaces[1] then
+			local app = window:application()
+			local app_name = app and app:name() or "unknown app"
+			PaperWM.logger.w(string.format("ignoring window without Space: %s - %s", app_name, window:title()))
+			return
+		end
+		return addWindow(window)
+	end
+end
+
 PaperWM:start()
 
 -- ============================================

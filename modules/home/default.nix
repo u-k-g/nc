@@ -1,10 +1,21 @@
-{ config, inputs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  self,
+  ...
+}:
+
+let
+  inherit (lib.attrsets) attrValues;
+in
 
 {
   home-manager = {
     backupFileExtension = "hm-backup";
     useGlobalPkgs = true;
     useUserPackages = true;
+    sharedModules = attrValues self.homeModules;
     extraSpecialArgs = {
       inherit inputs;
     };
@@ -15,8 +26,6 @@
         homeDirectory = config.nc.user.homeDirectory;
         stateVersion = "25.05";
       };
-
-      programs.home-manager.enable = true;
     };
   };
 }

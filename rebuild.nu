@@ -18,7 +18,7 @@ def target-attr [host: string] {
 
 def switch-command [host: string] {
   if $host == "macbook" {
-    [darwin-rebuild switch --flake $".#($host)"]
+    [sudo /run/current-system/sw/bin/darwin-rebuild switch --flake $".#($host)"]
   } else {
     [sudo nixos-rebuild switch --flake $".#($host)"]
   }
