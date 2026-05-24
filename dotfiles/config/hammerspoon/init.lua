@@ -337,6 +337,7 @@ local function build_update_command(current)
 	local curr_signature = build_signature(curr_windows)
 	local order_changed = prev_signature ~= curr_signature
 	local focus_changed = previous_state.focused ~= current.focused
+	local space_changed = previous_state.space ~= current.space
 
 	-- Update visible windows
 	for i = 1, math.min(#curr_windows, MAX_ITEMS) do
@@ -396,7 +397,7 @@ local function build_update_command(current)
 	-- Hide unused items
 	for i = #curr_windows + 1, MAX_ITEMS do
 		local prev = prev_windows[i]
-		if prev and prev.id then
+		if space_changed or (prev and prev.id) then
 			table.insert(cmds, string.format("--set paperwm_%d drawing=off", i - 1))
 		end
 	end
