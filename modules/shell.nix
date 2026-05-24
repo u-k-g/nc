@@ -52,6 +52,10 @@ in
       "nushell/misc.nu".source = dotfiles + /config/nushell/misc.nu;
       "nushell/misc-darwin.nu".source = dotfiles + /config/nushell/misc-darwin.nu;
       "nushell/prompts.nu".source = dotfiles + /config/nushell/prompts.nu;
+      "nushell/fcdiff.nu" = {
+        source = dotfiles + /config/nushell/fcdiff.nu;
+        executable = true;
+      };
       "nushell/atuin-fix.nu".source = dotfiles + /config/nushell/atuin-fix.nu;
     };
 

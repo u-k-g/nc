@@ -91,6 +91,7 @@ in
         fetch = ["git", "fetch"]
         d = ["diff", "--tool", "difft"]
         df = ["diff", "--tool", "difft"]
+        fcd = ["diff", "--tool", "fcstd"]
         gd = ["diff", "--git"]
         gdiff = ["diff", "--git"]
         ls = ["file", "list"]
@@ -109,6 +110,10 @@ in
         [merge-tools.difft]
         program = "difft"
         diff-args = ["--context", "5", "--color=always", "$left", "$right"]
+
+        [merge-tools.fcstd]
+        program = "${home}/.config/nushell/fcdiff.nu"
+        diff-args = ["$left", "$right"]
 
         [snapshot]
         max-new-file-size = 13200000

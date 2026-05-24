@@ -18,6 +18,7 @@ let
     nix-direnv
 
     coreutils
+    diffutils
     openssl
     less
     watch
@@ -58,6 +59,7 @@ let
     fd
     eza
     zoxide
+    unzip
     unar
     just
 
