@@ -9,7 +9,6 @@
 
     controlcenter = {
       BatteryShowPercentage = true;
-      Bluetooth = true;
     };
   };
 }
