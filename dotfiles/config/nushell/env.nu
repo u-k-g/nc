@@ -58,10 +58,9 @@ if ($nix_link | path exists) {
   $env.NIX_LINK = $"($env.HOME)/.nix-profile"
 }
 
-# Fixed: $env.?NIX_SSL_CERT_FILE -> $env.NIX_SSL_CERT_FILE?
-if ($env.NIX_SSL_CERT_FILE? | default null) == null {
-  $env.NIX_SSL_CERT_FILE = "/etc/ssl/certs/ca-certificates.crt"
-}
+$env.SSL_CERT_FILE = "/etc/ssl/cert.pem"
+$env.NIX_SSL_CERT_FILE = $env.SSL_CERT_FILE
+$env.CARGO_HTTP_CAINFO = $env.SSL_CERT_FILE
 
 if $nu.os-info.name == "macos" {
   let sdkroot = (try { ^xcrun --show-sdk-path | str trim } catch { "" })
@@ -105,16 +104,4 @@ $env.PATH = ($env.PATH | split row (char esep) | prepend ($nu.home-dir | path jo
 $env.PNPM_HOME = ($nu.home-dir | path join "Library" "pnpm")
 $env.PATH = ($env.PATH | split row (char esep) | prepend $env.PNPM_HOME)
 
-let cacert_cache = ($nu.home-dir | path join ".cache" "shell" "nix-cacert")
-let cacert = if ($cacert_cache | path exists) {
-  open --raw $cacert_cache | str trim
-} else {
-  let result = (nix eval --raw nixpkgs#cacert.outPath | str trim)
-  mkdir ($cacert_cache | path dirname)
-  $result | save --raw $cacert_cache
-  $result
-}
-$env.SSL_CERT_FILE = $"($cacert)/etc/ssl/certs/ca-bundle.crt"
-$env.NIX_SSL_CERT_FILE = $env.SSL_CERT_FILE
-$env.CARGO_HTTP_CAINFO = $env.SSL_CERT_FILE
 $env.CARGO_NET_GIT_FETCH_WITH_CLI = "true"
