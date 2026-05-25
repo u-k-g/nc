@@ -8,7 +8,10 @@
 {
   imports = [ inputs.agenix.darwinModules.age ];
 
-  age.identityPaths = [ "${config.nc.user.homeDirectory}/.ssh/id_ed25519" ];
+  age.identityPaths = [
+    "${config.nc.user.homeDirectory}/.config/agenix/keys.txt"
+    "${config.nc.user.homeDirectory}/.ssh/id_ed25519"
+  ];
 
   environment.systemPackages = [ inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default ];
 

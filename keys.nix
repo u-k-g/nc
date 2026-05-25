@@ -1,6 +1,6 @@
 rec {
   hosts = {
-    macbook = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPVbh74Osri8TqrnMnwMIN4RWJhXSRpyZ5HJpEK5PTwX uzair@macbook";
+    macbook = "age16h0a9z2kxg5ursdqwgl5h8fqy2lapvz3n770wj9e0xau2xa3ya2sd0esp0";
   };
 
   users = {
