@@ -43,9 +43,7 @@ $env.PROMPT_MULTILINE_INDICATOR = ""
 const helper_dir = "@nushellHelperDir@"
 
 source ($helper_dir | path join "misc.nu")
-if (sys host | get name) == "Darwin" {
-  source ($helper_dir | path join "misc-darwin.nu")
-}
+@nushellDarwinConfig@
 source ($helper_dir | path join "prompts.nu")
 $env.HAS_DIRENV = (try { ((^which direnv | complete).exit_code == 0) } catch { false })
 def --env load-direnv [] {
