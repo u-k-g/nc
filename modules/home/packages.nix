@@ -125,7 +125,6 @@ let
   linuxPackages = with pkgs; [
     docker
     docker-buildx
-    freecad
     usbutils
   ];
 
