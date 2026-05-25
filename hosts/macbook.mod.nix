@@ -8,11 +8,8 @@
 let
   inherit (lib.attrsets) attrValues;
 in
-
 {
   flake.darwinConfigurations.macbook = inputs.nix-darwin.lib.darwinSystem {
-    system = "aarch64-darwin";
-
     specialArgs = {
       inherit inputs self;
     };

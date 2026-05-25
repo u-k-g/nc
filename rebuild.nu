@@ -10,7 +10,7 @@ def current-system-path [host: string] {
 
 def target-attr [host: string] {
   if $host == "macbook" {
-    $".#darwinConfigurations.($host).system"
+    $".#darwinConfigurations.($host).config.system.build.toplevel"
   } else {
     $".#nixosConfigurations.($host).config.system.build.toplevel"
   }

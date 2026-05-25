@@ -7,7 +7,7 @@
 
 let
   user = config.nc.user;
-  fastWorkspaceSwitch = pkgs.callPackage ../packages/fast-workspace-switch { };
+  fastWorkspaceSwitch = pkgs.callPackage ../../packages/fast-workspace-switch { };
   paperwmConfig = pkgs.runCommand "paperwm-config" { } ''
     mkdir -p $out
     ln -s ${fastWorkspaceSwitch}/bin/fast-workspace-switch $out/fast-workspace-switch

@@ -2,7 +2,7 @@
 
 let
   user = config.nc.user;
-  dotfiles = ../dotfiles;
+  dotfiles = ../../dotfiles;
 in
 {
   home-manager.users.${user.name} = {

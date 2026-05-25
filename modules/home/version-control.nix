@@ -54,7 +54,7 @@ in
     };
 
     home.file = {
-      ".gitignore_global".source = ../dotfiles/home/.gitignore_global;
+      ".gitignore_global".source = ../../dotfiles/home/.gitignore_global;
     };
 
     xdg.configFile = {

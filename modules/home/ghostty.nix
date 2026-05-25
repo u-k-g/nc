@@ -2,7 +2,7 @@
 
 let
   user = config.nc.user;
-  dotfiles = ../dotfiles;
+  dotfiles = ../../dotfiles;
   shellCommand =
     if pkgs.stdenv.hostPlatform.isDarwin then
       "/etc/profiles/per-user/${user.name}/bin/nu --login --env-config ${user.homeDirectory}/.config/nushell/env.nu --config ${user.homeDirectory}/.config/nushell/config.nu"

@@ -1,11 +1,8 @@
 let
-  uzair = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPVbh74Osri8TqrnMnwMIN4RWJhXSRpyZ5HJpEK5PTwX uzair@macbook";
+  keys = import ../keys.nix;
 in
 {
-  flake.keys = {
-    macbook = uzair;
-    inherit uzair;
-  };
+  flake.keys = keys.hosts // keys.users;
 
-  flake.keys-admin = [ uzair ];
+  flake.keys-admin = keys.admins;
 }

@@ -20,6 +20,6 @@ in
       continuum
     ];
 
-    extraConfig = builtins.readFile ../dotfiles/config/tmux/tmux.conf;
+    extraConfig = builtins.readFile ../../dotfiles/config/tmux/tmux.conf;
   };
 }

@@ -2,7 +2,7 @@
 
 let
   user = config.nc.user;
-  dotfiles = ../dotfiles;
+  dotfiles = ../../dotfiles;
   nushellHelperDir = "${user.homeDirectory}/.config/nushell";
   nushellConfig = builtins.replaceStrings [ "@nushellHelperDir@" ] [ nushellHelperDir ] (
     builtins.readFile (dotfiles + /config/nushell/config.nu)
