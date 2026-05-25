@@ -46,6 +46,7 @@
     gaming = ./nixos/gaming.nix;
     graphics = ./nixos/graphics.nix;
     nixos = ./nixos/default.nix;
+    niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;
     printing = ./nixos/printing.nix;
     secrets = ./secrets/nixos.nix;

@@ -11,6 +11,8 @@ in
   options.nc.nixos.nvidia.enable = mkEnableOption "NVIDIA desktop graphics";
 
   config = mkIf config.nc.nixos.nvidia.enable {
+    boot.kernelParams = [ "nvidia-drm.modeset=1" ];
+
     services.xserver.videoDrivers = [ "nvidia" ];
 
     hardware.nvidia = {
