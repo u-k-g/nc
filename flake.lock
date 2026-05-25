@@ -170,6 +170,23 @@
         "type": "github"
       }
     },
+    "paperwm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1779672857,
+        "narHash": "sha256-3CvwsGenz9/UwLboearPU6ckKtMDNAb8EjveMQoCNUk=",
+        "owner": "u-k-g",
+        "repo": "PaperWM.spoon",
+        "rev": "649518f8e2be70347f8772d4b7c12c97e3f4aad0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "u-k-g",
+        "ref": "649518f8",
+        "repo": "PaperWM.spoon",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -180,6 +197,7 @@
         "homebrew-core": "homebrew-core",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
+        "paperwm": "paperwm",
         "themes": "themes"
       }
     },

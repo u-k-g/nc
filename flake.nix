@@ -49,6 +49,11 @@
 
     themes.url = "github:RGBCube/ThemeNix";
 
+    paperwm = {
+      url = "github:u-k-g/PaperWM.spoon/649518f8";
+      flake = false;
+    };
+
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";

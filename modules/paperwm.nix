@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  inputs,
+  pkgs,
+  ...
+}:
 
 let
   user = config.nc.user;
@@ -9,5 +14,9 @@ let
   '';
 in
 {
-  home-manager.users.${user.name}.xdg.configFile."paperwm".source = paperwmConfig;
+  home-manager.users.${user.name} = {
+    home.file.".hammerspoon/Spoons/PaperWM.spoon".source = inputs.paperwm;
+
+    xdg.configFile."paperwm".source = paperwmConfig;
+  };
 }
