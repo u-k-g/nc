@@ -40,7 +40,14 @@
   };
 
   flake.nixosModules = {
+    audio = ./nixos/audio.nix;
+    bluetooth = ./nixos/bluetooth.nix;
+    desktop = ./nixos/desktop.nix;
+    gaming = ./nixos/gaming.nix;
+    graphics = ./nixos/graphics.nix;
     nixos = ./nixos/default.nix;
+    nvidia = ./nixos/nvidia.nix;
+    printing = ./nixos/printing.nix;
     secrets = ./secrets/nixos.nix;
   };
 }
