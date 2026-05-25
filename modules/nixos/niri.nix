@@ -36,11 +36,6 @@
       configHome = config.nc.user.homeDirectory;
       compositor.name = "niri";
       quickshell.package = pkgs.quickshell;
-
-      logs = {
-        save = true;
-        path = "/var/log/dms-greeter.log";
-      };
     };
   };
 
