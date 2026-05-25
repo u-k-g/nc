@@ -30,29 +30,8 @@ PaperWM:bindHotkeys({
 	full_width = { { "alt" }, "f" },
 	-- center_window = { { "alt" }, "c" },
 
-	-- Workspaces handled manually below with fast-workspace-switch
-
-	-- Move Window to Workspace (Alt + Shift + 1-6)
-	move_window_1 = { { "alt", "shift" }, "1" },
-	move_window_2 = { { "alt", "shift" }, "2" },
-	move_window_3 = { { "alt", "shift" }, "3" },
-	move_window_4 = { { "alt", "shift" }, "4" },
-	move_window_5 = { { "alt", "shift" }, "5" },
-	move_window_6 = { { "alt", "shift" }, "6" },
+	-- Workspaces handled manually below with fast-workspace-switch.
 })
-
-local function launch(app)
-	return function()
-		hs.application.launchOrFocus(app)
-	end
-end
-
-hs.hotkey.bind({ "alt" }, "w", launch("Helium"))
-hs.hotkey.bind({ "alt" }, "o", launch("Obsidian"))
-hs.hotkey.bind({ "alt" }, "g", launch("Ghostty"))
-hs.hotkey.bind({ "alt" }, "y", launch("Finder"))
-hs.hotkey.bind({ "alt" }, "c", launch("FreeCAD"))
-hs.hotkey.bind({ "alt" }, "z", launch("Zed"))
 
 -- ============================================
 -- WINDOW RESIZING
@@ -89,6 +68,18 @@ end)
 
 local fastWorkspaceSwitchPath = os.getenv("HOME") .. "/.config/paperwm/fast-workspace-switch"
 
+local function mainSpaces()
+	local all_spaces = hs.spaces.allSpaces() or {}
+	local main_screen = hs.screen.mainScreen()
+	local main_uuid = main_screen and main_screen:getUUID()
+
+	return (main_uuid and all_spaces[main_uuid]) or all_spaces.Main or (function()
+		for _, spaces in pairs(all_spaces) do
+			return spaces
+		end
+	end)()
+end
+
 local function changeSpaceBy(offset)
 	local direction = offset > 0 and "right" or "left"
 	local count = math.abs(offset)
@@ -97,7 +88,7 @@ end
 
 local function currentSpaceIndex()
 	local current_space = hs.spaces.activeSpaceOnScreen()
-	local spaces = hs.spaces.allSpaces()[hs.screen.mainScreen():getUUID()]
+	local spaces = mainSpaces()
 
 	local current_index = nil
 	for space_index, space in ipairs(spaces) do
@@ -121,6 +112,79 @@ local function gotoSpace(index)
 	end
 end
 
+local function spaceAtIndex(index)
+	local spaces = mainSpaces()
+	return spaces and spaces[index]
+end
+
+local function indexForSpace(space)
+	local spaces = mainSpaces()
+	if not spaces then
+		return nil
+	end
+
+	for index, candidate in ipairs(spaces) do
+		if candidate == space then
+			return index
+		end
+	end
+
+	return nil
+end
+
+local function launch(app)
+	return function()
+		hs.application.launchOrFocus(app)
+	end
+end
+
+hs.hotkey.bind({ "alt" }, "w", launch("Helium"))
+hs.hotkey.bind({ "alt" }, "o", launch("Obsidian"))
+hs.hotkey.bind({ "alt" }, "g", launch("Ghostty"))
+hs.hotkey.bind({ "alt" }, "y", launch("Finder"))
+hs.hotkey.bind({ "alt" }, "c", launch("FreeCAD"))
+hs.hotkey.bind({ "alt" }, "z", launch("Zed"))
+
+local function clearFloating(window)
+	PaperWM.state.is_floating[window:id()] = nil
+	PaperWM.floating.persistFloatingList()
+end
+
+local function moveFocusedWindowToSpace(index)
+	local window = hs.window.focusedWindow()
+	if not window then
+		return
+	end
+
+	local target_space = spaceAtIndex(index)
+	if not target_space or hs.spaces.spaceType(target_space) ~= "user" then
+		return
+	end
+
+	local current_space = hs.spaces.windowSpaces(window)[1]
+	if current_space == target_space then
+		return
+	end
+
+	clearFloating(window)
+
+	local ok, err = PaperWM.space.MissionControl:moveWindowToSpace(window, target_space)
+	if not ok or err then
+		clearFloating(window)
+		PaperWM.windows.refreshWindows()
+		return
+	end
+
+	PaperWM.windows.refreshWindows()
+
+	hs.timer.doAfter(0.8, function()
+		clearFloating(window)
+		PaperWM.windows.refreshWindows()
+		gotoSpace(index)
+		window:focus()
+	end)
+end
+
 -- ============================================
 -- SPACE SWITCHING HOTKEYS (using fast-workspace-switch)
 -- ============================================
@@ -128,6 +192,9 @@ end
 for index = 1, 9 do
 	hs.hotkey.bind({ "alt" }, tostring(index), function()
 		gotoSpace(index)
+	end)
+	hs.hotkey.bind({ "alt", "shift" }, tostring(index), function()
+		moveFocusedWindowToSpace(index)
 	end)
 end
 

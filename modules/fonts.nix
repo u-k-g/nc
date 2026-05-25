@@ -21,6 +21,5 @@
     prociono
     oldstandard
     recursive
-    sketchybar-app-font
   ];
 }

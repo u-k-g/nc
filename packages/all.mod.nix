@@ -2,8 +2,10 @@
 
 {
   perSystem =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
     {
-      packages.fast-workspace-switch = pkgs.callPackage ./fast-workspace-switch { };
+      packages = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+        fast-workspace-switch = pkgs.callPackage ./fast-workspace-switch { };
+      };
     };
 }

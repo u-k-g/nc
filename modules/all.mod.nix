@@ -4,6 +4,8 @@
   flake.commonModules = {
     apps = ./apps.nix;
     editor = ./editor.nix;
+    fonts = ./fonts.nix;
+    ghostty = ./ghostty.nix;
     home = ./home/default.nix;
     inputs-gcroot = ./inputs-gcroot.nix;
     nix = ./nix.nix;
@@ -19,7 +21,7 @@
   flake.darwinModules = {
     darwin-desktop = ./darwin-desktop.nix;
     darwin-defaults = ./darwin-defaults.nix;
-    fonts = ./fonts.nix;
+    fonts = ./darwin-fonts.nix;
     homebrew = ./homebrew.nix;
     paperwm = ./paperwm.nix;
     secrets = ./secrets-darwin.nix;
