@@ -42,8 +42,8 @@ parse_duration() {
   local input=${1// /}
   local a b c
 
-  if [[ "$input" =~ ^[0-9]+$ ]]; then
-    echo $((input * 60))
+  if [[ "$input" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+    awk -v minutes="$input" 'BEGIN { printf "%d\n", minutes * 60 }'
     return 0
   fi
 
