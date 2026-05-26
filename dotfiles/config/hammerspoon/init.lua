@@ -2,6 +2,7 @@ PaperWM = hs.loadSpoon("PaperWM")
 
 PaperWM.external_bar = {top = 37}
 PaperWM.window_gap  =  { top = 4, bottom = 4, left = 8, right = 8 }
+PaperWM.native_tab_apps = { "Ghostty", "Finder" }
 
 PaperWM.allow_non_maximizable_window = function(window)
 	local app = window:application()
@@ -244,6 +245,7 @@ do
 			PaperWM.logger.w(string.format("ignoring window without Space: %s - %s", app_name, window:title()))
 			return
 		end
+
 		return addWindow(window)
 	end
 end

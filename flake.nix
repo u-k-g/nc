@@ -62,7 +62,7 @@
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
-      url = "github:u-k-g/PaperWM.spoon/649518f8";
+      url = "github:u-k-g/PaperWM.spoon/a0fd35ae";
       flake = false;
     };
 

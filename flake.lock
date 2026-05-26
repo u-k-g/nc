@@ -173,16 +173,16 @@
     "paperwm": {
       "flake": false,
       "locked": {
-        "lastModified": 1779672857,
-        "narHash": "sha256-3CvwsGenz9/UwLboearPU6ckKtMDNAb8EjveMQoCNUk=",
+        "lastModified": 1779834078,
+        "narHash": "sha256-DCxXSt5n0kGA04XgLlmebvdNkq1U2QeRFjtyzcTS2jQ=",
         "owner": "u-k-g",
         "repo": "PaperWM.spoon",
-        "rev": "649518f8e2be70347f8772d4b7c12c97e3f4aad0",
+        "rev": "a0fd35ae90df0dec997c8467bd76cf027b9ceb97",
         "type": "github"
       },
       "original": {
         "owner": "u-k-g",
-        "ref": "649518f8",
+        "ref": "a0fd35ae",
         "repo": "PaperWM.spoon",
         "type": "github"
       }
