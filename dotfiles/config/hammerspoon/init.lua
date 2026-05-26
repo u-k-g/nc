@@ -421,6 +421,13 @@ local function get_window_state()
 		col_idx = col_idx + 1
 	end
 
+	cache_missing_icons(app_names)
+
+	for _, win in ipairs(raw_windows) do
+		win.icon = get_icon(win.name)
+		table.insert(windows, win)
+	end
+
 	-- Sort by x position (left to right)
 	table.sort(windows, function(a, b)
 		return a.x < b.x
@@ -507,13 +514,6 @@ local function build_update_command(current)
 		if slot_changed or order_changed then
 			table.insert(cmds, string.format("--set %s drawing=on", item_name))
 		end
-	end
-
-	cache_missing_icons(app_names)
-
-	for _, win in ipairs(raw_windows) do
-		win.icon = get_icon(win.name)
-		table.insert(windows, win)
 	end
 
 	-- Hide unused items
