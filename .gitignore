@@ -63,10 +63,10 @@
 !dotfiles/config/paperwm/
 !dotfiles/config/paperwm/fast-workspace-switch.swift
 !dotfiles/config/sketchybar/
-!dotfiles/config/sketchybar/icons.sh
 !dotfiles/config/sketchybar/sketchybarrc
 !dotfiles/config/sketchybar/plugins/
-!dotfiles/config/sketchybar/plugins/*.sh
+!dotfiles/config/sketchybar/plugins/*.data
+!dotfiles/config/sketchybar/plugins/*.nu
 !dotfiles/config/tmux/
 !dotfiles/config/tmux/scripts/
 !dotfiles/config/tmux/scripts/sessionizer

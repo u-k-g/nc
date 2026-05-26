@@ -28,6 +28,7 @@
     homebrew = ./darwin/homebrew.nix;
     login = ./darwin/login.nix;
     menu = ./darwin/menu.nix;
+    paneru = ./darwin/paneru.nix;
     paperwm = ./darwin/paperwm.nix;
     screencapture = ./darwin/screencapture.nix;
     secrets = ./secrets/darwin.nix;

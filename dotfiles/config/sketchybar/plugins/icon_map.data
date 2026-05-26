@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+### SketchyBar app icon map data. Parsed by icon_map.nu.
 
 ### START-OF-ICON-MAP
 __icon_map() {

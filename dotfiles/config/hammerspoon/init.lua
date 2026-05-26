@@ -1,3 +1,70 @@
+local function launch(app)
+	return function()
+		hs.application.launchOrFocus(app)
+	end
+end
+
+hs.hotkey.bind({ "alt" }, "w", launch("Helium"))
+hs.hotkey.bind({ "alt" }, "o", launch("Obsidian"))
+hs.hotkey.bind({ "alt" }, "g", launch("Ghostty"))
+hs.hotkey.bind({ "alt" }, "y", launch("Finder"))
+hs.hotkey.bind({ "alt" }, "c", launch("FreeCAD"))
+hs.hotkey.bind({ "alt" }, "r", launch("Codex"))
+hs.hotkey.bind({ "alt" }, "z", launch("Zed"))
+
+local fastWorkspaceSwitchPath = os.getenv("HOME") .. "/.config/paperwm/fast-workspace-switch"
+
+local function mainSpaces()
+	local all_spaces = hs.spaces.allSpaces() or {}
+	local main_screen = hs.screen.mainScreen()
+	local main_uuid = main_screen and main_screen:getUUID()
+
+	return (main_uuid and all_spaces[main_uuid]) or all_spaces.Main or (function()
+		for _, spaces in pairs(all_spaces) do
+			return spaces
+		end
+	end)()
+end
+
+local function changeSpaceBy(offset)
+	local direction = offset > 0 and "right" or "left"
+	local count = math.abs(offset)
+	os.execute(fastWorkspaceSwitchPath .. " " .. direction .. " " .. count)
+end
+
+local function currentSpaceIndex()
+	local current_space = hs.spaces.activeSpaceOnScreen()
+	local spaces = mainSpaces()
+
+	local current_index = nil
+	for space_index, space in ipairs(spaces) do
+		if space == current_space then
+			current_index = space_index
+			break
+		end
+	end
+
+	return current_index
+end
+
+local function gotoSpace(index)
+	local current_index = currentSpaceIndex()
+	if not current_index then
+		return
+	end
+	local change_by = index - current_index
+	if change_by ~= 0 then
+		changeSpaceBy(change_by)
+	end
+end
+
+for index = 1, 9 do
+	hs.hotkey.bind({ "alt" }, tostring(index), function()
+		gotoSpace(index)
+	end)
+end
+
+if false then
 PaperWM = hs.loadSpoon("PaperWM")
 
 PaperWM.external_bar = {top = 37}
@@ -132,19 +199,6 @@ local function indexForSpace(space)
 
 	return nil
 end
-
-local function launch(app)
-	return function()
-		hs.application.launchOrFocus(app)
-	end
-end
-
-hs.hotkey.bind({ "alt" }, "w", launch("Helium"))
-hs.hotkey.bind({ "alt" }, "o", launch("Obsidian"))
-hs.hotkey.bind({ "alt" }, "g", launch("Ghostty"))
-hs.hotkey.bind({ "alt" }, "y", launch("Finder"))
-hs.hotkey.bind({ "alt" }, "c", launch("FreeCAD"))
-hs.hotkey.bind({ "alt" }, "z", launch("Zed"))
 
 local function clearFloating(window)
 	PaperWM.state.is_floating[window:id()] = nil
@@ -654,3 +708,4 @@ hs.hotkey.bind({ "cmd", "alt", "ctrl" }, "S", function()
 	previous_state = { windows = {}, focused = nil, space = nil }
 	update_sketchybar()
 end)
+end

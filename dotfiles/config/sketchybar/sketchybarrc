@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Optimized PaperWM + SketchyBar Configuration
-# Uses pre-created fixed item pool controlled directly from Hammerspoon Lua
+# Paneru + SketchyBar Configuration
+# Uses pre-created fixed item pool controlled by the Paneru state subscriber
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
 
@@ -35,9 +35,9 @@ default=(
 )
 sketchybar --default "${default[@]}"
 
-##### PaperWM Fixed Item Pool #####
-# Pre-create 12 items that will be controlled directly from Lua
-# Items start hidden (drawing=off) and are shown/hidden by Hammerspoon
+##### Paneru Fixed Item Pool #####
+# Pre-create 12 items that will be controlled directly from Paneru state
+# Items start hidden (drawing=off) and are shown/hidden by the Paneru subscriber
 
 for i in {0..11}; do
   sketchybar --add item paperwm_$i left \
@@ -52,17 +52,19 @@ for i in {0..11}; do
     padding_right=4
 done
 
+"$PLUGIN_DIR/paneru_windows.nu" >/tmp/sketchybar_paneru_windows.log 2>&1 &
+
 ##### Adding Right Items #####
 
 sketchybar --add item clock right \
-  --set clock update_freq=1 script="$PLUGIN_DIR/clock.sh" label.padding_right=10 \
+  --set clock update_freq=1 script="$PLUGIN_DIR/clock.nu" label.padding_right=10 \
   --add item timer right \
-  --set timer update_freq=1 script="$PLUGIN_DIR/timer.sh" click_script="$PLUGIN_DIR/timer_menu.sh" icon.drawing=off label="00:00" label.width=54 width=59 padding_right=0 \
+  --set timer update_freq=1 script="$PLUGIN_DIR/timer.nu" click_script="$PLUGIN_DIR/timer_menu.nu" icon.drawing=off label="00:00" label.width=54 width=59 padding_right=0 \
   --add item volume e \
-  --set volume icon.width=34 label.width=58 width=108 script="$PLUGIN_DIR/volume.sh" \
+  --set volume icon.width=34 label.width=58 width=108 script="$PLUGIN_DIR/volume.nu" \
   --subscribe volume volume_change \
   --add item battery q \
-  --set battery icon.width=34 label.width=58 width=108 update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+  --set battery icon.width=34 label.width=58 width=108 update_freq=120 script="$PLUGIN_DIR/battery.nu" \
   --subscribe battery system_woke power_source_change
 
 ##### Force all scripts to run the first time #####
