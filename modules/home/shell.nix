@@ -1,9 +1,12 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
+  inherit (lib) getExe;
   user = config.nc.user;
+  theme = config.nc.theme;
   dotfiles = ../../dotfiles;
   nushellHelperDir = "${user.homeDirectory}/.config/nushell";
+  hex = color: "#${color}";
   nushellConfig = builtins.replaceStrings
     [
       "@nushellHelperDir@"
@@ -20,14 +23,11 @@ let
     mkdir -p "$HOME" "$XDG_CONFIG_HOME"
 
     {
-      ${pkgs.atuin}/bin/atuin init nu
-      printf '\nsource ${nushellHelperDir}/atuin-fix.nu\n'
       ${pkgs.zoxide}/bin/zoxide init nushell --cmd cd
       ${pkgs.carapace}/bin/carapace _carapace nushell
     } > $out
 
     substituteInPlace $out \
-      --replace-quiet '^atuin' '^${pkgs.atuin}/bin/atuin' \
       --replace-quiet '^zoxide' '^${pkgs.zoxide}/bin/zoxide' \
       --replace-quiet '^carapace' '^${pkgs.carapace}/bin/carapace'
   '';
@@ -36,17 +36,83 @@ in
   home-manager.users.${user.name} = {
     programs.atuin = {
       enable = true;
-      enableNushellIntegration = false;
+      enableBashIntegration = false;
+      enableFishIntegration = false;
+      enableNushellIntegration = true;
+      enableZshIntegration = false;
+      forceOverwriteSettings = true;
+
+      settings = {
+        auto_sync = true;
+        update_check = false;
+        sync_address = "https://api.atuin.sh";
+
+        search_mode = "fuzzy";
+        filter_mode = "global";
+        filter_mode_shell_up_key_binding = "global";
+        search_mode_shell_up_key_binding = "fuzzy";
+        style = "compact";
+        show_preview = false;
+        show_tabs = false;
+        ctrl_n_shortcuts = true;
+        enter_accept = false;
+        keymap_mode = "vim-normal";
+        keymap_cursor = {
+          vim_insert = "blink-bar";
+          vim_normal = "steady-block";
+        };
+
+        history_filter = [
+          "^clear$"
+          "^clear ; tmux clear-history"
+          "^clear; tmux clear-history"
+        ];
+
+        stats.common_subcommands = [
+          "brew"
+          "bun"
+          "git"
+        ];
+
+        sync.records = true;
+        dotfiles.enabled = true;
+        theme.name = "nc";
+        search.filters = [
+          "global"
+          "directory"
+        ];
+      };
+
+      themes.nc = {
+        theme.name = theme.name;
+        colors = {
+          Base = hex theme.base05;
+          Title = hex theme.base0A;
+          Important = hex theme.base0D;
+          Guidance = hex theme.base0C;
+          AlertInfo = hex theme.base0B;
+          AlertWarn = hex theme.base09;
+          AlertError = hex theme.base08;
+          Annotation = hex theme.base04;
+          Muted = hex theme.base03;
+        };
+      };
     };
 
     programs.zoxide = {
       enable = true;
+      enableBashIntegration = false;
+      enableFishIntegration = false;
       enableNushellIntegration = false;
+      enableZshIntegration = false;
     };
 
     programs.carapace = {
       enable = true;
+      enableBashIntegration = false;
+      enableFishIntegration = false;
       enableNushellIntegration = false;
+      enableZshIntegration = false;
     };
 
     programs.nushell = {
@@ -55,8 +121,17 @@ in
       envFile.source = dotfiles + /config/nushell/env.nu;
     };
 
+    programs.zsh = {
+      enable = true;
+      dotDir = user.homeDirectory;
+      initContent = ''
+        if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
+          SHELL='${getExe pkgs.nushell}' exec "$SHELL"
+        fi
+      '';
+    };
+
     xdg.configFile = {
-      "atuin/config.toml".source = dotfiles + /config/atuin/config.toml;
       "nushell/integrations.nu".source = nushellIntegrations;
       "nushell/misc.nu".source = dotfiles + /config/nushell/misc.nu;
       "nushell/misc-darwin.nu".source = dotfiles + /config/nushell/misc-darwin.nu;
@@ -65,7 +140,6 @@ in
         source = dotfiles + /config/nushell/fcdiff.nu;
         executable = true;
       };
-      "nushell/atuin-fix.nu".source = dotfiles + /config/nushell/atuin-fix.nu;
     };
 
     home.sessionVariables = {

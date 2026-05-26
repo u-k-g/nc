@@ -61,7 +61,6 @@ in
       keep-derivations = true;
       keep-outputs = true;
       show-trace = true;
-      ssl-cert-file = "/etc/ssl/cert.pem";
       trusted-users = [
         "root"
         "@admin"
@@ -69,6 +68,8 @@ in
       ];
       use-xdg-base-directories = true;
       warn-dirty = false;
+    } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+      ssl-cert-file = "/etc/ssl/cert.pem";
     };
 
     gc = {

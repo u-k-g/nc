@@ -4,20 +4,20 @@
 
 window-inherit-working-directory = true
 window-padding-x = 8
-window-padding-y = 4
+window-padding-y = 8
 window-padding-balance = true
 window-padding-color = background
 fullscreen = false
 window-colorspace = display-p3
 # window-save-state = always
-# window-decoration = none
+window-decoration = true
 
 ## macos
 macos-non-native-fullscreen = true
 macos-option-as-alt = true
 macos-secure-input-indication = true
-macos-window-buttons = hidden
-macos-titlebar-style = hidden
+macos-window-buttons = visible
+macos-titlebar-style = tabs
 macos-titlebar-proxy-icon = hidden
 
 # =============================================================================
@@ -79,8 +79,6 @@ macos-icon-screen-color = c9c7ff
 
 # shell-integration = fish
 # shell-integration-features = sudo,title
-# command = /Users/uzair/.nix-profile/bin/fish -l -c "tmux attach-session || tmux new-session"
-command = @nushellCommand@
 
 # =============================================================================
 # GENERAL SETTINGS
@@ -89,7 +87,7 @@ command = @nushellCommand@
 confirm-close-surface = false
 quit-after-last-window-closed = true
 scrollbar=never
-window-title-font-family="Lilex italic"
+window-title-font-family="DepartureMono Nerd Font"
 bell-features = system,no-border,no-title,attention
 
 ## clipboard
@@ -123,27 +121,26 @@ keybind = cmd+s>l=goto_split:right
 ## other
 keybind = global:opt+grave_accent=toggle_quick_terminal
 keybind = cmd+,=text:hx ~/.config/ghostty/config\r
-keybind = cmd+k=text:clear ; tmux clear-history\r
-keybind = opt+shift+grave_accent=text: ff\r
+keybind = cmd+k=text:clear\r
 
 keybind = shift+enter=text:\x1b\r
 
-keybind = cmd+digit_1=unbind
-keybind = cmd+digit_2=unbind
-keybind = cmd+digit_3=unbind
-keybind = cmd+digit_4=unbind
-keybind = cmd+digit_5=unbind
-keybind = cmd+digit_6=unbind
-keybind = cmd+digit_7=unbind
-keybind = cmd+digit_8=unbind
-keybind = cmd+digit_9=unbind
+# keybind = cmd+digit_1=unbind
+# keybind = cmd+digit_2=unbind
+# keybind = cmd+digit_3=unbind
+# keybind = cmd+digit_4=unbind
+# keybind = cmd+digit_5=unbind
+# keybind = cmd+digit_6=unbind
+# keybind = cmd+digit_7=unbind
+# keybind = cmd+digit_8=unbind
+# keybind = cmd+digit_9=unbind
 
-keybind = cmd+1=text:\x001
-keybind = cmd+2=text:\x002
-keybind = cmd+3=text:\x003
-keybind = cmd+4=text:\x004
-keybind = cmd+5=text:\x005
-keybind = cmd+6=text:\x006
-keybind = cmd+7=text:\x007
-keybind = cmd+8=text:\x008
-keybind = cmd+9=text:\x009
+# keybind = cmd+1=text:\x001
+# keybind = cmd+2=text:\x002
+# keybind = cmd+3=text:\x003
+# keybind = cmd+4=text:\x004
+# keybind = cmd+5=text:\x005
+# keybind = cmd+6=text:\x006
+# keybind = cmd+7=text:\x007
+# keybind = cmd+8=text:\x008
+# keybind = cmd+9=text:\x009

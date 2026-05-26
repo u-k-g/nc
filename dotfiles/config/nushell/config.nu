@@ -120,8 +120,6 @@ $env.config.color_config.bool = "light_green_bold"
 $env.config.color_config.false_bool = "light_red_bold"
 $env.config.color_config.string = {|| (if $in =~ "^(#|0x)[a-fA-F0-9]+$" { ($in | str replace "0x" "#") } else { "white" }) }
 
-if ($env.TMUX? | is-empty) { tmux new -A -s main }
-
 source ($helper_dir | path join "integrations.nu")
 
 $env.NODE_EXTRA_CA_CERTS = "/etc/ssl/cert.pem"
