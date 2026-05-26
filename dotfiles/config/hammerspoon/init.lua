@@ -431,7 +431,7 @@ local function build_update_command(current)
 				table.insert(
 					cmds,
 					string.format(
-						'--set %s icon.drawing=off label.drawing=on label="%s" label.font="Lilex:Bold:14.0"',
+						'--set %s icon.drawing=off label.drawing=on label="%s" label.font="DepartureMono Nerd Font Mono:Regular:14.0"',
 						item_name,
 						shell_escape(label)
 					)
