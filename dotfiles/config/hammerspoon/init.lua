@@ -299,6 +299,52 @@ end
 
 build_icon_cache()
 
+local function shell_arg(str)
+	return "'" .. (str or ""):gsub("'", "'\\''") .. "'"
+end
+
+local function cache_missing_icons(app_names)
+	local missing = {}
+	local seen = {}
+
+	for _, app_name in ipairs(app_names) do
+		if app_name and not icon_cache[app_name] and not seen[app_name] then
+			seen[app_name] = true
+			table.insert(missing, app_name)
+		end
+	end
+
+	if #missing == 0 then
+		return
+	end
+
+	local args = {}
+	for _, app_name in ipairs(missing) do
+		table.insert(args, shell_arg(app_name))
+	end
+
+	local handle = io.popen(os.getenv("HOME") .. "/.config/sketchybar/plugins/icon_map.sh " .. table.concat(args, " ") .. " 2>/dev/null")
+	if not handle then
+		return
+	end
+
+	local output = handle:read("*l")
+	handle:close()
+
+	if not output then
+		return
+	end
+
+	local index = 1
+	for icon in output:gmatch("%S+") do
+		local app_name = missing[index]
+		if app_name then
+			icon_cache[app_name] = icon
+		end
+		index = index + 1
+	end
+end
+
 -- Get icon for app (cached lookup)
 local function get_icon(app_name)
 	if not app_name then
@@ -312,7 +358,7 @@ local function get_icon(app_name)
 
 	-- Try fallback to icon_map.sh for unknown apps
 	local handle = io.popen(
-		'"' .. os.getenv("HOME") .. '/.config/sketchybar/plugins/icon_map.sh" "' .. app_name .. '" 2>/dev/null'
+		os.getenv("HOME") .. "/.config/sketchybar/plugins/icon_map.sh " .. shell_arg(app_name) .. " 2>/dev/null"
 	)
 	if handle then
 		local icon = handle:read("*l")
@@ -351,6 +397,9 @@ local function get_window_state()
 	local focusedId = focusedWin and focusedWin:id()
 	local focusedApp = focusedWin and focusedWin:application() and focusedWin:application():name() or ""
 
+	local raw_windows = {}
+	local app_names = {}
+
 	-- Collect all windows with their positions
 	local col_idx = 1
 	for _, column in ipairs(windowList) do
@@ -359,14 +408,13 @@ local function get_window_state()
 			local appName = app and app:name() or "Unknown"
 			local windowId = window:id()
 			local x = xPositions[windowId] or (col_idx * 1000)
-			local icon = get_icon(appName)
 			local isFocused = (windowId == focusedId)
 
-			table.insert(windows, {
+			table.insert(app_names, appName)
+			table.insert(raw_windows, {
 				id = windowId,
 				name = appName,
 				x = x,
-				icon = icon,
 				focused = isFocused,
 			})
 		end
@@ -459,6 +507,13 @@ local function build_update_command(current)
 		if slot_changed or order_changed then
 			table.insert(cmds, string.format("--set %s drawing=on", item_name))
 		end
+	end
+
+	cache_missing_icons(app_names)
+
+	for _, win in ipairs(raw_windows) do
+		win.icon = get_icon(win.name)
+		table.insert(windows, win)
 	end
 
 	-- Hide unused items

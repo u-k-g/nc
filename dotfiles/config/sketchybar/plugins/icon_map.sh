@@ -645,5 +645,14 @@ __icon_map() {
   esac
 }
 ### END-OF-ICON-MAP
-__icon_map "$1"
-echo "$icon_result"
+if [ "$#" -le 1 ]; then
+  __icon_map "${1:-}"
+  echo "$icon_result"
+  exit 0
+fi
+
+for app_name in "$@"; do
+  __icon_map "$app_name"
+  printf '%s ' "$icon_result"
+done
+printf '\n'
