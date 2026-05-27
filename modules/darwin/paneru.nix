@@ -32,6 +32,8 @@ in
           right = 8;
         };
 
+        swipe.gesture.direction = "Reversed";
+
         windows.default = {
           title = ".*";
           horizontal_padding = 4;
