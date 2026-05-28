@@ -12,7 +12,7 @@ in
     imports = [ inputs.paneru.homeModules.paneru ];
 
     services.paneru = {
-      enable = true;
+      enable = false;
 
       settings = {
         options = {

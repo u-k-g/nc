@@ -12,10 +12,6 @@ let
     bash
     nushell
     atuin
-    (direnv.overrideAttrs (_: {
-      doCheck = false;
-    }))
-    nix-direnv
 
     coreutils
     diffutils
