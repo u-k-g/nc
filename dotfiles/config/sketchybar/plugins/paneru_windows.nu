@@ -70,17 +70,27 @@ def active-windows [state: record] {
 
   if $workspace == null { return [] }
 
-  $workspace.windows
-  | default []
-  | each {|window|
+  let windows = (
+    $workspace.windows
+    | default []
+    | each {|window|
       let name = ($window.app_name? | default "Unknown")
       let window_id = ($window.window_id? | default null)
       {
         id: $window_id,
+        bundle_id: ($window.bundle_id? | default ""),
         name: $name,
         icon: (icon-for-app $name),
         focused: (($window.focused? | default false) or ($window_id == $focused_window_id)),
       }
+    }
+  )
+
+  $windows
+  | uniq-by bundle_id name
+  | each {|window|
+      let matching = ($windows | where bundle_id == $window.bundle_id | where name == $window.name)
+      $window | upsert focused ($matching | any {|candidate| $candidate.focused })
     }
 }
 
@@ -135,11 +145,7 @@ def subscribe-loop [] {
       for line in (^$paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
-
-        match ($event.event? | default "") {
-          "window_title_changed" => {}
-          _ => { update-sketchybar }
-        }
+        update-sketchybar
       }
     }
     sleep 1sec
