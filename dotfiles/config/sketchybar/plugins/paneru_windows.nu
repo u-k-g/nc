@@ -132,7 +132,15 @@ def subscribe-loop [] {
   loop {
     update-sketchybar
     try {
-      ^$paneru subscribe --json | lines | each { update-sketchybar } | ignore
+      for line in (^$paneru subscribe --json | lines) {
+        let event = (try { $line | from json } catch { null })
+        if $event == null { continue }
+
+        match ($event.event? | default "") {
+          "window_title_changed" => {}
+          _ => { update-sketchybar }
+        }
+      }
     }
     sleep 1sec
   }
