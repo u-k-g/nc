@@ -17,8 +17,6 @@ in
       [
         kitty
         obsidian
-        opencode
-        t3code
         zed-editor
       ]
       ++ optionals pkgs.stdenv.isDarwin [

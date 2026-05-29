@@ -119,7 +119,7 @@ keybind = cmd+s>k=goto_split:up
 keybind = cmd+s>l=goto_split:right
 
 ## other
-keybind = global:opt+grave_accent=toggle_quick_terminal
+# keybind = global:opt+grave_accent=toggle_quick_terminal
 keybind = cmd+,=text:hx ~/.config/ghostty/config\r
 keybind = cmd+k=text:clear\r
 

@@ -58,10 +58,12 @@ local function gotoSpace(index)
 	end
 end
 
-for index = 1, 9 do
-	hs.hotkey.bind({ "alt" }, tostring(index), function()
-		gotoSpace(index)
-	end)
+if false then
+	for index = 1, 9 do
+		hs.hotkey.bind({ "alt" }, tostring(index), function()
+			gotoSpace(index)
+		end)
+	end
 end
 
 if false then

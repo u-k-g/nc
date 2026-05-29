@@ -46,7 +46,6 @@ let
     inshellisense
     hyperfine
     mosh
-    codex
     dix
 
     ripgrep
@@ -113,6 +112,7 @@ let
     arp-scan
     nmap
     nbtscan
+    usbutils
 
     screenfetch
     fastfetch
@@ -121,7 +121,6 @@ let
   linuxPackages = with pkgs; [
     docker
     docker-buildx
-    usbutils
   ];
 
   darwinPackages = with pkgs; [
