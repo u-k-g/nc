@@ -54,6 +54,7 @@
       "codex"
       "hammerspoon"
       "helium-browser"
+      "karabiner-elements"
       "kicad"
       "orcaslicer"
       "omniwm"

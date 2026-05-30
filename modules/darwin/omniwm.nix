@@ -11,7 +11,7 @@ in
     xdg.configFile."omniwm/settings.toml".source = dotfiles + /config/omniwm/settings.toml;
 
     launchd.agents.omniwm = {
-      enable = true;
+      enable = false;
       config = {
         Label = "com.barut.OmniWM";
         ProgramArguments = [

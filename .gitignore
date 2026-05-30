@@ -60,6 +60,8 @@
 !dotfiles/config/nushell/misc-darwin.nu
 !dotfiles/config/nushell/misc.nu
 !dotfiles/config/nushell/prompts.nu
+!dotfiles/config/karabiner/
+!dotfiles/config/karabiner/karabiner.json
 !dotfiles/config/omniwm/
 !dotfiles/config/omniwm/settings.toml
 !dotfiles/config/paperwm/

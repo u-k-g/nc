@@ -1,3 +1,8 @@
+-- Disabled by nc; keep the config in place without registering hotkeys or PaperWM.
+if true then
+	return
+end
+
 local function launch(app)
 	return function()
 		hs.application.launchOrFocus(app)
