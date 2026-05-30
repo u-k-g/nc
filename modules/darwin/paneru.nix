@@ -18,7 +18,7 @@ in
         options = {
           focus_follows_mouse = false;
           mouse_follows_focus = true;
-          animation_speed = 100000.0;
+          animation_speed = 22.0;
           auto_center = true;
           sliver_width = 1;
           window_hidden_ratio = 0.0;
@@ -33,7 +33,10 @@ in
           right = 8;
         };
 
-        swipe.gesture.direction = "Reversed";
+        swipe = {
+          sensitivity = 0.88;
+          gesture.direction = "Reversed";
+        };
 
         windows.default = {
           title = ".*";

@@ -67,7 +67,7 @@
     };
 
     paneru = {
-      url = "github:u-k-g/paneru/e0e20e5b";
+      url = "github:u-k-g/paneru/c72711f7";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

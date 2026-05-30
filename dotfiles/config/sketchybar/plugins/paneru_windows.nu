@@ -136,6 +136,18 @@ def update-sketchybar [] {
   }
 }
 
+def update-from-paneru-event [] {
+  let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
+
+  update-sketchybar
+  try { ^$sketchybar --update }
+
+  # Paneru can emit focus/windows events before `query state` reflects the
+  # whole coalesced batch. A short second pass catches the settled state.
+  sleep 50ms
+  update-sketchybar
+}
+
 def subscribe-loop [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
 
@@ -145,7 +157,7 @@ def subscribe-loop [] {
       for line in (^$paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
-        update-sketchybar
+        update-from-paneru-event
       }
     }
     sleep 1sec
