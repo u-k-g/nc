@@ -41,7 +41,27 @@ in
           vertical_padding = 4;
         };
 
+        apps = {
+          helium.name = "Helium";
+          obsidian.name = "Obsidian";
+          ghostty.name = "Ghostty";
+          finder.name = "Finder";
+          freecad.name = "FreeCAD";
+          codex.name = "Codex";
+          zed.name = "Zed";
+          t3.name = "T3 Code (Nightly)";
+        };
+
         bindings = {
+          app_helium = "alt - w";
+          app_obsidian = "alt - o";
+          app_ghostty = "alt - g";
+          app_finder = "alt - y";
+          app_freecad = "alt - c";
+          app_codex = "alt - r";
+          app_zed = "alt - z";
+          app_t3 = "alt - t";
+
           window_focus_west = "alt - h";
           window_focus_south = "alt - j";
           window_focus_north = "alt - k";
