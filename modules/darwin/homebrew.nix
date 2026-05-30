@@ -58,7 +58,6 @@
       "karabiner-elements"
       "kicad"
       "orcaslicer"
-      "omniwm"
       "opencode-desktop"
       "sf-symbols"
       "t3-code@nightly"

@@ -62,8 +62,6 @@
 !dotfiles/config/nushell/prompts.nu
 !dotfiles/config/karabiner/
 !dotfiles/config/karabiner/karabiner.json
-!dotfiles/config/omniwm/
-!dotfiles/config/omniwm/settings.toml
 !dotfiles/config/paperwm/
 !dotfiles/config/paperwm/fast-workspace-switch.swift
 !dotfiles/config/sketchybar/

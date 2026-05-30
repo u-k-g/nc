@@ -28,7 +28,6 @@
     karabiner = ./darwin/karabiner.nix;
     login = ./darwin/login.nix;
     menu = ./darwin/menu.nix;
-    omniwm = ./darwin/omniwm.nix;
     paneru = ./darwin/paneru.nix;
     paperwm = ./darwin/paperwm.nix;
     screencapture = ./darwin/screencapture.nix;
