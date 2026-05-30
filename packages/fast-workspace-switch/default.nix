@@ -14,6 +14,8 @@ stdenv.mkDerivation {
     swiftc \
       -framework CoreGraphics \
       -framework Foundation \
+      -F/System/Library/PrivateFrameworks \
+      -framework SkyLight \
       "$src" \
       -o fast-workspace-switch
     runHook postBuild

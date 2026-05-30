@@ -20,10 +20,11 @@ in
           mouse_follows_focus = true;
           animation_speed = 100000.0;
           auto_center = true;
-          sliver_width = 2;
+          sliver_width = 1;
           window_hidden_ratio = 0.0;
-          show_menu_bar = false;
         };
+
+        decorations.workspace_menu_status = false;
 
         padding = {
           top = 4;

@@ -1,6 +1,16 @@
 import CoreGraphics
 import Foundation
 
+@_silgen_name("CGSCopyManagedDisplaySpaces")
+func CGSCopyManagedDisplaySpaces(_ cid: CFTypeRef?) -> CFArray?
+
+@_silgen_name("CGSGetActiveSpace")
+func CGSGetActiveSpace(_ cid: Int) -> Int
+
+@_silgen_name("SLSMainConnectionID")
+func SLSMainConnectionID() -> Int
+
+
 private let floatMin = 1.401298464324817e-45
 
 private func setInteger(_ event: CGEvent, _ field: Int64, _ value: Int64) {
@@ -71,11 +81,70 @@ private func writeStderr(_ message: String) {
     FileHandle.standardError.write(Data(message.utf8))
 }
 
+private func mainDisplaySpaces() -> [Int]? {
+    let cid = SLSMainConnectionID()
+    guard let managedDisplays = CGSCopyManagedDisplaySpaces(cid as CFNumber) as? [[String: Any]] else {
+        return nil
+    }
+
+    var spacesByDisplay: [String: [Int]] = [:]
+    for display in managedDisplays {
+        guard let uuid = display["Display Identifier"] as? String,
+              let spaces = display["Spaces"] as? [[String: Any]]
+        else {
+            continue
+        }
+        spacesByDisplay[uuid] = spaces.compactMap { $0["id64"] as? Int }
+    }
+
+    return spacesByDisplay["Main"] ?? spacesByDisplay.values.first
+}
+
+private func switchBy(offset: Int) {
+    guard offset != 0 else {
+        return
+    }
+
+    let direction = offset > 0 ? 1 : 0
+    for index in 0..<abs(offset) {
+        if index > 0 {
+            usleep(50_000)
+        }
+
+        workingSpaceSwitch(direction)
+    }
+}
+
+private func gotoSpace(_ target: Int) {
+    guard let spaces = mainDisplaySpaces() else {
+        writeStderr("Unable to read Spaces state\n")
+        exit(1)
+    }
+
+    let currentSpace = CGSGetActiveSpace(SLSMainConnectionID())
+    guard let currentIndex = spaces.firstIndex(of: currentSpace) else {
+        writeStderr("Unable to determine current Space index\n")
+        exit(1)
+    }
+
+    switchBy(offset: target - (currentIndex + 1))
+}
+
 let args = CommandLine.arguments
 
 guard args.count == 3 else {
-    writeStderr("Usage: \(args[0]) <left|right> <count>\n")
+    writeStderr("Usage: \(args[0]) <left|right> <count> | goto <1-9>\n")
     exit(1)
+}
+
+if args[1] == "goto" {
+    guard let target = Int(args[2]), (1...9).contains(target) else {
+        writeStderr("Invalid target: \(args[2]). Must be 1-9.\n")
+        exit(1)
+    }
+
+    gotoSpace(target)
+    exit(0)
 }
 
 let direction: Int

@@ -18,12 +18,7 @@ let
           ;;
       esac
 
-      # Reset to the first space, then move right to the requested index.
-      fast-workspace-switch left 9
-
-      if [ "$target" -gt 1 ]; then
-        fast-workspace-switch right "$((target - 1))"
-      fi
+      fast-workspace-switch goto "$target"
     '';
   };
 in
