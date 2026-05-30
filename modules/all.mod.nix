@@ -24,7 +24,6 @@
     dock = ./darwin/dock.nix;
     essentials = ./darwin/essentials.nix;
     finder = ./darwin/finder.nix;
-    fonts = ./darwin/fonts.nix;
     homebrew = ./darwin/homebrew.nix;
     karabiner = ./darwin/karabiner.nix;
     login = ./darwin/login.nix;

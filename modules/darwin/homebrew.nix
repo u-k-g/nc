@@ -52,6 +52,7 @@
       "blip"
       "cmux"
       "codex"
+      "font-sketchybar-app-font"
       "hammerspoon"
       "helium-browser"
       "karabiner-elements"
