@@ -12,7 +12,6 @@ in
 
 {
   home-manager = {
-    backupFileExtension = "hm-backup";
     useGlobalPkgs = true;
     useUserPackages = true;
     sharedModules = attrValues self.homeModules;

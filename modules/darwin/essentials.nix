@@ -2,9 +2,9 @@
 
 {
   networking = {
-    computerName = "macbook";
-    hostName = "macbook";
-    localHostName = "macbook";
+    computerName = "darwinbook";
+    hostName = "darwinbook";
+    localHostName = "darwinbook";
   };
 
   system.defaults = {

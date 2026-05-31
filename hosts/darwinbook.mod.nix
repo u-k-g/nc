@@ -9,7 +9,7 @@ let
   inherit (lib.attrsets) attrValues;
 in
 {
-  flake.darwinConfigurations.macbook = inputs.nix-darwin.lib.darwinSystem {
+  flake.darwinConfigurations.darwinbook = inputs.nix-darwin.lib.darwinSystem {
     specialArgs = {
       inherit inputs self;
     };
@@ -21,7 +21,7 @@ in
     ++ attrValues self.commonModules
     ++ attrValues self.darwinModules
     ++ [
-      ./macbook/default.nix
+      ./darwinbook/default.nix
     ];
   };
 }

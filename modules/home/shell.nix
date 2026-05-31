@@ -33,6 +33,11 @@ let
   '';
 in
 {
+  environment.shells = [
+    pkgs.nushell
+    pkgs.zsh
+  ];
+
   home-manager.users.${user.name} = {
     programs.atuin = {
       enable = true;
@@ -126,17 +131,22 @@ in
       envFile.source = dotfiles + /config/nushell/env.nu;
     };
 
-    programs.zsh = {
-      enable = true;
-      dotDir = user.homeDirectory;
-      initContent = ''
+    xdg.configFile = {
+      "zsh/.zshrc".text = ''
+        export HOME='${user.homeDirectory}'
+        export USER='${user.name}'
+        export XDG_CACHE_HOME='${user.homeDirectory}/.cache'
+        export XDG_CONFIG_HOME='${user.homeDirectory}/.config'
+        export XDG_DATA_HOME='${user.homeDirectory}/.local/share'
+        export XDG_STATE_HOME='${user.homeDirectory}/.local/state'
+        export ZDOTDIR='${user.homeDirectory}/.config/zsh'
+        export DENO_CONFIG='${user.homeDirectory}/.config/deno/config.json'
+
         if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
-          SHELL='${getExe pkgs.nushell}' exec "$SHELL"
+          export SHELL='${getExe pkgs.nushell}'
+          exec '${getExe pkgs.nushell}' --login --config '${user.homeDirectory}/.config/nushell/config.nu'
         fi
       '';
-    };
-
-    xdg.configFile = {
       "nushell/integrations.nu".source = nushellIntegrations;
       "nushell/misc.nu".source = dotfiles + /config/nushell/misc.nu;
       "nushell/misc-darwin.nu".source = dotfiles + /config/nushell/misc-darwin.nu;
@@ -146,6 +156,12 @@ in
         executable = true;
       };
     };
+
+    home.file.".zshrc".text = ''
+      export XDG_CONFIG_HOME="''${XDG_CONFIG_HOME:-${user.homeDirectory}/.config}"
+      export ZDOTDIR="''${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"
+      [ -f "$ZDOTDIR/.zshrc" ] && source "$ZDOTDIR/.zshrc"
+    '';
 
     home.sessionVariables = {
       DENO_CONFIG = "${user.homeDirectory}/.config/deno/config.json";
