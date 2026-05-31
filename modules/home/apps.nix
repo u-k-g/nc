@@ -9,6 +9,7 @@ let
   inherit (lib) optionals;
   user = config.nc.user;
   dotfiles = ../../dotfiles;
+  heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
 in
 {
   home-manager.users.${user.name} = {
@@ -17,6 +18,7 @@ in
       [
         kitty
         obsidian
+        prismlauncher
         zed-editor
       ]
       ++ optionals pkgs.stdenv.isDarwin [
@@ -25,8 +27,10 @@ in
       ++ optionals pkgs.stdenv.isLinux [
         pkgs.freecad
         pkgs.ghostty
+        heliumBrowser
         pkgs.kicad
         pkgs.orca-slicer
+        pkgs.ungoogled-chromium
         pkgs.vesktop
       ];
 
