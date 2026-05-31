@@ -1,6 +1,13 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
+  imports = [ ./hardware.nix ];
+
   nc.user = {
     name = "ukg";
     handle = "ukg";
@@ -8,33 +15,11 @@
   };
 
   networking.hostName = "desktop";
-  nixpkgs.hostPlatform = "x86_64-linux";
 
   nc.nixos.nvidia.enable = true;
 
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/NIXROOT";
-    fsType = "ext4";
-  };
+  services.desktopManager.plasma6.enable = lib.mkForce false;
 
-  fileSystems."/boot" = {
-    device = "/dev/disk/by-label/BOOT";
-    fsType = "vfat";
-  };
-
-  boot.initrd.luks.devices.cryptroot.device = "/dev/disk/by-partlabel/cryptroot";
-
-  boot.initrd.availableKernelModules = [
-    "ahci"
-    "xhci_pci"
-    "usb_storage"
-    "usbhid"
-    "sd_mod"
-  ];
-
-  boot.kernelModules = [ "kvm-amd" ];
-
-  hardware.cpu.amd.updateMicrocode = true;
   hardware.enableRedistributableFirmware = true;
 
   zramSwap.enable = true;
