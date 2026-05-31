@@ -121,6 +121,8 @@ let
   linuxPackages = with pkgs; [
     docker
     docker-buildx
+    opencode
+    opencode-desktop
   ];
 
   darwinPackages = with pkgs; [
