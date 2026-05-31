@@ -2,11 +2,13 @@
   config,
   lib,
   pkgs,
+  self,
   ...
 }:
 
 let
   inherit (lib) optionals;
+  piCodingAgent = self.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent;
 
   commonPackages = with pkgs; [
     bash
@@ -68,6 +70,7 @@ let
     bun
     deno
     nodejs
+    piCodingAgent
     pnpm
     zig
     lua

@@ -124,6 +124,7 @@ keybind = cmd+,=text:hx ~/.config/ghostty/config\r
 keybind = cmd+k=text:clear\r
 
 keybind = shift+enter=text:\x1b\r
+keybind = alt+backspace=text:\x1b\x7f
 
 # keybind = cmd+digit_1=unbind
 # keybind = cmd+digit_2=unbind
