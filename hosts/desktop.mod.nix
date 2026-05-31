@@ -15,6 +15,7 @@ in
     };
 
     modules = [
+      inputs.chaotic.nixosModules.default
       inputs.home-manager.nixosModules.home-manager
     ]
     ++ attrValues self.commonModules
