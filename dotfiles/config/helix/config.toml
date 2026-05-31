@@ -1,4 +1,4 @@
-theme = "theme"
+theme = "gruvbox_dark_hard"
 
 [editor]
 auto-completion = false

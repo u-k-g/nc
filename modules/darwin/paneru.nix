@@ -18,7 +18,7 @@ in
         options = {
           focus_follows_mouse = false;
           mouse_follows_focus = true;
-          animation_speed = 22.0;
+          animation_speed = 28.0;
           auto_center = true;
           sliver_width = 1;
           window_hidden_ratio = 0.0;
@@ -48,7 +48,7 @@ in
           helium.name = "Helium";
           obsidian.name = "Obsidian";
           ghostty.name = "Ghostty";
-          finder.name = "Finder";
+          kitty.name = "kitty";
           freecad.name = "FreeCAD";
           codex.name = "Codex";
           zed.name = "Zed";
@@ -58,8 +58,7 @@ in
         bindings = {
           app_helium = "alt - w";
           app_obsidian = "alt - o";
-          app_ghostty = "alt - g";
-          app_finder = "alt - y";
+          app_kitty = "alt - semicolon";
           app_freecad = "alt - c";
           app_codex = "alt - r";
           app_zed = "alt - z";

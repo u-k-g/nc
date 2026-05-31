@@ -1,2 +1,2 @@
-inherits = "rose_pine"
-"ui.virtual.indent-guide" = "#26233a"
+inherits = "gruvbox_dark_hard"
+"ui.virtual.indent-guide" = "#3c3836"

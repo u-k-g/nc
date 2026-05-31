@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   inherit (lib) getExe;
@@ -7,16 +12,17 @@ let
   dotfiles = ../../dotfiles;
   nushellHelperDir = "${user.homeDirectory}/.config/nushell";
   hex = color: "#${color}";
-  nushellConfig = builtins.replaceStrings
-    [
-      "@nushellHelperDir@"
-      "@nushellDarwinConfig@"
-    ]
-    [
-      nushellHelperDir
-      (if pkgs.stdenv.hostPlatform.isDarwin then ''source "${nushellHelperDir}/misc-darwin.nu"'' else "")
-    ]
-    (builtins.readFile (dotfiles + /config/nushell/config.nu));
+  nushellConfig =
+    builtins.replaceStrings
+      [
+        "@nushellHelperDir@"
+        "@nushellDarwinConfig@"
+      ]
+      [
+        nushellHelperDir
+        (if pkgs.stdenv.hostPlatform.isDarwin then ''source "${nushellHelperDir}/misc-darwin.nu"'' else "")
+      ]
+      (builtins.readFile (dotfiles + /config/nushell/config.nu));
   nushellIntegrations = pkgs.runCommand "nushell-integrations.nu" { } ''
     export HOME="$TMPDIR/home"
     export XDG_CONFIG_HOME="$TMPDIR/config"
@@ -48,17 +54,16 @@ in
       forceOverwriteSettings = true;
 
       settings = {
-        auto_sync = true;
+        auto_sync = false;
         update_check = false;
-        sync_address = "https://api.atuin.sh";
 
         search_mode = "fuzzy";
         filter_mode = "global";
-        filter_mode_shell_up_key_binding = "global";
+        filter_mode_shell_up_key_binding = "directory";
         search_mode_shell_up_key_binding = "fuzzy";
         style = "compact";
         show_preview = false;
-        show_tabs = false;
+        show_tabs = true;
         ctrl_n_shortcuts = true;
         enter_accept = false;
         keymap_mode = "vim-normal";
@@ -79,13 +84,16 @@ in
           "git"
         ];
 
-        sync.records = true;
-        dotfiles.enabled = true;
         theme.name = "nc";
         search.filters = [
           "global"
           "directory"
         ];
+        keymap = {
+          emacs."ctrl-r" = "cycle-filter-mode";
+          "vim-insert"."ctrl-r" = "cycle-filter-mode";
+          "vim-normal"."ctrl-r" = "cycle-filter-mode";
+        };
       };
 
       themes.nc = {

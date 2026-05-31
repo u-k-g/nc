@@ -91,10 +91,10 @@ $env.DETSYS_IDS_TELEMETRY = "disabled"
 $env.FZF_DEFAULT_OPTS = (
   [
     ($env.FZF_DEFAULT_OPTS? | default "")
-    "--color=bg:#1f1d2e,bg+:#26233a,fg:#908caa,fg+:#f2e9e1"
-    "--color=hl:#c4a7e7,hl+:#c4a7e7,pointer:#c4a7e7,prompt:#c4a7e7"
-    "--color=info:#f2e9e1,border:#f2e9e1,marker:#c4a7e7,spinner:#c4a7e7"
-    "--color=header:#908caa,label:#f2e9e1,query:#f2e9e1"
+    "--color=bg:#1d2021,bg+:#3c3836,fg:#ebdbb2,fg+:#fbf1c7"
+    "--color=hl:#fabd2f,hl+:#fabd2f,pointer:#fe8019,prompt:#b8bb26"
+    "--color=info:#83a598,border:#665c54,marker:#d3869b,spinner:#8ec07c"
+    "--color=header:#928374,label:#fbf1c7,query:#fbf1c7"
   ]
   | where {|opt| $opt != "" }
   | str join " "

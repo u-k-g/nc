@@ -13,6 +13,7 @@
     apps = ./home/apps.nix;
     editor = ./home/editor.nix;
     ghostty = ./home/ghostty.nix;
+    kitty = ./home/kitty.nix;
     packages = ./home/packages.nix;
     shell = ./home/shell.nix;
     terminal = ./home/terminal.nix;
@@ -31,7 +32,6 @@
     paneru = ./darwin/paneru.nix;
     paperwm = ./darwin/paperwm.nix;
     screencapture = ./darwin/screencapture.nix;
-    skhd = ./darwin/skhd.nix;
     secrets = ./secrets/darwin.nix;
     sudo = ./darwin/sudo.nix;
     trackpad = ./darwin/trackpad.nix;

@@ -190,8 +190,8 @@
   "ui_font_size": 16,
   "buffer_font_size": 16,
   "theme": {
-    "mode": "system",
-    "light": "Catppuccin Mocha (Blur) [Heavy]",
+    "mode": "dark",
+    "light": "Gruvbox Light Soft",
     "dark": "Gruvbox Dark Soft"
   },
   // "buffer_font_family": "Monaspace Neon",
@@ -207,7 +207,6 @@
     "mcp-server-sequential-thinking": true,
     "latex": true,
     "postgres-language-server": true,
-    "rose-pine-theme": true,
     "sql": true,
     "zig": true
   },
