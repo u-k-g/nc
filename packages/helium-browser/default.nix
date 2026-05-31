@@ -20,7 +20,8 @@ appimageTools.wrapType2 {
     install -Dm644 ${appimageTools.extract { inherit pname version src; }}/helium.desktop \
       "$out/share/applications/helium.desktop"
     substituteInPlace "$out/share/applications/helium.desktop" \
-      --replace-fail 'Exec=AppRun' 'Exec=helium-browser'
+      --replace-quiet 'Exec=helium %U' 'Exec=helium-browser %U' \
+      --replace-quiet 'Exec=helium' 'Exec=helium-browser'
   '';
 
   meta = {
