@@ -64,17 +64,17 @@ in
         tab_bar_edge = "top";
         tab_bar_margin_width = if pkgs.stdenv.hostPlatform.isDarwin then 70 else 0;
         tab_bar_margin_height = "2 0";
-        tab_bar_style = "fade";
+        tab_bar_style = "separator";
         tab_powerline_style = "angled";
-        tab_separator = " › ";
+        tab_separator = ''"     "'';
         tab_title_template = "{custom}";
-        active_tab_title_template = "{custom}";
+        active_tab_title_template = "{fmt.noitalic}{fmt.bold}{custom}{fmt.nobold}";
 
-        active_tab_background = hex theme.base01;
+        active_tab_background = hex theme.base00;
         active_tab_foreground = hex theme.base05;
 
         inactive_tab_background = hex theme.base00;
-        inactive_tab_foreground = hex theme.base05;
+        inactive_tab_foreground = hex theme.base03;
 
         color0 = hex theme.base00;
         color1 = hex theme.base08;
@@ -140,7 +140,6 @@ in
 
     xdg.configFile."kitty/tab_bar.py".text = ''
       from os.path import basename
-
 
       def draw_title(data):
           tab = data.get("tab")

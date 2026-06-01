@@ -14,6 +14,7 @@
     editor = ./home/editor.nix;
     ghostty = ./home/ghostty.nix;
     kitty = ./home/kitty.nix;
+    opencode = ./home/opencode.nix;
     packages = ./home/packages.nix;
     shell = ./home/shell.nix;
     terminal = ./home/terminal.nix;

@@ -262,7 +262,6 @@ in
 
   home-manager.users.${user.name}.xdg.configFile = {
     "niri/config.kdl" = {
-      force = true;
       text = ''
         input {
             keyboard {
@@ -397,11 +396,9 @@ in
     };
 
     "DankMaterialShell/themes/nc-gruvbox.json" = {
-      force = true;
       text = builtins.toJSON dmsTheme;
     };
     "DankMaterialShell/settings.json" = {
-      force = true;
       text = builtins.toJSON dmsSettings;
     };
   };

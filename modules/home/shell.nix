@@ -54,7 +54,6 @@ in
       enableFishIntegration = false;
       enableNushellIntegration = true;
       enableZshIntegration = false;
-      forceOverwriteSettings = true;
 
       settings = {
         auto_sync = false;

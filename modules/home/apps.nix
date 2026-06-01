@@ -40,7 +40,6 @@ in
 
     xdg.dataFile = lib.mkIf pkgs.stdenv.isLinux {
       "applications/helium.desktop" = {
-        force = true;
         source = "${heliumBrowser}/share/applications/helium.desktop";
       };
     };
