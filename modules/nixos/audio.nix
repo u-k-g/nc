@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   security.rtkit.enable = true;
@@ -12,5 +12,12 @@
     };
 
     pulse.enable = true;
+    wireplumber.enable = true;
   };
+
+  environment.systemPackages = with pkgs; [
+    alsa-utils
+    pavucontrol
+    pulseaudio
+  ];
 }

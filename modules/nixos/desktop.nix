@@ -63,6 +63,7 @@
   };
 
   environment.systemPackages = with pkgs; [
+    crossmacro
     kdePackages.ark
     kdePackages.kcalc
     kdePackages.spectacle
