@@ -1,7 +1,6 @@
 #!/usr/bin/env nu
 
-# Rebuild a NixOS / Darwin config. This intentionally delegates activation to
-# nh instead of calling /run/current-system directly.
+# Rebuild a NixOS / Darwin config through nh only.
 def main --wrapped [
   host: string = "" # The host to build.
   ...arguments      # Arguments passed to `nh {os,darwin} switch`, then nix after --.

@@ -10,8 +10,8 @@ in
     enable = true;
 
     font = {
-      name = "BlexMono Nerd Font";
-      package = pkgs.nerd-fonts.blex-mono;
+      name = "Iosevka Nerd Font Mono";
+      package = pkgs.nerd-fonts.iosevka;
       size = theme.font.size.normal;
     };
 
@@ -20,6 +20,7 @@ in
       confirm_os_window_close = 0;
       focus_follows_mouse = true;
       mouse_hide_wait = 0;
+      copy_on_select = "clipboard";
       window_padding_width = theme.padding;
       hide_window_decorations = "titlebar-only";
       macos_titlebar_color = hex theme.base00;
@@ -49,7 +50,7 @@ in
 
       tab_bar_edge = "top";
       tab_bar_margin_width = 60;
-      tab_bar_margin_height = "4 0";
+      tab_bar_margin_height = "2 0";
       tab_bar_style = "fade";
       tab_powerline_style = "angled";
       tab_separator = " › ";
