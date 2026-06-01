@@ -122,7 +122,7 @@ $env.config.color_config.string = {|| (if $in =~ "^(#|0x)[a-fA-F0-9]+$" { ($in |
 
 source ($helper_dir | path join "integrations.nu")
 
-$env.NODE_EXTRA_CA_CERTS = "/etc/ssl/cert.pem"
+$env.NODE_EXTRA_CA_CERTS = $env.SSL_CERT_FILE
 
 
 ulimit -n 4096

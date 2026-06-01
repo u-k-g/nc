@@ -19,9 +19,10 @@ appimageTools.wrapType2 {
   extraInstallCommands = ''
     install -Dm644 ${appimageTools.extract { inherit pname version src; }}/helium.desktop \
       "$out/share/applications/helium.desktop"
-    substituteInPlace "$out/share/applications/helium.desktop" \
-      --replace-quiet 'Exec=helium %U' 'Exec=helium-browser %U' \
-      --replace-quiet 'Exec=helium' 'Exec=helium-browser'
+    sed -i \
+      -e "s|^Exec=helium %U$|Exec=$out/bin/helium-browser %U|" \
+      -e "s|^Exec=helium$|Exec=$out/bin/helium-browser|" \
+      "$out/share/applications/helium.desktop"
   '';
 
   meta = {

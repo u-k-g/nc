@@ -23,6 +23,9 @@ let
         (if pkgs.stdenv.hostPlatform.isDarwin then ''source "${nushellHelperDir}/misc-darwin.nu"'' else "")
       ]
       (builtins.readFile (dotfiles + /config/nushell/config.nu));
+  nushellEnv =
+    builtins.replaceStrings [ "@sslCertFile@" ] [ "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ]
+      (builtins.readFile (dotfiles + /config/nushell/env.nu));
   nushellIntegrations = pkgs.runCommand "nushell-integrations.nu" { } ''
     export HOME="$TMPDIR/home"
     export XDG_CONFIG_HOME="$TMPDIR/config"
@@ -136,7 +139,7 @@ in
     programs.nushell = {
       enable = true;
       configFile.text = nushellConfig;
-      envFile.source = dotfiles + /config/nushell/env.nu;
+      envFile.text = nushellEnv;
     };
 
     xdg.configFile = {

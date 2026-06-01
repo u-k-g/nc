@@ -1,6 +1,12 @@
-{ config, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
+  inherit (lib.attrsets) optionalAttrs;
   user = config.nc.user;
   home = config.home-manager.users.${user.name}.home.homeDirectory;
 in
@@ -20,6 +26,7 @@ in
         http = {
           postBuffer = 157286400;
           sslBackend = "openssl";
+          sslCAInfo = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
         };
 
         pull.rebase = false;
@@ -46,10 +53,13 @@ in
 
         github.user = "u-k-g";
 
-        commit.gpgsign = true;
-        tag.gpgSign = true;
+        commit.gpgsign = pkgs.stdenv.isDarwin;
+        tag.gpgSign = pkgs.stdenv.isDarwin;
 
         feature.manyFiles = true;
+      }
+      // optionalAttrs pkgs.stdenv.isDarwin {
+        gpg.format = "ssh";
       };
     };
 
@@ -68,7 +78,7 @@ in
 
         [signing]
         backend = "ssh"
-        behavior = "own"
+        behavior = "${if pkgs.stdenv.isDarwin then "own" else "drop"}"
 
         [signing.backends.ssh]
         program = "ssh-keygen"

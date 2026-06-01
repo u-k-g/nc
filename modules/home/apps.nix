@@ -37,5 +37,9 @@ in
     xdg.configFile = {
       "FreeCAD".source = dotfiles + /config/FreeCAD;
     };
+
+    xdg.dataFile = lib.mkIf pkgs.stdenv.isLinux {
+      "applications/helium.desktop".source = "${heliumBrowser}/share/applications/helium.desktop";
+    };
   };
 }

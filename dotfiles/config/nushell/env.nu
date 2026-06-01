@@ -4,10 +4,14 @@ $env.HOMEBREW_REPOSITORY = "/opt/homebrew"
 $env.MANPATH = ($env.MANPATH? | default [] | prepend "/opt/homebrew/share/man")
 $env.INFOPATH = ($env.INFOPATH? | default [] | prepend "/opt/homebrew/share/info")
 
+let profile_user = ($nu.home-dir | path basename)
+let user_profile = $"/etc/profiles/per-user/($profile_user)"
+
 $env.PATH = [
   ($nu.home-dir | path join ".platformio" "penv" "bin")
   ($nu.home-dir | path join ".platformio" "packages" "toolchain-gccarmnoneeabi-teensy" "bin")
-  "/etc/profiles/per-user/uzair/bin"
+  $"($user_profile)/bin"
+  "/run/wrappers/bin"
   "/run/current-system/sw/bin"
   "/nix/var/nix/profiles/default/bin"
   "/opt/homebrew/sbin"
@@ -29,20 +33,25 @@ $env.PATH = ($env.PATH | prepend ($nu.home-dir | path join ".deno" "bin"))
 
 $env.EDITOR = "hx"
 $env.XDG_CONFIG_HOME = $"($env.HOME)/.config"
-$env.NIX_PROFILES = $"/nix/var/nix/profiles/default /run/current-system/sw /etc/profiles/per-user/uzair"
+$env.NIX_PROFILES = $"/nix/var/nix/profiles/default /run/current-system/sw ($user_profile)"
 
 # Fixed: $env.?XDG_DATA_DIRS -> $env.XDG_DATA_DIRS?
 if ($env.XDG_DATA_DIRS? | default null) != null {
+  let existing_xdg_data_dirs = (
+    $env.XDG_DATA_DIRS
+    | split row (char esep)
+    | where {|dir| not ($dir =~ "/etc/profiles/per-user/.+/share") or ($dir == $"($user_profile)/share") }
+  )
   let base = (
-    $env.XDG_DATA_DIRS | split row (char esep) | prepend [
+    $existing_xdg_data_dirs | prepend [
       "/nix/var/nix/profiles/default/share"
       "/run/current-system/sw/share"
-      "/etc/profiles/per-user/uzair/share"
+      $"($user_profile)/share"
     ]
   )
   $env.XDG_DATA_DIRS = ($base | str join (char esep))
 } else {
-  $env.XDG_DATA_DIRS = "/nix/var/nix/profiles/default/share:/run/current-system/sw/share:/etc/profiles/per-user/uzair/share"
+  $env.XDG_DATA_DIRS = $"/nix/var/nix/profiles/default/share:/run/current-system/sw/share:($user_profile)/share"
 }
 
 # Fixed: $env.?XDG_STATE_HOME -> $env.XDG_STATE_HOME?
@@ -58,9 +67,11 @@ if ($nix_link | path exists) {
   $env.NIX_LINK = $"($env.HOME)/.nix-profile"
 }
 
-$env.SSL_CERT_FILE = "/etc/ssl/cert.pem"
+$env.SSL_CERT_FILE = "@sslCertFile@"
 $env.NIX_SSL_CERT_FILE = $env.SSL_CERT_FILE
 $env.CARGO_HTTP_CAINFO = $env.SSL_CERT_FILE
+$env.CURL_CA_BUNDLE = $env.SSL_CERT_FILE
+$env.GIT_SSL_CAINFO = $env.SSL_CERT_FILE
 
 if $nu.os-info.name == "macos" {
   let sdkroot = (try { ^xcrun --show-sdk-path | str trim } catch { "" })
