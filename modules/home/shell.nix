@@ -140,6 +140,9 @@ in
       enable = true;
       configFile.text = nushellConfig;
       envFile.text = nushellEnv;
+      extraConfig = lib.mkAfter ''
+        $env.config.shell_integration.osc9_9 = false
+      '';
     };
 
     xdg.configFile = {
