@@ -91,6 +91,7 @@ in
         default-command = "log"
         merge-editor = "mergiraf"
         graph.style = "square"
+        pager.command = ["${pkgs.bat}/bin/bat", "--plain", "--paging=always", "--color=always"]
 
         [aliases]
         ba = ["bookmark", "advance", "--to", "@-"]

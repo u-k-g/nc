@@ -32,6 +32,10 @@ $env.PATH = [
 $env.PATH = ($env.PATH | prepend ($nu.home-dir | path join ".deno" "bin"))
 
 $env.EDITOR = "hx"
+$env.PAGER = "bat --plain --paging=always"
+$env.BAT_PAGER = "less -FRX --chop-long-lines"
+$env.BAT_PAGING = "never"
+$env.BAT_STYLE = "plain"
 $env.XDG_CONFIG_HOME = $"($env.HOME)/.config"
 $env.NIX_PROFILES = $"/nix/var/nix/profiles/default /run/current-system/sw ($user_profile)"
 

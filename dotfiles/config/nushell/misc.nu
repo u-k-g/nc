@@ -6,8 +6,6 @@ alias nixup = nix profile upgrade nix --verbose
 def tree [...args] { ^eza --tree --git-ignore --group-directories-first ...$args }
 # def python3 [...args] { print "use uv" }
 # def which [...args] { ^which -a ...$args }
-def bat [...args] { ^bat -P --style=plain ...$args }
-
 def nixbump [
   --old: int = 0
   --cached: int = 0

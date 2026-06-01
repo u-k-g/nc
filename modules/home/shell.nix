@@ -155,6 +155,10 @@ in
         export XDG_STATE_HOME='${user.homeDirectory}/.local/state'
         export ZDOTDIR='${user.homeDirectory}/.config/zsh'
         export DENO_CONFIG='${user.homeDirectory}/.config/deno/config.json'
+        export PAGER='bat --plain --paging=always'
+        export BAT_PAGER='less -FRX --chop-long-lines'
+        export BAT_PAGING='never'
+        export BAT_STYLE='plain'
 
         if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
           export SHELL='${getExe pkgs.nushell}'
@@ -179,6 +183,10 @@ in
 
     home.sessionVariables = {
       DENO_CONFIG = "${user.homeDirectory}/.config/deno/config.json";
+      PAGER = "bat --plain --paging=always";
+      BAT_PAGER = "less -FRX --chop-long-lines";
+      BAT_PAGING = "never";
+      BAT_STYLE = "plain";
     };
   };
 }

@@ -19,6 +19,7 @@ let
     diffutils
     openssl
     less
+    bat
     watch
     rsync
     rclone
