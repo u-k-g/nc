@@ -38,6 +38,7 @@ in
         window_padding_width = theme.padding;
         hide_window_decorations = "titlebar-only";
         macos_titlebar_color = hex theme.base00;
+        macos_option_as_alt = "both";
 
         scrollback_lines = 100000;
         scrollback_pager = "${scrollbackPager}/bin/kitty-scrollback-pager +INPUT_LINE_NUMBER";
@@ -118,6 +119,7 @@ in
         "super+9" = "goto_tab 9";
         "super+0" = "goto_tab 10";
         "super+enter" = "launch --location=vsplit";
+        "alt+backspace" = "send_text all \\x17";
         "ctrl+shift+x" =
           "launch --stdin-source=@screen_scrollback --type=overlay ${scrollbackHx}/bin/kitty-scrollback-hx";
       };
