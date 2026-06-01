@@ -117,5 +117,22 @@ in
       "super+0" = "goto_tab 10";
       "super+enter" = "launch --location=vsplit";
     };
+
+    extraConfig = ''
+      symbol_map U+2190-U+21FF Iosevka Nerd Font Mono
+      symbol_map U+2200-U+22FF Iosevka Nerd Font Mono
+      symbol_map U+2300-U+23FF Iosevka Nerd Font Mono
+      symbol_map U+2460-U+24FF Iosevka Nerd Font Mono
+      symbol_map U+2500-U+259F Iosevka Nerd Font Mono
+      symbol_map U+25A0-U+25FF Iosevka Nerd Font Mono
+      symbol_map U+2600-U+27BF Iosevka Nerd Font Mono
+      symbol_map U+27C0-U+27FF Iosevka Nerd Font Mono
+      symbol_map U+2800-U+28FF Iosevka Nerd Font Mono
+      symbol_map U+2900-U+297F Iosevka Nerd Font Mono
+      symbol_map U+2A00-U+2AFF Iosevka Nerd Font Mono
+      symbol_map U+E000-U+F8FF Iosevka Nerd Font Mono
+      symbol_map U+F0000-U+FFFFD Iosevka Nerd Font Mono
+      symbol_map U+100000-U+10FFFD Iosevka Nerd Font Mono
+    '';
   };
 }
