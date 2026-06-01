@@ -68,6 +68,7 @@
     kdePackages.kcalc
     kdePackages.spectacle
     kdePackages.dolphin
+    modrinth-app
     wl-clipboard
     xclip
   ];
