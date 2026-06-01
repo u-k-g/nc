@@ -71,7 +71,7 @@ let
     cornerRadius = theme.cornerRadius;
     niriLayoutGapsOverride = 16;
     niriLayoutRadiusOverride = theme.cornerRadius;
-    niriLayoutBorderSize = 4;
+    niriLayoutBorderSize = 0;
 
     widgetBackgroundColor = "sch";
     widgetColorMode = "default";
@@ -80,7 +80,7 @@ let
     workspaceColorMode = "default";
     workspaceOccupiedColorMode = "primary";
     workspaceUnfocusedColorMode = "default";
-    workspaceFocusedBorderEnabled = true;
+    workspaceFocusedBorderEnabled = false;
     workspaceFocusedBorderColor = "primary";
     workspaceFocusedBorderThickness = 2;
 
@@ -263,11 +263,7 @@ in
 
             default-column-width { proportion 0.5; }
 
-            focus-ring {
-                width 4
-                active-color "${hex theme.base0A}"
-                inactive-color "${hex theme.base03}"
-            }
+            focus-ring { off; }
         }
 
         window-rule {
@@ -358,7 +354,13 @@ in
       '';
     };
 
-    "DankMaterialShell/themes/nc-gruvbox.json".text = builtins.toJSON dmsTheme;
-    "DankMaterialShell/settings.json".text = builtins.toJSON dmsSettings;
+    "DankMaterialShell/themes/nc-gruvbox.json" = {
+      force = true;
+      text = builtins.toJSON dmsTheme;
+    };
+    "DankMaterialShell/settings.json" = {
+      force = true;
+      text = builtins.toJSON dmsSettings;
+    };
   };
 }
