@@ -4,6 +4,8 @@ let
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
+  tabBarLeftPadding = if pkgs.stdenv.hostPlatform.isDarwin then 9 else 2;
+  tabBarRightPadding = 2;
   scrollbackPager = pkgs.writeShellScriptBin "kitty-scrollback-pager" ''
     line_arg="''${1:-}"
     export BAT_PAGER="${pkgs.less}/bin/less -FRX --chop-long-lines''${line_arg:+ $line_arg}"
@@ -62,11 +64,11 @@ in
         selection_foreground = hex theme.base00;
 
         tab_bar_edge = "top";
-        tab_bar_margin_width = if pkgs.stdenv.hostPlatform.isDarwin then 70 else 0;
+        tab_bar_margin_width = 0;
         tab_bar_margin_height = "2 0";
-        tab_bar_style = "separator";
+        tab_bar_style = "custom";
         tab_powerline_style = "angled";
-        tab_separator = ''"     "'';
+        tab_separator = ''"   "'';
         tab_title_template = "{custom}";
         active_tab_title_template = "{fmt.noitalic}{fmt.bold}{custom}{fmt.nobold}";
 
@@ -139,7 +141,18 @@ in
     };
 
     xdg.configFile."kitty/tab_bar.py".text = ''
+      import os
+      import socket
       from os.path import basename
+
+      from kitty.tab_bar import as_rgb, draw_tab_with_separator
+
+
+      FG = as_rgb(0x${theme.base05})
+      MUTED = as_rgb(0x${theme.base03})
+      LEFT_PADDING = ${toString tabBarLeftPadding}
+      RIGHT_PADDING = ${toString tabBarRightPadding}
+
 
       def draw_title(data):
           tab = data.get("tab")
@@ -159,6 +172,42 @@ in
               name = exe_name or title
 
           return f" {index} {name}"
+
+
+      def draw_right_status(screen):
+          user = os.environ.get("USER") or os.environ.get("LOGNAME") or "user"
+          host = socket.gethostname().split(".", 1)[0] or "host"
+          parts = [
+              (MUTED, "["),
+              (FG, user),
+              (MUTED, "@"),
+              (FG, host),
+              (MUTED, "]"),
+          ]
+          width = sum(len(text) for _, text in parts)
+          if screen.cursor.x + width + RIGHT_PADDING >= screen.columns:
+              return
+
+          screen.draw(" " * (screen.columns - screen.cursor.x - width - RIGHT_PADDING))
+          screen.cursor.bold = False
+          screen.cursor.italic = False
+          screen.cursor.bg = 0
+          for color, text in parts:
+              screen.cursor.fg = color
+              screen.draw(text)
+
+
+      def draw_tab(draw_data, screen, tab, before, max_tab_length, index, is_last, extra_data):
+          if index == 1 and screen.cursor.x == 0 and LEFT_PADDING > 0:
+              screen.draw(" " * LEFT_PADDING)
+              before = screen.cursor.x
+
+          end = draw_tab_with_separator(
+              draw_data, screen, tab, before, max_tab_length, index, is_last, extra_data
+          )
+          if is_last:
+              draw_right_status(screen)
+          return end
     '';
   };
 }

@@ -23,11 +23,11 @@ in
         font.size.normal = 16;
         font.size.big = 20;
 
-        font.sans.name = "Lexend";
-        font.sans.package = pkgs.lexend;
+        font.sans.name = "IBM Plex Sans";
+        font.sans.package = pkgs.ibm-plex;
 
-        font.mono.name = "JetBrainsMono Nerd Font";
-        font.mono.package = pkgs.nerd-fonts.jetbrains-mono;
+        font.mono.name = "Iosevka Nerd Font Mono";
+        font.mono.package = pkgs.nerd-fonts.iosevka;
 
         icons.name = "Gruvbox-Plus-Dark";
         icons.package = pkgs.gruvbox-plus-icons;
