@@ -29,6 +29,7 @@
     home = config.nc.user.homeDirectory;
     shell = pkgs.nushell;
     extraGroups = [
+      "input"
       "networkmanager"
       "wheel"
     ];

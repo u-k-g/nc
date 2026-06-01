@@ -47,6 +47,7 @@ in
   };
 
   environment.systemPackages = with pkgs; [
+    adwaita-icon-theme
     dgop
     dms-shell
     dsearch
@@ -56,7 +57,14 @@ in
     nirius
     nwg-displays
     sunsetr
+    xwayland-satellite
   ];
+
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    XCURSOR_THEME = "Adwaita";
+    XCURSOR_SIZE = "24";
+  };
 
   home-manager.users.${user.name}.xdg.configFile."niri/config.kdl" = {
     force = true;
