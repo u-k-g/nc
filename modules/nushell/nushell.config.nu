@@ -1,11 +1,22 @@
+use std/clip
+use std null_device
+
+alias cat = ^bat
+alias less = ^bat --plain
+
 $env.config.buffer_editor = "hx"
+$env.config.history.file_format = "sqlite"
+$env.config.history.isolation = false
+$env.config.history.max_size = 10_000_000
+$env.config.history.sync_on_enter = true
 $env.config.show_banner = false
+$env.config.rm.always_trash = false
 $env.config.recursion_limit = 100
 $env.config.table.mode = "restructured"
 $env.config.edit_mode = "vi"
+$env.config.cursor_shape.emacs = "line"
 $env.config.cursor_shape.vi_insert = "line"
 $env.config.cursor_shape.vi_normal = "block"
-$env.CARAPACE_BRIDGES = "inshellisense,carapace,zsh,fish,bash"
 $env.config.completions.algorithm = "substring"
 $env.config.completions.sort = "smart"
 $env.config.completions.case_sensitive = false
@@ -25,7 +36,7 @@ $env.config.use_ansi_coloring = "auto"
 $env.config.error_style = "fancy"
 $env.config.highlight_resolved_externals = true
 $env.config.display_errors.exit_code = false
-$env.config.display_errors.termination_signal = false
+$env.config.display_errors.termination_signal = true
 $env.config.footer_mode = 25
 $env.config.table.index_mode = "always"
 $env.config.table.show_empty = true
@@ -35,43 +46,23 @@ $env.config.table.trim.methodology = "wrapping"
 $env.config.table.trim.wrapping_try_keep_words = true
 $env.config.table.trim.truncating_suffix = "..."
 $env.config.table.header_on_separator = true
+$env.config.table.abbreviated_row_count = null
 $env.config.table.footer_inheritance = true
+$env.config.table.missing_value_symbol = $"(ansi magenta_bold)nope(ansi reset)"
+$env.config.datetime_format.table = null
+$env.config.filesize.unit = "metric"
+$env.config.filesize.show_unit = true
+$env.config.filesize.precision = 1
 $env.config.render_right_prompt_on_last_line = false
 $env.config.float_precision = 2
 $env.config.ls.use_ls_colors = true
 $env.PROMPT_MULTILINE_INDICATOR = ""
-const helper_dir = "@nushellHelperDir@"
 
-source ($helper_dir | path join "misc.nu")
-@nushellDarwinConfig@
-source ($helper_dir | path join "prompts.nu")
-$env.HAS_DIRENV = (try { ((^which direnv | complete).exit_code == 0) } catch { false })
-def --env load-direnv [] {
-  if not ($env.HAS_DIRENV? | default false) {
-    return
-  }
-
-  if not (".envrc" | path exists) {
-    return
-  }
-
-  ^direnv reload | ignore
-  let direnv_env = (^direnv export json | from json | default {})
-  if ($direnv_env | is-empty) {
-    return
-  }
-
-  load-env ($direnv_env | reject --optional PATH)
-
-  if ($direnv_env | get --optional PATH | default "" | is-not-empty) {
-    $env.PATH = ($direnv_env.PATH | split row (char esep))
-  }
-}
 $env.config.menus = [
   {
     name: completion_menu
     only_buffer_difference: false
-    marker: $env.PROMPT_INDICATOR_VI_INSERT
+    marker: ($env.PROMPT_INDICATOR_VI_INSERT? | default "")
     type: {
       layout: ide
       min_completion_width: 0
@@ -91,16 +82,17 @@ $env.config.menus = [
       text: white
       selected_text: white_reverse
       description_text: yellow
-      match_text: {attr: u}
-      selected_match_text: {attr: ur}
+      match_text: { attr: u }
+      selected_match_text: { attr: ur }
     }
   }
 ]
-$env.config.hooks.pre_execution = [
+
+$env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default [] | append [
   {||
     let cmd = (commandline | str trim)
     if ($cmd | is-not-empty) {
-      $env.TERM_TITLE = $"(ansi title)($cmd) — nu"
+      print $"(ansi title)($cmd) -- nu(char bel)"
     }
     if ($cmd == "git") or ($cmd | str starts-with "git ") {
       $env.GIT_PROMPT_PWD = ""
@@ -112,25 +104,39 @@ $env.config.hooks.pre_execution = [
       $env.JJ_RIGHT_PROMPT_VALUE = ""
     }
   }
-]
+])
+
 $env.config.hooks.display_output = {||
-  tee { table --expand | print } | try { (if $in != null { ($env.last = $in) }) }
+  tee { table --expand | print } | try { if $in != null { $env.last = $in } }
 }
-$env.config.color_config.bool = "light_green_bold"
-$env.config.color_config.false_bool = "light_red_bold"
-$env.config.color_config.string = {|| (if $in =~ "^(#|0x)[a-fA-F0-9]+$" { ($in | str replace "0x" "#") } else { "white" }) }
 
-source ($helper_dir | path join "integrations.nu")
+$env.config.color_config.bool = {||
+  if $in { "light_green_bold" } else { "light_red_bold" }
+}
+$env.config.color_config.string = {||
+  if $in =~ "^(#|0x)[a-fA-F0-9]+$" {
+    $in | str replace "0x" "#"
+  } else {
+    "white"
+  }
+}
 
-$env.NODE_EXTRA_CA_CERTS = $env.SSL_CERT_FILE
+def --wrapped * [program: string = "", ...arguments] {
+  if ($program | str contains "#") or ($program | str contains ":") {
+    nix run $program -- ...$arguments
+  } else {
+    nix run ("default#" + $program) -- ...$arguments
+  }
+}
 
+def --wrapped > [...programs] {
+  nix shell ...($programs | each {
+    if ($in | str contains "#") or ($in | str contains ":") {
+      $in
+    } else {
+      "default#" + $in
+    }
+  })
+}
 
 ulimit -n 4096
-$env.DENO_CONFIG = ($nu.home-dir | path join ".config" "deno" "config.json")
-$env.config.hooks.env_change.PWD = (
-  $env.config.hooks.env_change.PWD?
-  | default []
-  | append {|| load-direnv }
-)
-
-load-direnv

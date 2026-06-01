@@ -16,7 +16,7 @@ def get-jj-workspace-root [] {
       return $env.JJ_WORKSPACE_ROOT
     }
   }
-  let root = try { ^jj workspace root err> /dev/null } catch { "" }
+  let root = try { ^jj workspace root err> $null_device } catch { "" }
   $env.JJ_WORKSPACE_ROOT = $root
   $env.JJ_WORKSPACE_ROOT_PWD = $env.PWD
   $env.JJ_WORKSPACE_ROOT_TS = $now
@@ -39,10 +39,10 @@ def get-jj-right-prompt [] {
   }
 
   let change_id_shortest = try {
-    do -i { ^jj --no-pager log -r '@' --no-graph -T 'change_id.shortest()' err> /dev/null | str trim }
+    do -i { ^jj --no-pager log -r '@' --no-graph -T 'change_id.shortest()' err> $null_device | str trim }
   } catch { "" }
   let closest_bookmark = try {
-    do -i { ^jj --no-pager log -r 'heads(ancestors(@) & bookmarks())' --no-graph -T 'local_bookmarks.map(|b| b.name()).join(", ")' err> /dev/null | str trim }
+    do -i { ^jj --no-pager log -r 'heads(ancestors(@) & bookmarks())' --no-graph -T 'local_bookmarks.map(|b| b.name()).join(", ")' err> $null_device | str trim }
   } catch { "" }
   let has_changes = try {
     do -i { (^jj --no-pager status | str contains "orking copy change") }
@@ -70,10 +70,10 @@ def get-git-prompt [] {
     }
   }
 
-  let branch = try { ^git rev-parse --abbrev-ref HEAD err> /dev/null | str trim } catch { "" }
+  let branch = try { ^git rev-parse --abbrev-ref HEAD err> $null_device | str trim } catch { "" }
   $env.GIT_PROMPT_PWD = $env.PWD
   let branch = if ($branch == "HEAD") {
-    try { ^git rev-parse --short HEAD err> /dev/null | str trim } catch { "" }
+    try { ^git rev-parse --short HEAD err> $null_device | str trim } catch { "" }
   } else {
     $branch
   }

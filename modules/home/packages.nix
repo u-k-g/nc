@@ -35,7 +35,6 @@ let
     radicle-node
     gh
     mergiraf
-    difftastic
 
     tmux
     carapace
@@ -47,6 +46,7 @@ let
     dialog
     fzf
     inshellisense
+    fish
     hyperfine
     mosh
     dix
@@ -120,6 +120,7 @@ let
 
     screenfetch
     fastfetch
+    vivid
   ];
 
   linuxPackages = with pkgs; [

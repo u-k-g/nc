@@ -17,6 +17,7 @@
 
 !README.md
 !flake.lock
+!flake.nix
 !rebuild.nu
 
 !*.age

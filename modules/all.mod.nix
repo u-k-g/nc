@@ -11,12 +11,14 @@
     user = ./common/user.nix;
 
     apps = ./home/apps.nix;
+    bat = ./home/bat.nix;
+    btop = ./home/btop.nix;
+    difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
     ghostty = ./home/ghostty.nix;
     kitty = ./home/kitty.nix;
     opencode = ./home/opencode.nix;
     packages = ./home/packages.nix;
-    shell = ./home/shell.nix;
     terminal = ./home/terminal.nix;
     version-control = ./home/version-control.nix;
   };
@@ -24,7 +26,7 @@
   flake.darwinModules = {
     desktop = ./darwin/desktop.nix;
     dock = ./darwin/dock.nix;
-    essentials = ./darwin/essentials.nix;
+    darwin-essentials = ./darwin/essentials.nix;
     finder = ./darwin/finder.nix;
     homebrew = ./darwin/homebrew.nix;
     karabiner = ./darwin/karabiner.nix;
