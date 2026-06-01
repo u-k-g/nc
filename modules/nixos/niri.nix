@@ -11,6 +11,7 @@ let
   theme = config.nc.theme;
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
+  dms = getExe pkgs.dms-shell;
   dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-gruvbox.json";
   dmsTheme = {
     dark = {
@@ -274,9 +275,9 @@ in
         binds {
             Alt+Slash { show-hotkey-overlay; }
             Alt+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-            Alt+Shift+Slash repeat=false { spawn "dms" "ipc" "call" "keybinds" "toggle" "niri"; }
-            Alt+Comma repeat=false { spawn "dms" "ipc" "call" "settings" "focusOrToggle"; }
-            Alt+X repeat=false { spawn "dms" "ipc" "call" "powermenu" "toggle"; }
+            Alt+Shift+Slash repeat=false { spawn "${dms}" "ipc" "call" "keybinds" "toggle" "niri"; }
+            Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
+            Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
 
             // Match the Darwin/Paneru app launchers. Alt is physical Option after keyd remaps PC Win to Option.
             Alt+W repeat=false { spawn "${getExe heliumBrowser}"; }
@@ -329,7 +330,7 @@ in
             Alt+V { toggle-window-floating; }
             Alt+Shift+V { switch-focus-between-floating-and-tiling; }
             Alt+Tab { focus-workspace-previous; }
-            Alt+Space repeat=false { spawn "dms" "ipc" "call" "spotlight" "toggle"; }
+            Alt+Space repeat=false { spawn "${dms}" "ipc" "call" "spotlight" "toggle"; }
             Alt+Shift+Space { toggle-overview; }
 
             XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }

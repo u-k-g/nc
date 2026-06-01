@@ -36,6 +36,7 @@ in
 
       strip_trailing_spaces = "always";
       enable_audio_bell = false;
+      shell_integration = "no-cursor no-title";
 
       active_border_color = hex theme.base0A;
       inactive_border_color = hex theme.base01;
@@ -99,6 +100,22 @@ in
       "cmd+9" = "goto_tab 9";
       "cmd+0" = "goto_tab 10";
       "cmd+enter" = "launch --location=vsplit";
+
+      "super+c" = "copy_to_clipboard";
+      "super+v" = "paste_from_clipboard";
+      "super+t" = "new_tab";
+      "super+w" = "close_tab";
+      "super+1" = "goto_tab 1";
+      "super+2" = "goto_tab 2";
+      "super+3" = "goto_tab 3";
+      "super+4" = "goto_tab 4";
+      "super+5" = "goto_tab 5";
+      "super+6" = "goto_tab 6";
+      "super+7" = "goto_tab 7";
+      "super+8" = "goto_tab 8";
+      "super+9" = "goto_tab 9";
+      "super+0" = "goto_tab 10";
+      "super+enter" = "launch --location=vsplit";
     };
   };
 }
