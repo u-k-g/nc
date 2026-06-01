@@ -12,6 +12,32 @@ let
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
+  macCommandKey = pkgs.writeShellApplication {
+    name = "nc-mac-command-key";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.niri
+      pkgs.wtype
+    ];
+    text = ''
+      case "''${1:-}" in
+        a|c|f|l|n|q|r|s|t|v|w|x|z) key="$1" ;;
+        *) exit 64 ;;
+      esac
+
+      app_id="$(niri msg -j focused-window 2>/dev/null | jq -r '.app_id // ""')" || app_id=""
+      app_id="''${app_id,,}"
+
+      case "$app_id" in
+        *kitty*|*ghostty*|*alacritty*|*wezterm*|*foot*|*terminal*)
+          wtype -M ctrl -M shift "$key" -m shift -m ctrl
+          ;;
+        *)
+          wtype -M ctrl "$key" -m ctrl
+          ;;
+      esac
+    '';
+  };
   dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-gruvbox.json";
   dmsTheme = {
     dark = {
@@ -278,6 +304,21 @@ in
             Alt+Shift+Slash repeat=false { spawn "${dms}" "ipc" "call" "keybinds" "toggle" "niri"; }
             Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
             Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
+
+            // Physical Cmd-position key after keyd's Alt/Super swap: macOS-style app shortcuts.
+            Super+A repeat=false { spawn "${getExe macCommandKey}" "a"; }
+            Super+C repeat=false { spawn "${getExe macCommandKey}" "c"; }
+            Super+F repeat=false { spawn "${getExe macCommandKey}" "f"; }
+            Super+L repeat=false { spawn "${getExe macCommandKey}" "l"; }
+            Super+N repeat=false { spawn "${getExe macCommandKey}" "n"; }
+            Super+Q repeat=false { spawn "${getExe macCommandKey}" "q"; }
+            Super+R repeat=false { spawn "${getExe macCommandKey}" "r"; }
+            Super+S repeat=false { spawn "${getExe macCommandKey}" "s"; }
+            Super+T repeat=false { spawn "${getExe macCommandKey}" "t"; }
+            Super+V repeat=false { spawn "${getExe macCommandKey}" "v"; }
+            Super+W repeat=false { spawn "${getExe macCommandKey}" "w"; }
+            Super+X repeat=false { spawn "${getExe macCommandKey}" "x"; }
+            Super+Z repeat=false { spawn "${getExe macCommandKey}" "z"; }
 
             // Match the Darwin/Paneru app launchers. Alt is physical Option after keyd remaps PC Win to Option.
             Alt+W repeat=false { spawn "${getExe heliumBrowser}"; }
