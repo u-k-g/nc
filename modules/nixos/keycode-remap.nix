@@ -12,9 +12,15 @@
 
           # Keep the Cmd/Win-position key as the WM modifier and make Alt behave like Ctrl.
           leftmeta = "layer(alt)";
-          leftalt = "layer(control)";
+          leftalt = "layer(mac-control)";
           rightmeta = "layer(alt)";
-          rightalt = "layer(control)";
+          rightalt = "layer(mac-control)";
+        };
+
+        "mac-control:C" = {
+          c = "M-c";
+          k = "M-k";
+          v = "M-v";
         };
 
         "hyper:C-M-A-S" = {

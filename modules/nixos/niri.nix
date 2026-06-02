@@ -12,6 +12,32 @@ let
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
+  macClipboardKey = pkgs.writeShellApplication {
+    name = "nc-mac-clipboard-key";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.niri
+      pkgs.wtype
+    ];
+    text = ''
+      case "''${1:-}" in
+        c|v) key="$1" ;;
+        *) exit 64 ;;
+      esac
+
+      app_id="$(niri msg -j focused-window 2>/dev/null | jq -r '.app_id // ""')" || app_id=""
+      app_id="''${app_id,,}"
+
+      case "$app_id" in
+        *kitty*|*ghostty*|*alacritty*|*wezterm*|*foot*|*terminal*)
+          wtype -M ctrl -M shift "$key" -m shift -m ctrl
+          ;;
+        *)
+          wtype -M ctrl "$key" -m ctrl
+          ;;
+      esac
+    '';
+  };
   dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-gruvbox.json";
   dmsTheme = {
     dark = {
@@ -277,6 +303,8 @@ in
             Alt+Shift+Slash repeat=false { spawn "${dms}" "ipc" "call" "keybinds" "toggle" "niri"; }
             Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
             Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
+            Super+C repeat=false { spawn "${getExe macClipboardKey}" "c"; }
+            Super+V repeat=false { spawn "${getExe macClipboardKey}" "v"; }
 
             // Match the Darwin/Paneru app launchers. Alt is the physical Cmd/Win-position key after keycode remapping.
             Alt+W repeat=false { spawn "${getExe heliumBrowser}"; }

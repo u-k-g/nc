@@ -103,26 +103,45 @@ in
         color21 = hex theme.base06;
       };
 
-      keybindings = {
-        "super+c" = "copy_to_clipboard";
-        "super+v" = "paste_from_clipboard";
-        "super+t" = "new_tab";
-        "super+w" = "close_tab";
-        "super+1" = "goto_tab 1";
-        "super+2" = "goto_tab 2";
-        "super+3" = "goto_tab 3";
-        "super+4" = "goto_tab 4";
-        "super+5" = "goto_tab 5";
-        "super+6" = "goto_tab 6";
-        "super+7" = "goto_tab 7";
-        "super+8" = "goto_tab 8";
-        "super+9" = "goto_tab 9";
-        "super+0" = "goto_tab 10";
-        "super+enter" = "launch --location=vsplit";
-        "alt+backspace" = "send_text all \\x17";
-        "ctrl+shift+x" =
-          "launch --stdin-source=@screen_scrollback --type=overlay ${scrollbackHx}/bin/kitty-scrollback-hx";
-      };
+      keybindings =
+        (
+          if pkgs.stdenv.isLinux then
+            {
+              "ctrl+1" = "goto_tab 1";
+              "ctrl+2" = "goto_tab 2";
+              "ctrl+3" = "goto_tab 3";
+              "ctrl+4" = "goto_tab 4";
+              "ctrl+5" = "goto_tab 5";
+              "ctrl+6" = "goto_tab 6";
+              "ctrl+7" = "goto_tab 7";
+              "ctrl+8" = "goto_tab 8";
+              "ctrl+9" = "goto_tab 9";
+              "ctrl+0" = "goto_tab 10";
+              "super+k" = "clear_terminal to_cursor active";
+            }
+          else
+            { }
+        )
+        // {
+          "super+c" = "copy_to_clipboard";
+          "super+v" = "paste_from_clipboard";
+          "super+t" = "new_tab";
+          "super+w" = "close_tab";
+          "super+1" = "goto_tab 1";
+          "super+2" = "goto_tab 2";
+          "super+3" = "goto_tab 3";
+          "super+4" = "goto_tab 4";
+          "super+5" = "goto_tab 5";
+          "super+6" = "goto_tab 6";
+          "super+7" = "goto_tab 7";
+          "super+8" = "goto_tab 8";
+          "super+9" = "goto_tab 9";
+          "super+0" = "goto_tab 10";
+          "super+enter" = "launch --location=vsplit";
+          "alt+backspace" = "send_text all \\x17";
+          "ctrl+shift+x" =
+            "launch --stdin-source=@screen_scrollback --type=overlay ${scrollbackHx}/bin/kitty-scrollback-hx";
+        };
 
       extraConfig = ''
         symbol_map U+2190-U+21FF Iosevka Nerd Font Mono
