@@ -11,10 +11,10 @@
           capslock = "overload(hyper, esc)";
 
           # Keep the Cmd/Win-position key as the WM modifier and make Alt behave like Ctrl.
-          leftmeta = "leftalt";
-          leftalt = "leftcontrol";
-          rightmeta = "rightalt";
-          rightalt = "rightcontrol";
+          leftmeta = "layer(alt)";
+          leftalt = "layer(control)";
+          rightmeta = "layer(alt)";
+          rightalt = "layer(control)";
         };
 
         "hyper:C-M-A-S" = {
