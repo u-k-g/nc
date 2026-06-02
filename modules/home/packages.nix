@@ -7,8 +7,19 @@
 }:
 
 let
-  inherit (lib) optionals;
-  piCodingAgent = self.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent;
+  inherit (lib) getExe hiPrio optionals;
+  opencodeCli = hiPrio (
+    pkgs.writeShellScriptBin "opencode" ''
+      exec ${getExe pkgs.opencode} "$@"
+    ''
+  );
+  opencodeDesktopApp = pkgs.symlinkJoin {
+    name = "opencode-desktop-app";
+    paths = [ pkgs.opencode-desktop ];
+    postBuild = ''
+      rm -rf $out/bin
+    '';
+  };
 
   commonPackages = with pkgs; [
     bash
@@ -71,7 +82,8 @@ let
     bun
     deno
     nodejs
-    piCodingAgent
+    codex
+    opencodeCli
     pnpm
     zig
     lua
@@ -126,12 +138,13 @@ let
   linuxPackages = with pkgs; [
     docker
     docker-buildx
-    opencode
     opencode-desktop
   ];
 
   darwinPackages = with pkgs; [
     colima
+    opencodeDesktopApp
+    self.packages.${pkgs.stdenv.hostPlatform.system}.t3-code-nightly
   ];
 in
 {
