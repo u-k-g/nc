@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib) hiPrio mkIf;
+  inherit (lib) hiPrio mkIf mkMerge;
   user = config.nc.user;
   json = pkgs.formats.json { };
 
@@ -178,21 +178,27 @@ let
   };
 in
 {
-  home-manager.users.${user.name} = mkIf pkgs.stdenv.isLinux {
-    home.packages = [ prismlauncherGamemode ];
+  home-manager.users.${user.name} = mkMerge [
+    {
+      home.packages = [
+        (if pkgs.stdenv.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
+      ];
+    }
 
-    xdg.desktopEntries.prismlauncher-gamemode = {
-      name = "PrismLauncher (GameMode)";
-      genericName = "Minecraft Launcher";
-      comment = "Launch PrismLauncher through GameMode";
-      exec = "${prismlauncherGamemode}/bin/prismlauncher %u";
-      terminal = false;
-      categories = [ "Game" ];
-    };
+    (mkIf pkgs.stdenv.isLinux {
+      xdg.desktopEntries.prismlauncher-gamemode = {
+        name = "PrismLauncher (GameMode)";
+        genericName = "Minecraft Launcher";
+        comment = "Launch PrismLauncher through GameMode";
+        exec = "${prismlauncherGamemode}/bin/prismlauncher %u";
+        terminal = false;
+        categories = [ "Game" ];
+      };
 
-    xdg.dataFile."PrismLauncher/instances/mcsr/minecraft/config/mcsr/standardsettings.json" = {
-      source = json.generate "mcsr-standardsettings.json" mcsrStandardSettings;
-      force = true;
-    };
-  };
+      xdg.dataFile."PrismLauncher/instances/mcsr/minecraft/config/mcsr/standardsettings.json" = {
+        source = json.generate "mcsr-standardsettings.json" mcsrStandardSettings;
+        force = true;
+      };
+    })
+  ];
 }
