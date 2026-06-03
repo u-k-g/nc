@@ -117,6 +117,9 @@ in
               "ctrl+8" = "goto_tab 8";
               "ctrl+9" = "goto_tab 9";
               "ctrl+0" = "goto_tab 10";
+              "ctrl+shift+k" = "clear_terminal to_cursor active";
+              "ctrl+shift+t" = "new_tab";
+              "ctrl+shift+w" = "close_tab";
               "super+k" = "clear_terminal to_cursor active";
             }
           else

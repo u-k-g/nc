@@ -20,7 +20,9 @@
         "mac-control:C" = {
           c = "M-c";
           k = "M-k";
+          t = "M-t";
           v = "M-v";
+          w = "M-w";
         };
 
         "hyper:C-M-A-S" = {

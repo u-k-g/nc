@@ -13,12 +13,14 @@
     apps = ./home/apps.nix;
     bat = ./home/bat.nix;
     btop = ./home/btop.nix;
+    desktop-theme = ./home/desktop-theme.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
     ghostty = ./home/ghostty.nix;
     kitty = ./home/kitty.nix;
     opencode = ./home/opencode.nix;
     packages = ./home/packages.nix;
+    prismlauncher = ./home/prismlauncher.nix;
     terminal = ./home/terminal.nix;
     version-control = ./home/version-control.nix;
   };

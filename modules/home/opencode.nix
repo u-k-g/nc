@@ -80,7 +80,7 @@
 
       tui = {
         theme = "gruvbox";
-        scroll_speed = 1;
+        scroll_speed = 4;
       };
     };
 

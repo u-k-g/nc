@@ -1,4 +1,5 @@
 {
+  lib,
   pkgs,
   ...
 }:
@@ -22,10 +23,10 @@
     desktopManager.plasma6.enable = true;
   };
 
-  programs.dconf.enable = true;
-
   xdg.portal = {
     enable = true;
+    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
+    config.niri."org.freedesktop.impl.portal.Settings" = lib.mkForce "kde";
     xdgOpenUsePortal = true;
   };
 

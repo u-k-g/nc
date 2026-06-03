@@ -12,16 +12,17 @@ let
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
-  macClipboardKey = pkgs.writeShellApplication {
-    name = "nc-mac-clipboard-key";
+  macCommandKey = pkgs.writeShellApplication {
+    name = "nc-mac-command-key";
     runtimeInputs = [
       pkgs.jq
+      pkgs.kitty
       pkgs.niri
       pkgs.wtype
     ];
     text = ''
       case "''${1:-}" in
-        c|v) key="$1" ;;
+        c|k|t|v|w) key="$1" ;;
         *) exit 64 ;;
       esac
 
@@ -30,7 +31,20 @@ let
 
       case "$app_id" in
         *kitty*|*ghostty*|*alacritty*|*wezterm*|*foot*|*terminal*)
-          wtype -M ctrl -M shift "$key" -m shift -m ctrl
+          case "$key" in
+            c|v)
+              wtype -M ctrl -M shift "$key" -m shift -m ctrl
+              ;;
+            k)
+              wtype -M ctrl -M shift "$key" -m shift -m ctrl
+              ;;
+            t)
+              wtype -M ctrl -M shift "$key" -m shift -m ctrl
+              ;;
+            w)
+              wtype -M ctrl -M shift "$key" -m shift -m ctrl
+              ;;
+          esac
           ;;
         *)
           wtype -M ctrl "$key" -m ctrl
@@ -268,7 +282,12 @@ in
                 numlock
             }
 
+            mouse {
+                accel-profile "flat"
+            }
+
             touchpad {
+                accel-profile "flat"
                 tap
                 natural-scroll
             }
@@ -303,8 +322,16 @@ in
             Alt+Shift+Slash repeat=false { spawn "${dms}" "ipc" "call" "keybinds" "toggle" "niri"; }
             Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
             Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
-            Super+C repeat=false { spawn "${getExe macClipboardKey}" "c"; }
-            Super+V repeat=false { spawn "${getExe macClipboardKey}" "v"; }
+            Super+C repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "c"; }
+            Super+K repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "k"; }
+            Super+T repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "t"; }
+            Super+V repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "v"; }
+            Super+W repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "w"; }
+            Ctrl+Super+C repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "c"; }
+            Ctrl+Super+K repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "k"; }
+            Ctrl+Super+T repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "t"; }
+            Ctrl+Super+V repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "v"; }
+            Ctrl+Super+W repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "w"; }
 
             // Match the Darwin/Paneru app launchers. Alt is the physical Cmd/Win-position key after keycode remapping.
             Alt+W repeat=false { spawn "${getExe heliumBrowser}"; }
