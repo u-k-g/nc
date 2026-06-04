@@ -12,6 +12,31 @@ let
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
+  focusOrLaunch = pkgs.writeShellApplication {
+    name = "nc-focus-or-launch";
+    runtimeInputs = [
+      pkgs.jq
+      pkgs.niri
+    ];
+    text = ''
+      pattern="''${1:-}"
+      shift || exit 64
+
+      id="$(${getExe pkgs.niri} msg -j windows \
+        | ${getExe pkgs.jq} -r --arg pattern "$pattern" '
+          [.[] | select(((.app_id // "") | ascii_downcase) | test($pattern))]
+          | sort_by(.focus_timestamp.secs // 0, .focus_timestamp.nanos // 0)
+          | last
+          | .id // empty
+        ')"
+
+      if [ -n "$id" ]; then
+        exec ${getExe pkgs.niri} msg action focus-window --id "$id"
+      fi
+
+      exec "$@"
+    '';
+  };
   macCommandKey = pkgs.writeShellApplication {
     name = "nc-mac-command-key";
     runtimeInputs = [
@@ -334,12 +359,12 @@ in
             Ctrl+Super+W repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "w"; }
 
             // Match the Darwin/Paneru app launchers. Alt is the physical Cmd/Win-position key after keycode remapping.
-            Alt+W repeat=false { spawn "${getExe heliumBrowser}"; }
-            Alt+O repeat=false { spawn "${getExe pkgs.obsidian}"; }
-            Alt+Semicolon repeat=false { spawn "${getExe pkgs.kitty}"; }
-            Alt+C repeat=false { spawn "${lib.getExe' pkgs.freecad "freecad"}"; }
-            Alt+R repeat=false { spawn "${getExe pkgs.opencode-desktop}"; }
-            Alt+Z repeat=false { spawn "${getExe pkgs.zed-editor}"; }
+            Alt+W repeat=false { spawn "${getExe focusOrLaunch}" "helium" "${getExe heliumBrowser}"; }
+            Alt+O repeat=false { spawn "${getExe focusOrLaunch}" "obsidian" "${getExe pkgs.obsidian}"; }
+            Alt+Semicolon repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe pkgs.kitty}"; }
+            Alt+C repeat=false { spawn "${getExe focusOrLaunch}" "freecad" "${lib.getExe' pkgs.freecad "freecad"}"; }
+            Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe pkgs.opencode-desktop}"; }
+            Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe pkgs.zed-editor}"; }
 
             Alt+H { focus-column-left; }
             Alt+J { focus-window-down; }
