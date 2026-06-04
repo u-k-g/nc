@@ -63,7 +63,6 @@ let
     url = "https://raw.githubusercontent.com/DuncanRuns/Jingle-EyeSee-Plugin/main/src/main/resources/overlay.png";
     hash = "sha256:1l1q0hkjwzip725zlyf5rfax671jrp3hhf6qsckn3m452dvqhzpb";
   };
-
   mcsrStandardSettings = builtins.fromJSON ''
     {
       ".apiVersion": "2.2+1.16-1.16.1",
@@ -390,7 +389,7 @@ in
             },
 
             experimental = {
-                tearing = false,
+                tearing = true,
             },
 
             shaders = {
