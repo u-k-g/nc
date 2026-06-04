@@ -88,6 +88,64 @@ $env.config.menus = [
   }
 ]
 
+def nu-history-search []: nothing -> nothing {
+  let query = (commandline | str trim)
+  let commands = (
+    history
+    | get command
+    | reverse
+    | uniq
+  )
+
+  let candidates = if ($query | is-empty) {
+    $commands
+  } else {
+    let terms = ($query | str downcase | split row " " | where {|term| $term | is-not-empty })
+
+    $commands | where {|command|
+      let command = ($command | str downcase)
+      $terms | all {|term| $command | str contains $term }
+    }
+  }
+
+  let selected = (
+    $candidates
+    | input list --fuzzy "history"
+  )
+
+  if (($selected | describe) != "nothing") and ($selected | is-not-empty) {
+    commandline edit $selected
+  }
+}
+
+$env.config.keybindings ++= [
+  {
+    name: nu_history_search_ctrl_r
+    modifier: control
+    keycode: char_r
+    mode: [emacs vi_insert vi_normal]
+    event: {
+      send: executehostcommand
+      cmd: "nu-history-search"
+    }
+  }
+  {
+    name: nu_history_search_up
+    modifier: none
+    keycode: up
+    mode: [emacs vi_insert vi_normal]
+    event: {
+      until: [
+        {send: menuup}
+        {
+          send: executehostcommand
+          cmd: "nu-history-search"
+        }
+      ]
+    }
+  }
+]
+
 $env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default [] | append [
   {||
     let cmd = (commandline | str trim)

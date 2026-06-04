@@ -46,6 +46,8 @@ in
         cursor = hex theme.base05;
         cursor_text_color = hex theme.base00;
         cursor_shape = "beam";
+        cursor_trail = 3;
+        cursor_trail_decay = "0.1 0.4";
 
         url_color = hex theme.base0D;
 

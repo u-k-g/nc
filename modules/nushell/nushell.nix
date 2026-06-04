@@ -182,7 +182,7 @@ in
     { lib, ... }:
     {
       programs.atuin = {
-        enable = true;
+        enable = false;
         enableBashIntegration = false;
         enableFishIntegration = false;
         enableNushellIntegration = true;
@@ -198,7 +198,7 @@ in
           search_mode_shell_up_key_binding = "fuzzy";
           style = "compact";
           show_preview = false;
-          show_tabs = true;
+          show_tabs = false;
           ctrl_n_shortcuts = true;
           enter_accept = false;
           keymap_mode = "vim-normal";
@@ -211,12 +211,6 @@ in
             "^clear$"
             "^clear ; tmux clear-history"
             "^clear; tmux clear-history"
-          ];
-
-          stats.common_subcommands = [
-            "brew"
-            "bun"
-            "git"
           ];
 
           theme.name = "nc";
