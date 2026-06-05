@@ -182,7 +182,7 @@ in
     { lib, ... }:
     {
       programs.atuin = {
-        enable = false;
+        enable = true;
         enableBashIntegration = false;
         enableFishIntegration = false;
         enableNushellIntegration = true;

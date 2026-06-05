@@ -118,34 +118,6 @@ def nu-history-search []: nothing -> nothing {
   }
 }
 
-$env.config.keybindings ++= [
-  {
-    name: nu_history_search_ctrl_r
-    modifier: control
-    keycode: char_r
-    mode: [emacs vi_insert vi_normal]
-    event: {
-      send: executehostcommand
-      cmd: "nu-history-search"
-    }
-  }
-  {
-    name: nu_history_search_up
-    modifier: none
-    keycode: up
-    mode: [emacs vi_insert vi_normal]
-    event: {
-      until: [
-        {send: menuup}
-        {
-          send: executehostcommand
-          cmd: "nu-history-search"
-        }
-      ]
-    }
-  }
-]
-
 $env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default [] | append [
   {||
     let cmd = (commandline | str trim)
