@@ -90,30 +90,30 @@ $env.config.menus = [
 
 def nu-history-search []: nothing -> nothing {
   let query = (commandline | str trim)
-  let commands = (
+  let query_args = if ($query | is-empty) { [] } else { [$"--query=($query)"] }
+  let sk_args = [
+    "--read0"
+    "--tiebreak=score,index,-begin"
+    "--no-sort"
+    "--layout=reverse"
+    "--height=100%"
+    "--border=rounded"
+    "--prompt=history> "
+  ] | append $query_args
+
+  let selected = try {
     history
     | get command
     | reverse
     | uniq
-  )
-
-  let candidates = if ($query | is-empty) {
-    $commands
-  } else {
-    let terms = ($query | str downcase | split row " " | where {|term| $term | is-not-empty })
-
-    $commands | where {|command|
-      let command = ($command | str downcase)
-      $terms | all {|term| $command | str contains $term }
-    }
+    | str join (char nul)
+    | ^sk ...$sk_args
+    | str trim
+  } catch {
+    ""
   }
 
-  let selected = (
-    $candidates
-    | input list --fuzzy "history"
-  )
-
-  if (($selected | describe) != "nothing") and ($selected | is-not-empty) {
+  if ($selected | is-not-empty) {
     commandline edit $selected
   }
 }

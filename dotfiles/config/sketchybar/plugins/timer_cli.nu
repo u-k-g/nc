@@ -18,7 +18,7 @@ def write-stopwatch [status: string, elapsed: int, start_time: int] {
 }
 
 def refresh-bar [] {
-  try { with-env { NAME: timer } { ^$nu_bin --no-config-file (($env.CONFIG_DIR? | default ($env.HOME + "/.config/sketchybar")) | path join plugins timer.nu) } }
+  try { ^$nu_bin --no-config-file (($env.CONFIG_DIR? | default ($env.HOME + "/.config/sketchybar")) | path join plugins timer.nu) }
 }
 
 def format-time [total: int] {

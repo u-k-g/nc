@@ -19,7 +19,6 @@ def format-time [total: int] {
 }
 
 def main [] {
-  let name = ($env.NAME? | default "timer")
   let now = (date now | format date "%s" | into int)
   mut state = (read-state)
   mut color = "0xffffffff"
@@ -46,5 +45,5 @@ def main [] {
     if (($now mod 2) == 0) { $color = "0xffff7777" } else { $color = "0x40ff7777" }
   }
 
-  ^sketchybar --set $name $"label=($label)" $"label.color=($color)"
+  ^sketchybar --set timer $"label=($label)" $"label.color=($color)"
 }

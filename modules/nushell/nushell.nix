@@ -275,6 +275,7 @@ in
       home.sessionVariables = sessionVariables;
       home.sessionPath = sessionPath;
       home.packages = [
+        pkgs.skim
         pkgs.vivid
         lsColors
       ];
