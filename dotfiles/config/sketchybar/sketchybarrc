@@ -57,11 +57,11 @@ done
 ##### Adding Right Items #####
 
 sketchybar --add item clock right \
-  --set clock update_freq=1 script="$PLUGIN_DIR/clock.nu" label.padding_right=10 \
+  --set clock update_freq=1 script="$PLUGIN_DIR/clock.nu" label.align=right label.padding_right=10 \
   --add item timer right \
-  --set timer update_freq=1 script="$PLUGIN_DIR/timer.nu" click_script="$PLUGIN_DIR/timer_menu.nu" icon.drawing=off label="00:00" label.width=72 width=78 padding_right=0 \
+  --set timer update_freq=1 script="$PLUGIN_DIR/timer.nu" click_script="$PLUGIN_DIR/timer_menu.nu" icon.drawing=off label="00:00" label.width=72 label.align=right width=78 padding_right=0 \
   --add item volume e \
-  --set volume icon.width=34 label.width=58 width=108 script="$PLUGIN_DIR/volume.nu" \
+  --set volume icon.width=34 icon.align=left label.width=58 label.align=left width=108 script="$PLUGIN_DIR/volume.nu" \
   --subscribe volume volume_change \
   --add item battery q \
   --set battery icon.width=34 label.width=58 width=108 update_freq=120 script="$PLUGIN_DIR/battery.nu" \

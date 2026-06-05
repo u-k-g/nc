@@ -50,6 +50,12 @@ in
         cursor_trail_decay = "0.1 0.4";
 
         url_color = hex theme.base0D;
+        detect_urls = true;
+        open_url_modifiers = "cmd";
+        "mouse_map cmd+left press grabbed" = "discard_event";
+        "mouse_map cmd+left release grabbed,ungrabbed" = "mouse_handle_click link";
+        "mouse_map super+left press grabbed" = "discard_event";
+        "mouse_map super+left release grabbed,ungrabbed" = "mouse_handle_click link";
 
         strip_trailing_spaces = "always";
         enable_audio_bell = false;
