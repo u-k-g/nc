@@ -269,6 +269,7 @@ in
         local function reset_res()
             close_eye_see()
             waywall.set_resolution(normal_width, normal_height)
+            waywall.set_sensitivity(1.0)
         end
 
         local function toggle_res(width, height)
@@ -289,6 +290,7 @@ in
             end
 
             waywall.set_resolution(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
+            waywall.set_sensitivity(0.1)
             close_eye_see()
 
             local dst = {
