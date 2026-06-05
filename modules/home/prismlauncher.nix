@@ -49,6 +49,9 @@ let
 
   monitorWidth = 2560;
   monitorHeight = 1440;
+  godSensMinecraft = 0.02291165;
+  godSensWaywallNormal = 12.8000006;
+  godSensWaywallTall = 1.1512141;
   thinBtWidth = builtins.floor ((monitorHeight * 1000.0) / 3571.0);
   thinBtHeight = monitorHeight;
   planarAbuseWidth = monitorWidth;
@@ -109,12 +112,12 @@ let
       "showSubtitles": true,
       "language": { "enabled": false, "value": "en_us" },
       "forceUnicodeFont": { "enabled": false, "value": false },
-      "mouseSensitivity": 0.5,
+      "mouseSensitivity": ${toString godSensMinecraft},
       "invertYMouse": { "enabled": false, "value": false },
       "mouseWheelSensitivity": { "enabled": false, "value": 1.0 },
       "discrete_mouse_scroll": { "enabled": false, "value": false },
       "touchscreen": { "enabled": false, "value": false },
-      "rawMouseInput": true,
+      "rawMouseInput": false,
       "autoJump": false,
       "key_key.jump": "key.keyboard.space",
       "key_key.sneak": "key.keyboard.left.shift",
@@ -219,9 +222,9 @@ let
           <entry key="hotkey_decrement_modifier" value="0"/>
           <entry key="hotkey_decrement_code" value="65587"/>
           <entry key="use_precise_angle" value="true"/>
-          <entry key="default_boat_type" value="1"/>
+          <entry key="default_boat_type" value="2"/>
           <entry key="sigma_boat" value="0.0001"/>
-          <entry key="sensitivity" value="0.5"/>
+          <entry key="sensitivity" value="${toString godSensMinecraft}"/>
         </map>
   '';
 in
@@ -269,7 +272,7 @@ in
         local function reset_res()
             close_eye_see()
             waywall.set_resolution(normal_width, normal_height)
-            waywall.set_sensitivity(1.0)
+            waywall.set_sensitivity(${toString godSensWaywallNormal})
         end
 
         local function toggle_res(width, height)
@@ -290,7 +293,7 @@ in
             end
 
             waywall.set_resolution(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
-            waywall.set_sensitivity(0.1)
+            waywall.set_sensitivity(${toString godSensWaywallTall})
             close_eye_see()
 
             local dst = {
@@ -380,7 +383,7 @@ in
                 layout = "us",
                 repeat_rate = 40,
                 repeat_delay = 300,
-                sensitivity = 1.0,
+                sensitivity = ${toString godSensWaywallNormal},
                 confine_pointer = true,
             },
 
@@ -532,7 +535,7 @@ in
                 launch_ninjabrain()
             end,
 
-            ["*-H"] = function()
+            ["backslash"] = function()
                 toggle_ninjabrain()
             end,
 
