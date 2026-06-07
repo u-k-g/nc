@@ -626,13 +626,14 @@ in
               MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
                 s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
                 s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
-                s@^JavaPath=.*@JavaPath=${pkgs.jdk17}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk17}/bin/java\n";
+                s@^JavaPath=.*@JavaPath=${pkgs.jdk21}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk21}/bin/java\n";
                 s@^IgnoreJavaCompatibility=.*@IgnoreJavaCompatibility=true@m or $_ .= "IgnoreJavaCompatibility=true\n";
                 s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
                 s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
                 s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
                 s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
-                s@^Env=.*@"Env=".$ENV{MCSR_ENV}@me or $_ .= "Env=".$ENV{MCSR_ENV}."\n";
+                s@^Env=.*\n@@mg;
+                $_ .= "Env=".$ENV{MCSR_ENV}."\n";
                 s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
                 s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
                 s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
