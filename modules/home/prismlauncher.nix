@@ -66,6 +66,34 @@ let
     url = "https://raw.githubusercontent.com/DuncanRuns/Jingle-EyeSee-Plugin/main/src/main/resources/overlay.png";
     hash = "sha256:1l1q0hkjwzip725zlyf5rfax671jrp3hhf6qsckn3m452dvqhzpb";
   };
+  mcsrJvmArgs = lib.concatStringsSep " " [
+    "-XX:+UnlockExperimentalVMOptions"
+    "-XX:+UnlockDiagnosticVMOptions"
+    "-XX:+UseShenandoahGC"
+    "-XX:ShenandoahGCMode=iu"
+    "-XX:ShenandoahGuaranteedGCInterval=1000000"
+    "-XX:AllocatePrefetchStyle=1"
+    "-XX:+AlwaysActAsServerClassMachine"
+    "-XX:+AlwaysPreTouch"
+    "-XX:+DisableExplicitGC"
+    "-XX:+UseNUMA"
+    "-XX:+UseTransparentHugePages"
+    "-XX:-DontCompileHugeMethods"
+    "-XX:MaxNodeLimit=240000"
+    "-XX:NodeLimitFudgeFactor=8000"
+    "-XX:+UseVectorCmov"
+    "-XX:+PerfDisableSharedMem"
+    "-XX:+UseFastUnorderedTimeStamps"
+    "-XX:+UseCriticalJavaThreadPriority"
+    "-XX:ThreadPriorityPolicy=1"
+    "-XX:NmethodSweepActivity=1"
+    "-XX:ReservedCodeCacheSize=400M"
+    "-XX:NonNMethodCodeHeapSize=12M"
+    "-XX:ProfiledCodeHeapSize=194M"
+    "-XX:NonProfiledCodeHeapSize=194M"
+    "-XX:MaxInlineLevel=40"
+    "-XX:TypeProfileMajorReceiverPercent=30"
+  ];
   mcsrStandardSettings = builtins.fromJSON ''
     {
       ".apiVersion": "2.2+1.16-1.16.1",
@@ -594,8 +622,15 @@ in
               ${pkgs.perl}/bin/perl -0pi -e '
                 s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
                 s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
+                s@^JavaPath=.*@JavaPath=${pkgs.jdk17}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk17}/bin/java\n";
+                s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
+                s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
+                s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
                 s@^OverrideEnv=.*@OverrideEnv=false@m or $_ .= "OverrideEnv=false\n";
                 s@^Env=.*@Env={}@m or $_ .= "Env={}\n";
+                s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
+                s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
+                s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
                 s@^OverrideNativeWorkarounds=.*@OverrideNativeWorkarounds=true@m or $_ .= "OverrideNativeWorkarounds=true\n";
                 s@^UseNativeGLFW=.*@UseNativeGLFW=true@m or $_ .= "UseNativeGLFW=true\n";
                 s@^CustomGLFWPath=.*@CustomGLFWPath=@m or $_ .= "CustomGLFWPath=\n";
