@@ -69,31 +69,23 @@ let
   mcsrJvmArgs = lib.concatStringsSep " " [
     "-XX:+UnlockExperimentalVMOptions"
     "-XX:+UnlockDiagnosticVMOptions"
-    "-XX:+UseShenandoahGC"
-    "-XX:ShenandoahGCMode=iu"
-    "-XX:ShenandoahGuaranteedGCInterval=1000000"
-    "-XX:AllocatePrefetchStyle=1"
-    "-XX:+AlwaysActAsServerClassMachine"
+    "-XX:+UseG1GC"
+    "-XX:MaxGCPauseMillis=50"
     "-XX:+AlwaysPreTouch"
     "-XX:+DisableExplicitGC"
     "-XX:+UseNUMA"
     "-XX:+UseTransparentHugePages"
-    "-XX:-DontCompileHugeMethods"
-    "-XX:MaxNodeLimit=240000"
-    "-XX:NodeLimitFudgeFactor=8000"
-    "-XX:+UseVectorCmov"
     "-XX:+PerfDisableSharedMem"
     "-XX:+UseFastUnorderedTimeStamps"
     "-XX:+UseCriticalJavaThreadPriority"
     "-XX:ThreadPriorityPolicy=1"
-    "-XX:NmethodSweepActivity=1"
     "-XX:ReservedCodeCacheSize=400M"
-    "-XX:NonNMethodCodeHeapSize=12M"
-    "-XX:ProfiledCodeHeapSize=194M"
-    "-XX:NonProfiledCodeHeapSize=194M"
     "-XX:MaxInlineLevel=40"
-    "-XX:TypeProfileMajorReceiverPercent=30"
   ];
+  mcsrEnv = builtins.toJSON {
+    __GL_THREADED_OPTIMIZATIONS = "0";
+    LD_PRELOAD = "${pkgs.jemalloc}/lib/libjemalloc.so";
+  };
   mcsrStandardSettings = builtins.fromJSON ''
     {
       ".apiVersion": "2.2+1.16-1.16.1",
@@ -619,15 +611,15 @@ in
           ''
             target=${lib.escapeShellArg mcsrInstanceCfgTarget}
             if [ -e "$target" ]; then
-              ${pkgs.perl}/bin/perl -0pi -e '
+              MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
                 s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
                 s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
-                s@^JavaPath=.*@JavaPath=${pkgs.jdk17}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk17}/bin/java\n";
+                s@^JavaPath=.*@JavaPath=${pkgs.jdk8}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk8}/bin/java\n";
                 s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
                 s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
                 s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
-                s@^OverrideEnv=.*@OverrideEnv=false@m or $_ .= "OverrideEnv=false\n";
-                s@^Env=.*@Env={}@m or $_ .= "Env={}\n";
+                s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
+                s@^Env=.*@"Env=".$ENV{MCSR_ENV}@me or $_ .= "Env=".$ENV{MCSR_ENV}."\n";
                 s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
                 s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
                 s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
