@@ -8,6 +8,12 @@
 
 let
   inherit (lib) getExe hiPrio optionals;
+  user = config.nc.user;
+
+  bunGlobalPackages = [
+    "tscircuit@0.0.1837"
+  ];
+
   opencodeCli = hiPrio (
     pkgs.writeShellScriptBin "opencode" ''
       exec ${getExe pkgs.opencode} "$@"
@@ -148,8 +154,19 @@ let
   ];
 in
 {
-  home-manager.users.${config.nc.user.name}.home.packages =
-    commonPackages
-    ++ optionals pkgs.stdenv.isLinux linuxPackages
-    ++ optionals pkgs.stdenv.isDarwin darwinPackages;
+  home-manager.users.${user.name} = {
+    home.packages =
+      commonPackages
+      ++ optionals pkgs.stdenv.isLinux linuxPackages
+      ++ optionals pkgs.stdenv.isDarwin darwinPackages;
+
+    home.activation.bun-global-packages =
+      config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
+        ''
+          export HOME=${lib.escapeShellArg user.homeDirectory}
+          export BUN_INSTALL="$HOME/.bun"
+
+          ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages}
+        '';
+  };
 }
