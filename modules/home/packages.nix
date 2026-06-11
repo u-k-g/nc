@@ -27,6 +27,14 @@ let
     '';
   };
 
+  dix =
+    if pkgs.stdenv.isDarwin then
+      pkgs.dix.overrideAttrs (_: {
+        doCheck = false;
+      })
+    else
+      pkgs.dix;
+
   commonPackages = with pkgs; [
     bash
     nushell
@@ -57,7 +65,6 @@ let
     carapace
     zellij
     btop
-    lazygit
     yazi
     lazyssh
     dialog
