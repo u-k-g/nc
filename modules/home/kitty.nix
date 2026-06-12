@@ -4,7 +4,7 @@ let
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
-  tabBarLeftPadding = if pkgs.stdenv.hostPlatform.isDarwin then 9 else 2;
+  tabBarLeftPadding = 2;
   tabBarRightPadding = 2;
   scrollbackPager = pkgs.writeShellScriptBin "kitty-scrollback-pager" ''
     line_arg="''${1:-}"
