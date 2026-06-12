@@ -6,7 +6,7 @@ PLUGIN_DIR="$CONFIG_DIR/plugins"
 
 ##### Bar Appearance #####
 bar=(
-  shadow=on
+  shadow=off
   height=37
   color=0x55000000
   position=top
