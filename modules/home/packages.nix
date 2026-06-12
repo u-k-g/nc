@@ -173,7 +173,8 @@ in
           export HOME=${lib.escapeShellArg user.homeDirectory}
           export BUN_INSTALL="$HOME/.bun"
 
-          ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages}
+          ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages} \
+            || printf 'warning: failed to install Bun global packages\n' >&2
         '';
   };
 }
