@@ -437,6 +437,7 @@
         "nixpkgs": "nixpkgs_2",
         "paneru": "paneru",
         "paperwm": "paperwm",
+        "rust-overlay": "rust-overlay_2",
         "themes": "themes"
       }
     },
@@ -453,6 +454,26 @@
         "owner": "oxalica",
         "repo": "rust-overlay",
         "rev": "107c334f141854f563f8adf1db781dc453d92639",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_2": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1781320681,
+        "narHash": "sha256-mjJ/VxJaIkgcUvKANgKOaaN5M1X1X+6NjCP0C5hw0WI=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "5b929d8c854149d926d05ea0cd6469bf4e54db27",
         "type": "github"
       },
       "original": {

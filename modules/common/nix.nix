@@ -20,6 +20,7 @@ in
 
 {
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.overlays = [ inputs.rust-overlay.overlays.default ];
 
   environment.systemPackages = [
     pkgs.nh

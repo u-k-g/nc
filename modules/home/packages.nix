@@ -35,6 +35,17 @@ let
     else
       pkgs.dix;
 
+  rustToolchain = pkgs.rust-bin.stable."1.93.0".default.override {
+    extensions = [
+      "rust-src"
+      "rustfmt"
+      "llvm-tools"
+    ];
+    targets = [
+      "thumbv7em-none-eabi"
+    ];
+  };
+
   commonPackages = with pkgs; [
     bash
     nushell
@@ -104,8 +115,7 @@ let
 
     llvm
     clang
-    rustc
-    cargo
+    rustToolchain
     clang-tools
     lld
 
