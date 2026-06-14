@@ -16,6 +16,26 @@ let
     agenix = inputs.agenix;
     themes = inputs.themes;
   };
+
+  nixRunShortcuts = pkgs.writeText "nix-run-shortcuts.nu" ''
+    def --wrapped * [program: string = "", ...arguments] {
+      if ($program | str contains "#") or ($program | str contains ":") {
+        nix run $program -- ...$arguments
+      } else {
+        nix run ("default#" + $program) -- ...$arguments
+      }
+    }
+
+    def --wrapped > [...arguments: string] {
+      nix shell ...($arguments | each {
+        if ($in | str contains "#") or ($in | str contains ":") {
+          $in
+        } else {
+          "default#" + $in
+        }
+      })
+    }
+  '';
 in
 
 {
@@ -69,7 +89,8 @@ in
       ];
       use-xdg-base-directories = true;
       warn-dirty = false;
-    } // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+    }
+    // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
       ssl-cert-file = "/etc/ssl/cert.pem";
     };
 
@@ -80,4 +101,7 @@ in
 
     optimise.automatic = true;
   };
+
+  home-manager.users.${config.nc.user.name}.programs.nushell.extraConfig =
+    lib.modules.mkAfter "source ${nixRunShortcuts}\n";
 }

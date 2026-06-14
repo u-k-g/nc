@@ -151,22 +151,4 @@ $env.config.color_config.string = {||
   }
 }
 
-def --wrapped * [program: string = "", ...arguments] {
-  if ($program | str contains "#") or ($program | str contains ":") {
-    nix run $program -- ...$arguments
-  } else {
-    nix run ("default#" + $program) -- ...$arguments
-  }
-}
-
-def --wrapped > [...programs] {
-  nix shell ...($programs | each {
-    if ($in | str contains "#") or ($in | str contains ":") {
-      $in
-    } else {
-      "default#" + $in
-    }
-  })
-}
-
 ulimit -n 4096
