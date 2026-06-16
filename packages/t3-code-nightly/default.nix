@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "0.0.25-nightly.20260602.439";
+  version = "0.0.27";
 in
 stdenvNoCC.mkDerivation {
   pname = "t3-code-nightly";
@@ -14,7 +14,7 @@ stdenvNoCC.mkDerivation {
 
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-arm64.zip";
-    hash = "sha256-mx8FH4b4r/2jSSM9cMcMB2iTXx1AY5geTNugVpw1YIA=";
+    hash = "sha256-2teOphbCdl1mQHFvDUK+qVdBdwHD/9uu/lY4VmRf1hU=";
   };
 
   nativeBuildInputs = [ unzip ];
