@@ -1,14 +1,8 @@
 {
   config,
   inputs,
-  lib,
   ...
 }:
-
-let
-  inherit (lib.modules) mkBefore;
-  inherit (lib.strings) escapeShellArg;
-in
 
 {
   nix-homebrew = {
@@ -18,11 +12,18 @@ in
     user = config.nc.user.name;
 
     taps = {
+      "apple/homebrew-apple" = inputs.homebrew-apple;
+      "barutsrb/homebrew-tap" = inputs.homebrew-barutsrb-tap;
+      "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz-formulae;
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
+      "homebrew/homebrew-services" = inputs.homebrew-services;
+      "manaflow-ai/homebrew-cmux" = inputs.homebrew-manaflow-cmux;
+      "nikitabobko/homebrew-tap" = inputs.homebrew-nikitabobko-tap;
+      "osx-cross/homebrew-arm" = inputs.homebrew-osx-cross-arm;
     };
 
-    mutableTaps = true;
+    mutableTaps = false;
   };
 
   homebrew = {
@@ -75,20 +76,4 @@ in
 
     masApps = { };
   };
-
-  system.activationScripts.homebrew.text = mkBefore ''
-    # Homebrew 6 requires explicit trust for formulae from non-official taps.
-    if [ -f "${config.homebrew.prefix}/bin/brew" ]; then
-      echo >&2 "trusting Homebrew tap formulae..."
-      PATH="${config.homebrew.prefix}/bin:$PATH" \
-      sudo \
-        --preserve-env=PATH \
-        --user=${escapeShellArg config.homebrew.user} \
-        --set-home \
-        brew trust --formula \
-          felixkratz/formulae/borders \
-          felixkratz/formulae/sketchybar \
-          osx-cross/arm/arm-gcc-bin@10
-    fi
-  '';
 }

@@ -179,6 +179,38 @@
         "type": "github"
       }
     },
+    "homebrew-apple": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1700101961,
+        "narHash": "sha256-VGt2OfrqnxyqJCsd6c4I7BP3EhcMrPbOLP7WBL5Mh4I=",
+        "owner": "apple",
+        "repo": "homebrew-apple",
+        "rev": "2bc44284e24d39ed64d6f492a0e1f4c47a5ced08",
+        "type": "github"
+      },
+      "original": {
+        "owner": "apple",
+        "repo": "homebrew-apple",
+        "type": "github"
+      }
+    },
+    "homebrew-barutsrb-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781654742,
+        "narHash": "sha256-MXzl6My9fP2qfpas2scw+ezaWaOG0Y+ibAU82tQoLKc=",
+        "owner": "barutsrb",
+        "repo": "homebrew-tap",
+        "rev": "2312173c8cbd177d94a4936ebc2a6cb173fce508",
+        "type": "github"
+      },
+      "original": {
+        "owner": "barutsrb",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "homebrew-cask": {
       "flake": false,
       "locked": {
@@ -208,6 +240,86 @@
       "original": {
         "owner": "homebrew",
         "repo": "homebrew-core",
+        "type": "github"
+      }
+    },
+    "homebrew-felixkratz-formulae": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780547371,
+        "narHash": "sha256-QGCVV5N1QC56GQK3ck2YJ6J6/S8SQ6rTElz69y58078=",
+        "owner": "FelixKratz",
+        "repo": "homebrew-formulae",
+        "rev": "70b2071488b61c14f773ce9e1bf6626ee851981a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FelixKratz",
+        "repo": "homebrew-formulae",
+        "type": "github"
+      }
+    },
+    "homebrew-manaflow-cmux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781528889,
+        "narHash": "sha256-CKu/JCtBYAjhBVYsxlP9ExRz+6VgvK28jV1QCrd2SOk=",
+        "owner": "manaflow-ai",
+        "repo": "homebrew-cmux",
+        "rev": "0002617d317de856bbf8e10a008840a2cb67902b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "manaflow-ai",
+        "repo": "homebrew-cmux",
+        "type": "github"
+      }
+    },
+    "homebrew-nikitabobko-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1781001567,
+        "narHash": "sha256-l1psK9FNz/HboCOuLGB+NaJ3Grb2ARoBfhgn8ojyC1w=",
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "rev": "0c56442781790c242f6a1a4978dc0f1ff364a4c4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nikitabobko",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
+    "homebrew-osx-cross-arm": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1773151057,
+        "narHash": "sha256-iRN00UzY6X0qmXHGGcH+Vt46DLpnhCEMQfy+EeasaUg=",
+        "owner": "osx-cross",
+        "repo": "homebrew-arm",
+        "rev": "e3bb686fb159097c2fb3ee6d1acb3f7e4dd8a184",
+        "type": "github"
+      },
+      "original": {
+        "owner": "osx-cross",
+        "repo": "homebrew-arm",
+        "type": "github"
+      }
+    },
+    "homebrew-services": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1742475690,
+        "narHash": "sha256-qg3/+iHtnFe6VxGapisTatGnoH0XG4BnWWqwwzWYzk0=",
+        "owner": "homebrew",
+        "repo": "homebrew-services",
+        "rev": "2c294ab9515576d961cea28c93148c6452db2def",
+        "type": "github"
+      },
+      "original": {
+        "owner": "homebrew",
+        "repo": "homebrew-services",
         "type": "github"
       }
     },
@@ -412,8 +524,15 @@
         "flake-parts": "flake-parts",
         "home-manager": "home-manager_2",
         "homebrew": "homebrew",
+        "homebrew-apple": "homebrew-apple",
+        "homebrew-barutsrb-tap": "homebrew-barutsrb-tap",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
+        "homebrew-felixkratz-formulae": "homebrew-felixkratz-formulae",
+        "homebrew-manaflow-cmux": "homebrew-manaflow-cmux",
+        "homebrew-nikitabobko-tap": "homebrew-nikitabobko-tap",
+        "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",
+        "homebrew-services": "homebrew-services",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs_2",
         "paneru": "paneru",
