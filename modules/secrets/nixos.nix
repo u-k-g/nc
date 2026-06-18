@@ -1,19 +1,25 @@
 {
   config,
   inputs,
+  lib,
   pkgs,
   ...
 }:
 
+let
+  inherit (lib.lists) singleton;
+in
 {
-  imports = [ inputs.agenix.nixosModules.age ];
+  imports = singleton inputs.agenix.nixosModules.age;
 
   age.identityPaths = [
     "${config.nc.user.homeDirectory}/.config/agenix/keys.txt"
     "${config.nc.user.homeDirectory}/.ssh/id_ed25519"
   ];
 
-  environment.systemPackages = [ inputs.agenix.packages.${pkgs.stdenv.hostPlatform.system}.default ];
-
-  home-manager.users.${config.nc.user.name}.home.packages = [ pkgs.rage ];
+  home-manager.users.${config.nc.user.name}.home.packages = [
+    pkgs.age
+    pkgs.rage
+    pkgs.ragenix
+  ];
 }
