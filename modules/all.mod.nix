@@ -6,13 +6,13 @@
     home-manager = ./common/home-manager.nix;
     inputs-gcroot = ./common/inputs-gcroot.nix;
     nix = ./common/nix.nix;
-    secrets = ./secrets/default.nix;
     theme = ./theme/default.nix;
     user = ./common/user.nix;
 
     apps = ./home/apps.nix;
     bat = ./home/bat.nix;
     btop = ./home/btop.nix;
+    codex = ./home/codex.nix;
     desktop-theme = ./home/desktop-theme.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
@@ -37,7 +37,6 @@
     paneru = ./darwin/paneru.nix;
     paperwm = ./darwin/paperwm.nix;
     screencapture = ./darwin/screencapture.nix;
-    secrets = ./secrets/darwin.nix;
     sudo = ./darwin/sudo.nix;
     trackpad = ./darwin/trackpad.nix;
   };
@@ -57,6 +56,5 @@
     niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;
     printing = ./nixos/printing.nix;
-    secrets = ./secrets/nixos.nix;
   };
 }

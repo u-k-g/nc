@@ -5,9 +5,7 @@
         "darwin": [
           "nix-darwin"
         ],
-        "home-manager": [
-          "home-manager"
-        ],
+        "home-manager": [],
         "nixpkgs": [
           "nixpkgs"
         ],

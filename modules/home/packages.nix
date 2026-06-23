@@ -106,7 +106,6 @@ let
     bun
     deno
     nodejs
-    codex
     opencodeCli
     pnpm
     zig
