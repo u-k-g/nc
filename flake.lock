@@ -484,16 +484,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1781035845,
-        "narHash": "sha256-O6IdMn3CxE41Pcf68RdiP45OhS9ttR3Jl8YTRu5uwcg=",
+        "lastModified": 1782417827,
+        "narHash": "sha256-GIFMbCqayhCA7rTEKz8aWCQzYMK4J6oKCgQ/JkVeV5U=",
         "owner": "u-k-g",
         "repo": "paneru",
-        "rev": "5861c0205bc317008e25445cc0b94246e88f7731",
+        "rev": "acb348011e23c3264babe39f8d1245c4766d3497",
         "type": "github"
       },
       "original": {
         "owner": "u-k-g",
-        "ref": "5861c020",
+        "ref": "acb34801",
         "repo": "paneru",
         "type": "github"
       }
