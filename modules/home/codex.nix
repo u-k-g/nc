@@ -15,7 +15,6 @@ let
   codexGitPolicyName = "codex-git-policy.py";
 
   blockedGitSubcommands = [
-    "add"
     "am"
     "archimport"
     "backfill"
@@ -85,6 +84,7 @@ let
   ];
 
   allowedGitSubcommands = [
+    "add"
     "annotate"
     "archive"
     "blame"
@@ -149,6 +149,7 @@ let
     import sys
 
     ALLOW_ANY = {
+        "add",
         "annotate",
         "archive",
         "blame",
@@ -201,7 +202,6 @@ let
         "version",
     }
     DENY_ALWAYS = {
-        "add",
         "am",
         "archimport",
         "backfill",
