@@ -156,6 +156,11 @@ let
     substituteInPlace $out --replace-quiet '^carapace' '^${getExe pkgs.carapace}'
   '';
 
+  justCompletions = pkgs.runCommand "just-completions.nu" { } ''
+    ${getExe pkgs.just} --completions nushell > $out
+    substituteInPlace $out --replace-quiet '(^just ' '(^${getExe pkgs.just} '
+  '';
+
   nuConfig = lib.concatStringsSep "\n" [
     nuVariables
     nuPath
@@ -168,6 +173,7 @@ let
     ))
     (builtins.readFile (dotfiles + /config/nushell/prompts.nu))
     "source ${carapaceConfig}"
+    "source ${justCompletions}"
   ];
 in
 {
