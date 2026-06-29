@@ -217,7 +217,7 @@ $env.config.keybindings ++= [
 
 def fing [
   --sweep(-s) # Also ping every host first; slower, but can find devices missed by arp-scan.
-  --no-hostnames(-n) # Skip reverse DNS/NetBIOS hostname lookups.
+  --no-hostnames(-n) # Skip DNS/mDNS/NetBIOS hostname lookups.
 ] {
   let iface = "en0"
   let network = (
@@ -262,27 +262,168 @@ def fing [
   # Merge and dedupe (arp-scan results take precedence for vendor info)
   let entries = ($arp_scan_entries ++ $system_arp_entries | uniq-by ip)
 
+  let clean_hostname = {|name|
+    $name
+    | str trim
+    | str trim --right --char "."
+  }
+
+  let ssh_local_hostnames = (
+    if $no_hostnames {
+      []
+    } else {
+      let known_hosts_path = ($env.HOME | path join ".ssh" "known_hosts")
+      let known_hosts = (
+        if ($known_hosts_path | path exists) {
+          open --raw $known_hosts_path
+          | lines
+          | where {|line| not ($line | str starts-with "#") and not ($line | str starts-with "|") }
+          | each {|line|
+            $line
+            | split row " "
+            | get 0?
+            | default ""
+            | split row ","
+            | each {|host|
+              let unwrapped_host = (
+                $host
+                | str replace -r '^\[' ''
+                | str replace -r '\]:[0-9]+$' ''
+              )
+              do $clean_hostname $unwrapped_host
+            }
+          }
+          | flatten
+        } else {
+          []
+        }
+      )
+
+      let ssh_config_path = ($env.HOME | path join ".ssh" "config")
+      let ssh_config_hosts = (
+        if ($ssh_config_path | path exists) {
+          open --raw $ssh_config_path
+          | lines
+          | str trim
+          | where {|line| $line =~ '(?i)^(host|hostname)\s+.+' }
+          | parse -r '(?i)^(host|hostname)\s+(?P<hosts>.+)$'
+          | get hosts
+          | each {|hosts| $hosts | split row " " }
+          | flatten
+          | where {|host| $host =~ '(?i)\.local\.?$' }
+          | each {|host| do $clean_hostname $host }
+        } else {
+          []
+        }
+      )
+
+      $known_hosts
+      | append $ssh_config_hosts
+      | where {|host| $host =~ '(?i)\.local$' }
+      | uniq
+    }
+  )
+
+  let ssh_local_hosts_by_ip = (
+    $ssh_local_hostnames
+    | par-each --threads 16 {|host|
+      let dscache_out = (^dscacheutil -q host -a name $host | lines | str trim)
+      let dscache_ip = (
+        $dscache_out
+        | where {|line| $line =~ '^ip_address:' }
+        | get 0?
+        | default ""
+        | parse -r '^ip_address:\s*(?P<ip>[0-9.]+)$'
+        | get ip.0?
+        | default ""
+      )
+      let dns_sd_ip = (
+        if ($dscache_ip | is-empty) {
+          let dns_sd_result = (do { ^timeout 1 dns-sd -G v4 $host } | complete)
+          $dns_sd_result.stdout
+          | lines
+          | parse -r '.*\s(?P<ip>[0-9]+(?:\.[0-9]+){3})\s+[0-9]+.*'
+          | get ip.0?
+          | default ""
+        } else {
+          ""
+        }
+      )
+      let ip = (
+        [
+          $dscache_ip
+          $dns_sd_ip
+        ]
+        | where {|candidate| $candidate | is-not-empty }
+        | get 0?
+        | default ""
+      )
+
+      {
+        ip: $ip
+        hostname: $host
+      }
+    }
+    | where {|host| $host.ip | is-not-empty }
+    | uniq-by ip
+  )
+
   $entries
   | par-each --threads 32 {|e|
     let hostname = (
       if $no_hostnames {
         ""
       } else {
-        let dscache_out = (^dscacheutil -q host -a address $e.ip | lines | str trim)
-        let h1 = ($dscache_out | where {|l| $l =~ '^name:' } | get 0? | default "")
-        if not ($h1 | is-empty) {
-          $h1 | parse -r '^name:\s*(.+)$' | get capture0.0 | default ""
+        let ssh_local_hostname = (
+          $ssh_local_hosts_by_ip
+          | where ip == $e.ip
+          | get hostname.0?
+          | default ""
+        )
+        if ($ssh_local_hostname | is-not-empty) {
+          $ssh_local_hostname
         } else {
-          let dig_result = (do { ^dig +time=1 +tries=1 +short -x $e.ip } | complete)
-          let dig_out = $dig_result.stdout | lines
-          if ($dig_out | is-not-empty) {
-            $dig_out | get 0 | str trim --right --char '.'
+          let dscache_out = (^dscacheutil -q host -a address $e.ip | lines | str trim)
+          let h1 = ($dscache_out | where {|l| $l =~ '^name:' } | get 0? | default "")
+          if not ($h1 | is-empty) {
+            let dscache_hostname = (
+              $h1
+              | parse -r '^name:\s*(.+)$'
+              | get capture0.0
+              | default ""
+            )
+            do $clean_hostname $dscache_hostname
           } else {
-            let nbtscan_out = (^nbtscan -q -m 1 -t 300 $e.ip e> /dev/null)
-            if ($nbtscan_out | is-not-empty) {
-              $nbtscan_out | parse -r '^\S+\s+\S+\s+\S+\s+(\S+)' | get capture0.0 | default ""
+            let dig_result = (do { ^dig +time=1 +tries=1 +short -x $e.ip } | complete)
+            let dig_out = $dig_result.stdout | lines
+            if ($dig_out | is-not-empty) {
+              do $clean_hostname ($dig_out | get 0)
             } else {
-              "<no-hostname>"
+              let reverse_mdns_name = (
+                $e.ip
+                | split row "."
+                | reverse
+                | str join "."
+              )
+              let mdns_ptr_result = (do { ^timeout 1 dns-sd -q $"($reverse_mdns_name).in-addr.arpa" PTR IN } | complete)
+              let mdns_ptr_hostname = (
+                $mdns_ptr_result.stdout
+                | lines
+                | where {|line| $line =~ '\sPTR\s+IN\s+\S+\.local\.?$' }
+                | parse -r '.*\sPTR\s+IN\s+(?P<host>\S+\.local\.?)$'
+                | get host.0?
+                | default ""
+              )
+              if ($mdns_ptr_hostname | is-not-empty) {
+                do $clean_hostname $mdns_ptr_hostname
+              } else {
+                let nbtscan_out = (^nbtscan -q -m 1 -t 300 $e.ip e> /dev/null)
+                if ($nbtscan_out | is-not-empty) {
+                  $nbtscan_out | parse -r '^\S+\s+\S+\s+\S+\s+(\S+)' | get capture0.0 | default ""
+                } else {
+                  "<no-hostname>"
+                }
+              }
             }
           }
         }
