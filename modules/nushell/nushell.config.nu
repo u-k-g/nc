@@ -62,7 +62,7 @@ $env.config.menus = [
   {
     name: completion_menu
     only_buffer_difference: false
-    marker: ($env.PROMPT_INDICATOR_VI_INSERT? | default "")
+    marker: $"(ansi dark_gray_bold)╰─ (ansi blue):(ansi reset) "
     type: {
       layout: ide
       min_completion_width: 0
