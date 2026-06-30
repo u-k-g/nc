@@ -1,45 +1,13 @@
-// Zed settings
-//
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
-//
-// To see all of Zed's default settings without changing your
-// custom settings, run `zed: open default settings` from the
-// command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "soft_wrap": "editor_width",
-  "agent_servers": {
-    "opencode": {
-      "favorite_config_option_values": {
-        "model": [
-          "openai/gpt-5.4/high",
-          "openai/gpt-5.5/low",
-          "openai/gpt-5.4/medium"
-        ]
-      },
-      "type": "registry"
-    },
-    "codex-acp": {
-      "type": "registry"
-    },
-    "cursor": {
-      "default_config_options": {
-        "mode": "agent"
-      },
-      "favorite_config_option_values": {
-        "model": [
-          "gpt-5.4[reasoning=medium,context=272k,fast=false]"
-        ]
-      },
-      "type": "registry"
-    }
+  "which_key": {
+    "enabled": true
   },
+  "ui_font_family": "Iosevka Nerd Font",
+  "auto_update": true,
+  "soft_wrap": "editor_width",
   "helix_mode": true,
   "diff_view_style": "split",
   "ensure_final_newline_on_save": true,
-  "notification_panel": {
-    "button": false
-  },
   "use_system_window_tabs": true,
   "preview_tabs": {
     "enable_preview_from_file_finder": true
@@ -48,7 +16,7 @@
     "close_position": "right",
     "show_close_button": "hover",
     "file_icons": false,
-    "git_status": false
+    "git_status": true
   },
   "tab_bar": {
     "show_nav_history_buttons": false,
@@ -60,8 +28,7 @@
     "show_user_picture": false,
     "show_onboarding_banner": false,
     "show_project_items": false,
-    "show_branch_name": false,
-    "show_branch_icon": false
+    "show_branch_name": false
   },
   "status_bar": {
     "active_language_button": false,
@@ -72,9 +39,6 @@
   },
   "search": {
     "button": false
-  },
-  "file_finder": {
-    "git_status": true
   },
   "enable_language_server": true,
   "gutter": {
@@ -94,10 +58,10 @@
   },
   "disable_ai": false,
   "collaboration_panel": {
-    "button": false,
-    "dock": "right"
+    "button": false
   },
   "terminal": {
+    "shell": "system",
     "toolbar": {
       "breadcrumbs": true
     },
@@ -108,28 +72,14 @@
     "button": false,
     "dock": "bottom"
   },
-  "ssh_connections": [
-    {
-      "host": "bluevigil@lawndart97.local",
-      "projects": [
-        {
-          "paths": ["/home/bluevigil"]
-        },
-        {
-          "paths": ["/home/bluevigil/mission-controller"]
-        }
-      ]
-    }
-  ],
   "outline_panel": {
-    "button": false,
-    "dock": "right"
+    "button": false
   },
   "autosave": "off",
   "vim_mode": false,
   "git_panel": {
     "status_style": "icon",
-    "dock": "left"
+    "dock": "right"
   },
   "edit_predictions": {
     "provider": "zed",
@@ -139,15 +89,6 @@
       "proxy": null,
       "proxy_no_verify": null,
       "enterprise_uri": null
-    },
-    "enabled_in_text_threads": false
-  },
-  "context_servers": {
-    "mcp-server-exa-search": {
-      "enabled": false,
-      "settings": {
-        "exa_api_key": ""
-      }
     }
   },
   "project_panel": {
@@ -163,28 +104,17 @@
     "file_icons": true,
     "hide_gitignore": false,
     "button": true,
-    "dock": "left"
+    "dock": "right"
   },
-  "icon_theme": "Bearded Icon Theme",
   "agent": {
     "sidebar_side": "left",
     "tool_permissions": {
       "default": "allow"
     },
     "button": true,
-    "inline_assistant_model": {
-      "provider": "zed.dev",
-      "model": "gpt-5"
-    },
     "use_modifier_to_send": true,
-    "play_sound_when_agent_done": "always",
-    "dock": "right",
-    "default_profile": "write",
-    "model_parameters": [],
-    "default_model": {
-      "provider": "zed.dev",
-      "model": "gpt-5"
-    }
+    "dock": "left",
+    "default_profile": "write"
   },
   "base_keymap": "VSCode",
   "ui_font_size": 16,
@@ -194,107 +124,11 @@
     "light": "Gruvbox Light Soft",
     "dark": "Gruvbox Dark Soft"
   },
-  // "buffer_font_family": "Monaspace Neon",
-  // "ui_font_family": "Monaspace Neon",
   "buffer_font_features": {
     "calt": false
   },
   "auto_install_extensions": {
-    "git-firefly": true,
-    "toml": true,
-    "biome": true,
-    "html": true,
-    "mcp-server-sequential-thinking": true,
-    "latex": true,
-    "postgres-language-server": true,
-    "sql": true,
-    "zig": true
+    "git-firefly": true
   },
-  "file_types": {
-    "C++": ["ino"]
-  },
-  "lsp": {
-    "arduino-language-server": {
-      "binary": {
-        "path": "~/go/bin/arduino-language-server",
-        "arguments": [
-          "-clangd",
-          "/opt/homebrew/bin/clangd",
-          "-cli",
-          "/opt/homebrew/bin/arduino-cli",
-          "-cli-config",
-          "~/.arduino15/arduino-cli.yaml",
-          "-fqbn",
-          "arduino:avr:uno"
-        ]
-      }
-    },
-    "clangd": {
-      "binary": {
-        "path": "/usr/bin/clangd",
-        "arguments": ["--header-insertion=iwyu"]
-      },
-      "initialization_options": {
-        "clangdFileStatus": true,
-        "usePlaceholders": true,
-        "completeUnimported": true,
-        "semanticHighlighting": true
-      }
-    },
-    "vtsls": {
-      "enabled": false
-    },
-    "tailwindcss-language-server": {
-      "enabled": false
-    },
-    "eslint": {
-      "enabled": false
-    }
-  },
-  "code_actions_on_format": {
-    "source.addMissingImports.clangd": true
-  },
-  "format_on_save": "off",
-
-  "languages": {
-    "C++": {
-      "language_servers": ["clangd", "arduino-language-server"]
-    },
-    "TypeScript": {
-      "language_servers": [
-        "vtsls",
-        "biome",
-        "!eslint",
-        "!tailwindcss-language-server",
-        "..."
-      ]
-    },
-    "TSX": {
-      "language_servers": [
-        "vtsls",
-        "biome",
-        "!eslint",
-        "!tailwindcss-language-server",
-        "..."
-      ]
-    },
-    "JavaScript": {
-      "language_servers": [
-        "vtsls",
-        "biome",
-        "!eslint",
-        "!tailwindcss-language-server",
-        "..."
-      ]
-    },
-    "JSX": {
-      "language_servers": [
-        "vtsls",
-        "biome",
-        "!eslint",
-        "!tailwindcss-language-server",
-        "..."
-      ]
-    }
-  }
+  "format_on_save": "off"
 }
