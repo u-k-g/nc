@@ -1,8 +1,16 @@
 {
+  "buffer_font_family": "Lilex Nerd Font Mono",
+  "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "mode": "agent-full-access"
+      },
+      "type": "registry"
+    }
+  },
   "which_key": {
     "enabled": true
   },
-  "ui_font_family": "Iosevka Nerd Font",
   "auto_update": true,
   "soft_wrap": "editor_width",
   "helix_mode": true,
@@ -46,7 +54,6 @@
   },
   "minimum_contrast_for_highlights": 45.0,
   "current_line_highlight": "line",
-  "buffer_font_family": "Lilex",
   "restore_on_startup": "last_workspace",
   "redact_private_values": false,
   "on_last_window_closed": "quit_app",
