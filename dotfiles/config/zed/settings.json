@@ -114,6 +114,7 @@
     "dock": "right"
   },
   "agent": {
+    "thinking_display": "always_collapsed",
     "sidebar_side": "left",
     "tool_permissions": {
       "default": "allow"
