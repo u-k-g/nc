@@ -40,7 +40,6 @@ let
     NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     MANPAGER = getExe batPager;
     PAGER = getExe batPager;
-    PNPM_HOME = "${home}/Library/pnpm";
     SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     XDG_CACHE_HOME = "${home}/.cache";
     XDG_CONFIG_HOME = "${home}/.config";
@@ -50,7 +49,6 @@ let
   };
 
   sessionPath = [
-    "${home}/Library/pnpm"
     "${home}/.bun/bin"
     "${home}/.deno/bin"
     "${home}/.platformio/penv/bin"

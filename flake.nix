@@ -34,7 +34,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+    chaotic = {
+      url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+      inputs.home-manager.follows = "home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
@@ -68,41 +72,6 @@
       flake = false;
     };
 
-    homebrew-apple = {
-      url = "github:apple/homebrew-apple";
-      flake = false;
-    };
-
-    homebrew-barutsrb-tap = {
-      url = "github:barutsrb/homebrew-tap";
-      flake = false;
-    };
-
-    homebrew-felixkratz-formulae = {
-      url = "github:FelixKratz/homebrew-formulae";
-      flake = false;
-    };
-
-    homebrew-services = {
-      url = "github:homebrew/homebrew-services";
-      flake = false;
-    };
-
-    homebrew-manaflow-cmux = {
-      url = "github:manaflow-ai/homebrew-cmux";
-      flake = false;
-    };
-
-    homebrew-nikitabobko-tap = {
-      url = "github:nikitabobko/homebrew-tap";
-      flake = false;
-    };
-
-    homebrew-osx-cross-arm = {
-      url = "github:osx-cross/homebrew-arm";
-      flake = false;
-    };
-
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
@@ -111,7 +80,9 @@
     };
 
     paneru = {
-      url = "github:u-k-g/paneru/acb34801";
+      url = "github:u-k-g/paneru";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.nix-darwin.follows = "nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

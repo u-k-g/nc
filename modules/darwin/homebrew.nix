@@ -12,18 +12,11 @@
     user = config.nc.user.name;
 
     taps = {
-      "apple/homebrew-apple" = inputs.homebrew-apple;
-      "barutsrb/homebrew-tap" = inputs.homebrew-barutsrb-tap;
-      "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz-formulae;
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
-      "homebrew/homebrew-services" = inputs.homebrew-services;
-      "manaflow-ai/homebrew-cmux" = inputs.homebrew-manaflow-cmux;
-      "nikitabobko/homebrew-tap" = inputs.homebrew-nikitabobko-tap;
-      "osx-cross/homebrew-arm" = inputs.homebrew-osx-cross-arm;
     };
 
-    mutableTaps = false;
+    mutableTaps = true;
   };
 
   homebrew = {

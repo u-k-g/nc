@@ -7,7 +7,8 @@
 }:
 
 let
-  inherit (lib) getExe hiPrio optionals;
+  inherit (lib.lists) optionals;
+  inherit (lib.meta) getExe hiPrio;
   user = config.nc.user;
 
   bunGlobalPackages = [
@@ -24,6 +25,14 @@ let
     paths = [ pkgs.opencode-desktop ];
     postBuild = ''
       rm -rf $out/bin
+    '';
+  };
+  corepackPnpm = pkgs.symlinkJoin {
+    name = "corepack-pnpm";
+    paths = [ pkgs.corepack ];
+    postBuild = ''
+      rm -f $out/bin/corepack
+      rm -f $out/bin/yarn
     '';
   };
 
@@ -106,8 +115,8 @@ let
     bun
     deno
     nodejs
+    corepackPnpm
     opencodeCli
-    pnpm
     zig
     lua
     fnm
