@@ -41,7 +41,6 @@ in
         pkgs.freecad
         pkgs.ghostty
         heliumBrowser
-        pkgs.kicad
         pkgs.orca-slicer
         pkgs.ungoogled-chromium
         discord

@@ -27,6 +27,9 @@ let
       rm -rf $out/bin
     '';
   };
+  kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
+    exec /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli "$@"
+  '';
   corepackPnpm = pkgs.symlinkJoin {
     name = "corepack-pnpm";
     paths = [ pkgs.corepack ];
@@ -169,11 +172,13 @@ let
   linuxPackages = with pkgs; [
     docker
     docker-buildx
+    kicad
     opencode-desktop
   ];
 
   darwinPackages = with pkgs; [
     colima
+    kicadCli
     opencodeDesktopApp
     self.packages.${pkgs.stdenv.hostPlatform.system}.t3-code-nightly
   ];
