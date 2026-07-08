@@ -24,7 +24,7 @@
 
     onActivation = {
       autoUpdate = true;
-      cleanup = "zap";
+      cleanup = "uninstall";
       upgrade = true;
     };
 
