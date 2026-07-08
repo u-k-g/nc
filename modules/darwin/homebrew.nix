@@ -45,6 +45,7 @@
       "glslviewer"
       "mas"
       "ruby"
+      "sk"
       "felixkratz/formulae/borders"
       "felixkratz/formulae/sketchybar"
       "osx-cross/arm/arm-gcc-bin@10"
@@ -63,7 +64,7 @@
       "sf-symbols"
       "thaw"
       "vesktop"
-      "zed@preview"
+      "zed"
       "zulu@17"
     ];
 

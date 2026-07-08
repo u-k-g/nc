@@ -6,7 +6,9 @@
 }:
 
 let
-  inherit (lib) getExe optionalString;
+  inherit (lib.lists) optionals;
+  inherit (lib.meta) getExe;
+  inherit (lib.strings) optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
   home = user.homeDirectory;
@@ -278,11 +280,14 @@ in
 
       home.sessionVariables = sessionVariables;
       home.sessionPath = sessionPath;
-      home.packages = [
-        pkgs.skim
-        pkgs.vivid
-        lsColors
-      ];
+      home.packages =
+        optionals pkgs.stdenv.isLinux [
+          pkgs.skim
+        ]
+        ++ [
+          pkgs.vivid
+          lsColors
+        ];
 
       home.activation.shadow-xcode = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''

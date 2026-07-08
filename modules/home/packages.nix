@@ -111,6 +111,7 @@ let
     sd
     ffmpeg
     ffsend
+    handy
     scrcpy
     tio
     imagemagick

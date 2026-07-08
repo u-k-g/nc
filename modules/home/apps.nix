@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib) optionals;
+  inherit (lib.lists) optionals;
   user = config.nc.user;
   dotfiles = ../../dotfiles;
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
@@ -32,7 +32,6 @@ in
       [
         kitty
         obsidian
-        zed-editor
       ]
       ++ optionals pkgs.stdenv.isDarwin [
         pkgs.ghostty-bin
@@ -43,6 +42,7 @@ in
         heliumBrowser
         pkgs.orca-slicer
         pkgs.ungoogled-chromium
+        zed-editor
         discord
       ];
 
