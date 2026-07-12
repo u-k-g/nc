@@ -7,7 +7,7 @@
 
 let
   inherit (lib.generators) toJSON;
-  inherit (lib.lists) singleton;
+  inherit (lib.lists) optionals singleton;
   inherit (lib.meta) getExe;
   inherit (lib.strings) concatMapStringsSep;
 
@@ -651,7 +651,7 @@ in
   };
 
   home-manager.users.${config.nc.user.name} = {
-    home.packages = singleton pkgs.codex;
+    home.packages = optionals pkgs.stdenv.isLinux <| singleton pkgs.codex;
 
     home.file = {
       ".codex/rules/git.rules".text = ''
