@@ -1,9 +1,6 @@
 use std/clip
 use std null_device
 
-alias cat = ^bat
-alias less = ^bat --plain
-
 $env.config.buffer_editor = "hx"
 $env.config.history.file_format = "sqlite"
 $env.config.history.isolation = false

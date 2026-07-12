@@ -16,7 +16,6 @@ let
   hex = color: "#${color}";
 
   sessionVariables = {
-    BAT_PAGER = "less -FRX --chop-long-lines";
     BAT_PAGING = "never";
     BAT_STYLE = "plain";
     CARAPACE_BRIDGES = "inshellisense,carapace,zsh,fish,bash";
@@ -40,8 +39,6 @@ let
     NIX_PROFILES = "/nix/var/nix/profiles/default /run/current-system/sw /etc/profiles/per-user/${user.name}";
     NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-    MANPAGER = getExe batPager;
-    PAGER = getExe batPager;
     SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     XDG_CACHE_HOME = "${home}/.cache";
     XDG_CONFIG_HOME = "${home}/.config";
@@ -68,10 +65,6 @@ let
     "${home}/.opencode/bin"
     "${home}/.lmstudio/bin"
   ];
-
-  batPager = pkgs.writeShellScriptBin "bat-pager" ''
-    exec ${getExe pkgs.bat} --plain "$@"
-  '';
 
   lsColors = pkgs.runCommand "ls-colors" { } ''
     mkdir -p $out/share
@@ -161,6 +154,26 @@ let
     substituteInPlace $out --replace-quiet '(^just ' '(^${getExe pkgs.just} '
   '';
 
+  wrtcmtmsgConfig = ''
+    def wrtcmtmsg [] {
+      let diff = (^${getExe pkgs.jujutsu} diff --git --no-pager | complete)
+
+      if $diff.exit_code != 0 {
+        error make {
+          msg: ($diff.stderr | str trim)
+          label: {
+            text: "jj diff failed"
+            span: (metadata $diff.stderr).span
+          }
+        }
+      }
+
+      let skill = open --raw ${builtins.toJSON "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
+      let prompt = $skill + "\n\n" + $diff.stdout
+      ^${getExe pkgs.opencode} run --model opencode-go/minimax-m3 -- $prompt
+    }
+  '';
+
   nuConfig = lib.concatStringsSep "\n" [
     nuVariables
     nuPath
@@ -174,6 +187,7 @@ let
     (builtins.readFile (dotfiles + /config/nushell/prompts.nu))
     "source ${carapaceConfig}"
     "source ${justCompletions}"
+    wrtcmtmsgConfig
   ];
 in
 {

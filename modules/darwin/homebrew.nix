@@ -40,6 +40,7 @@
     ];
 
     brews = [
+      "colima"
       "create-dmg"
       "espeak-ng"
       "glslviewer"
@@ -47,7 +48,10 @@
       "ruby"
       "sk"
       "felixkratz/formulae/borders"
-      "felixkratz/formulae/sketchybar"
+      {
+        name = "felixkratz/formulae/sketchybar";
+        start_service = true;
+      }
       "osx-cross/arm/arm-gcc-bin@10"
     ];
 

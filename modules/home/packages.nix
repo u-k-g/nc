@@ -157,7 +157,6 @@ let
     arduino-cli
     platformio
     arduino-language-server
-    micropython
     tytools
 
     arp-scan
@@ -178,7 +177,6 @@ let
   ];
 
   darwinPackages = with pkgs; [
-    colima
     kicadCli
     opencodeDesktopApp
     self.packages.${pkgs.stdenv.hostPlatform.system}.t3-code-nightly

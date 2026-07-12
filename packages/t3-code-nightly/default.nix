@@ -8,7 +8,7 @@
 let
   inherit (lib.lists) singleton;
 
-  version = "0.0.29-nightly.20260630.695";
+  version = "0.0.29-nightly.20260712.791";
 in
 stdenvNoCC.mkDerivation {
   pname = "t3-code-nightly";
@@ -16,7 +16,7 @@ stdenvNoCC.mkDerivation {
 
   src = fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-arm64.zip";
-    hash = "sha256-lOEbWW4XktykM72hC2BtrRIsv0d9c2TIw1xXp0f3xIA=";
+    hash = "sha256-I5x2lbIdhUYxEWmWUDauDhUi71S5xoq20pjeJGZkOFE=";
   };
 
   nativeBuildInputs = singleton unzip;
