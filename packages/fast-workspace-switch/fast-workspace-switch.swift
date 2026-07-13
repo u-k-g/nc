@@ -2,13 +2,13 @@ import CoreGraphics
 import Foundation
 
 @_silgen_name("CGSCopyManagedDisplaySpaces")
-func CGSCopyManagedDisplaySpaces(_ cid: CFTypeRef?) -> CFArray?
+func CGSCopyManagedDisplaySpaces(_ cid: Int32) -> CFArray?
 
 @_silgen_name("CGSGetActiveSpace")
-func CGSGetActiveSpace(_ cid: Int) -> Int
+func CGSGetActiveSpace(_ cid: Int32) -> Int
 
 @_silgen_name("SLSMainConnectionID")
-func SLSMainConnectionID() -> Int
+func SLSMainConnectionID() -> Int32
 
 
 private let floatMin = 1.401298464324817e-45
@@ -83,7 +83,7 @@ private func writeStderr(_ message: String) {
 
 private func mainDisplaySpaces() -> [Int]? {
     let cid = SLSMainConnectionID()
-    guard let managedDisplays = CGSCopyManagedDisplaySpaces(cid as CFNumber) as? [[String: Any]] else {
+    guard let managedDisplays = CGSCopyManagedDisplaySpaces(cid) as? [[String: Any]] else {
         return nil
     }
 
