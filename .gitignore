@@ -34,7 +34,6 @@
 !*.md
 !*.nix
 !*.nu
-!*.patch
 !*.png
 !*.sh
 !*.swift

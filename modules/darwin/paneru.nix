@@ -14,13 +14,13 @@ in
 
     services.paneru = {
       enable = true;
-      package = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.paneru-swap-events;
+      package = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.paneru;
 
       settings = {
         options = {
           focus_follows_mouse = false;
           mouse_follows_focus = true;
-          animation_speed = 28.0;
+          animation_speed = 37.0;
           auto_center = true;
           sliver_width = 1;
           window_hidden_ratio = 0.0;
