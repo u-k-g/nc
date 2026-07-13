@@ -48,16 +48,6 @@ private func setDouble(_ event: CGEvent, _ field: Int64, _ value: Double) {
     event.setDoubleValueField(CGEventField(rawValue: UInt32(field))!, value: value)
 }
 
-private func createMarkerEvent() -> CGEvent? {
-    guard let event = CGEvent(source: nil) else {
-        return nil
-    }
-
-    setInteger(event, 0x37, 29)
-    setInteger(event, 0x29, 33231)
-    return event
-}
-
 private func createSwipeEvent(_ values: SwipeValues, phase: GesturePhase) -> CGEvent? {
     guard let event = CGEvent(source: nil) else {
         return nil
@@ -87,27 +77,21 @@ private func createSwipeEvent(_ values: SwipeValues, phase: GesturePhase) -> CGE
 private func postSwipe(_ direction: Direction) -> Bool {
     let values = SwipeValues(direction: direction)
 
-    guard let beginMarkerEvent = createMarkerEvent(),
-          let beginSwipeEvent = createSwipeEvent(values, phase: .began)
-    else {
+    guard let beginSwipeEvent = createSwipeEvent(values, phase: .began) else {
         writeStderr("Unable to create Space-switch begin events\n")
         return false
     }
 
     beginSwipeEvent.post(tap: .cghidEventTap)
-    beginMarkerEvent.post(tap: .cghidEventTap)
 
     usleep(gestureHoldMicroseconds)
 
-    guard let endMarkerEvent = createMarkerEvent(),
-          let endSwipeEvent = createSwipeEvent(values, phase: .ended)
-    else {
+    guard let endSwipeEvent = createSwipeEvent(values, phase: .ended) else {
         writeStderr("Unable to create Space-switch end events\n")
         return false
     }
 
     endSwipeEvent.post(tap: .cghidEventTap)
-    endMarkerEvent.post(tap: .cghidEventTap)
     return true
 }
 
