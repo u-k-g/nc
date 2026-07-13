@@ -52,7 +52,6 @@ in
           kitty.name = "kitty";
           freecad.name = "FreeCAD";
           codex.name = "Codex";
-          zed.name = "Zed";
           t3.name = "T3 Code (Nightly)";
         };
 
@@ -62,7 +61,6 @@ in
           app_kitty = "alt - semicolon";
           app_freecad = "alt - c";
           app_codex = "alt - r";
-          app_zed = "alt - z";
           app_t3 = "alt - t";
 
           window_focus_west = "alt - h";

@@ -153,6 +153,27 @@
             ]
           },
           {
+            "description": "Open Zed",
+            "manipulators": [
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "z",
+                  "modifiers": {
+                    "mandatory": [
+                      "option"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "shell_command": "/usr/bin/open -b dev.zed.Zed"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "description": "Caps Lock tap Escape, hold Hyper",
             "manipulators": [
               {
