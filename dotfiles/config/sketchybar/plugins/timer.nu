@@ -1,14 +1,6 @@
 #!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
 
-const state_file = "/tmp/sketchybar_timer_state.json"
-
-def read-state [] {
-  if ($state_file | path exists) { open $state_file } else { { status: idle duration: 0 remaining: 0 end_time: 0 elapsed: 0 start_time: 0 } }
-}
-
-def write-state [state: record] {
-  $state | save --force $state_file
-}
+use timer_state.nu [read-timer-state write-timer-state]
 
 def format-time [total: int] {
   let safe_total = ([$total 0] | math max)
@@ -20,7 +12,7 @@ def format-time [total: int] {
 
 def main [] {
   let now = (date now | format date "%s" | into int)
-  mut state = (read-state)
+  mut state = (read-timer-state)
   mut color = "0xffffffff"
   mut label = "00:00"
 
@@ -28,7 +20,7 @@ def main [] {
     let remaining = ($state.end_time - $now)
     if $remaining <= 0 {
       $state = { status: done duration: ($state.duration | default 0) remaining: 0 end_time: 0 }
-      write-state $state
+      write-timer-state $state
       $label = "00:00"
     } else {
       $label = (format-time $remaining)

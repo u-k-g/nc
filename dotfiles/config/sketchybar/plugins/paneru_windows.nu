@@ -3,22 +3,52 @@
 const max_items = 12
 const focused_color = "0xffffffff"
 const unfocused_color = "0x60ffffff"
-const pid_file = "/tmp/sketchybar_paneru_windows.pid"
+const legacy_pid_file = "/tmp/sketchybar_paneru_windows.pid"
 const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
 
 def env-default [name: string, fallback: string] {
   $env | get --optional $name | default $fallback
 }
 
+def runtime-dir [] {
+  let temporary = ($env.TMPDIR? | default "" | str trim)
+  if not ($temporary | is-empty) { return $temporary }
+
+  let fallback = ($env.HOME | path join "Library" "Caches" "sketchybar")
+  mkdir $fallback
+  try { ^/bin/chmod 700 $fallback }
+  $fallback
+}
+
+def pid-file [] {
+  runtime-dir | path join "sketchybar_paneru_windows.pid"
+}
+
+def stop-subscriber-from [path: string] {
+  if not ($path | path exists) { return }
+
+  let pid = (try { open $path | str trim | into int } catch { null })
+  if ($pid == null) or ($pid == $nu.pid) { return }
+
+  let owner = (try { ^/bin/ps -p $pid -o uid= | str trim | into int } catch { null })
+  let current_owner = (try { ^/usr/bin/id -u | str trim | into int } catch { null })
+  let command = (try { ^/bin/ps -p $pid -o command= | str trim } catch { "" })
+  if ($owner == $current_owner) and ($command | str contains "paneru_windows.nu") {
+    try { ^/bin/kill $pid err> /dev/null }
+  }
+}
+
 def kill-existing [] {
-  if ($pid_file | path exists) {
-    let pid = (try { open $pid_file | str trim | into int } catch { null })
-    if ($pid != null) and ($pid != $nu.pid) {
-      try { ^kill $pid err> /dev/null }
-    }
+  let current_pid_file = (pid-file)
+  stop-subscriber-from $current_pid_file
+
+  if $legacy_pid_file != $current_pid_file {
+    stop-subscriber-from $legacy_pid_file
+    try { rm --force $legacy_pid_file }
   }
 
-  $nu.pid | save --force $pid_file
+  $nu.pid | save --force $current_pid_file
+  try { ^/bin/chmod 600 $current_pid_file }
 }
 
 def shell-escape [value: any] {
@@ -26,21 +56,27 @@ def shell-escape [value: any] {
 }
 
 def app-label [name: string] {
+  if ($name | is-empty) { return "?" }
   let capitals = ($name | str replace --all --regex '[^A-Z]' '')
   if (($capitals | str length) == 2) { $capitals } else { $name | str substring 0..1 }
 }
 
-def icon-for-app [name: string] {
+def resolve-icon [name: string, cache: list] {
+  let cached = ($cache | where name == $name | get --optional 0.icon | default null)
+  if $cached != null { return { icon: $cached cache: $cache } }
+
   let config_dir = (env-default CONFIG_DIR ($env.HOME + "/.config/sketchybar"))
   let icon_map = ($config_dir | path join "plugins" "icon_map.nu")
 
-  try {
+  let icon = (try {
     let result = (^$nu_bin --no-config-file $icon_map $name | complete)
     let icon = ($result.stdout | str trim | lines | first | default "")
     if ($result.exit_code == 0) and (not ($icon | is-empty)) { $icon } else { ":default:" }
   } catch {
     ":default:"
-  }
+  })
+
+  { icon: $icon cache: ($cache | append { name: $name icon: $icon }) }
 }
 
 def paneru-state [] {
@@ -71,25 +107,32 @@ def active-windows [state: record] {
   if $workspace == null { return [] }
 
   $workspace.windows
-  | default []
-  | each {|window|
-    let name = ($window.app_name? | default "Unknown")
+    | default []
+    | each {|window|
+    let raw_name = ($window.app_name? | default "" | str trim)
+    let name = (if ($raw_name | is-empty) { "Unknown" } else { $raw_name })
     let window_id = ($window.window_id? | default null)
     {
       id: $window_id,
       name: $name,
-      icon: (icon-for-app $name),
       focused: (($window.focused? | default false) or ($window_id == $focused_window_id)),
     }
   }
 }
 
-def update-sketchybar [] {
+def update-sketchybar [icon_cache: list] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
   let state = (try { paneru-state } catch { null })
-  if $state == null { return [] }
+  if $state == null { return { window_ids: [] icon_cache: $icon_cache } }
 
-  let windows = (active-windows $state)
+  let active = (active-windows $state | first $max_items)
+  mut cache = $icon_cache
+  mut windows = []
+  for window in $active {
+    let resolved = (resolve-icon $window.name $cache)
+    $cache = $resolved.cache
+    $windows = ($windows | append ($window | insert icon $resolved.icon))
+  }
   mut args = []
 
   for index in 0..(($max_items) - 1) {
@@ -125,7 +168,7 @@ def update-sketchybar [] {
     ^$sketchybar ...$args
   }
 
-  $windows | get id
+  { window_ids: ($windows | get id) icon_cache: $cache }
 }
 
 def update-focus [window_ids: list, focused_window_id: any] {
@@ -149,10 +192,14 @@ def update-focus [window_ids: list, focused_window_id: any] {
 
 def subscribe-loop [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
+  mut icon_cache = []
 
   loop {
-    mut window_ids = (update-sketchybar)
     try {
+      let initial = (update-sketchybar $icon_cache)
+      mut window_ids = $initial.window_ids
+      $icon_cache = $initial.icon_cache
+
       for line in (^$paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
@@ -163,10 +210,14 @@ def subscribe-loop [] {
           if ($window_ids | any {|window_id| $window_id == $focused_window_id }) {
             update-focus $window_ids $focused_window_id
           } else {
-            $window_ids = (update-sketchybar)
+            let updated = (update-sketchybar $icon_cache)
+            $window_ids = $updated.window_ids
+            $icon_cache = $updated.icon_cache
           }
         } else if $event_name != "window_title_changed" {
-          $window_ids = (update-sketchybar)
+          let updated = (update-sketchybar $icon_cache)
+          $window_ids = $updated.window_ids
+          $icon_cache = $updated.icon_cache
         }
       }
     }
@@ -177,7 +228,7 @@ def subscribe-loop [] {
 def main [mode?: string] {
   kill-existing
   if $mode == "once" {
-    update-sketchybar
+    update-sketchybar [] | ignore
   } else {
     subscribe-loop
   }

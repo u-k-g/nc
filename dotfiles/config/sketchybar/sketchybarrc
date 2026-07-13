@@ -3,6 +3,9 @@
 # Uses pre-created fixed item pool controlled by the Paneru state subscriber
 
 PLUGIN_DIR="$CONFIG_DIR/plugins"
+RUNTIME_DIR="${TMPDIR:-$HOME/Library/Caches/sketchybar}"
+mkdir -p "$RUNTIME_DIR"
+chmod 700 "$RUNTIME_DIR"
 
 ##### Bar Appearance #####
 bar=(
@@ -52,7 +55,7 @@ for i in {0..11}; do
     padding_right=4
 done
 
-"$PLUGIN_DIR/paneru_windows.nu" >/tmp/sketchybar_paneru_windows.log 2>&1 &
+"$PLUGIN_DIR/paneru_windows.nu" >"$RUNTIME_DIR/sketchybar_paneru_windows.log" 2>&1 &
 
 ##### Adding Right Items #####
 

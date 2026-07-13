@@ -1,21 +1,24 @@
 #!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
 
-const state_file = "/tmp/sketchybar_timer_state.json"
-const last_duration_file = "/tmp/sketchybar_timer_last_duration"
-const pending_left_click_file = "/tmp/sketchybar_timer_pending_left_click"
 const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
 
-def read-state [] {
-  if ($state_file | path exists) { open $state_file } else { { status: idle duration: 0 remaining: 0 end_time: 0 elapsed: 0 start_time: 0 } }
-}
+use timer_state.nu [
+  pending-click-path
+  read-last-duration
+  read-timer-state
+  timer-state-path
+  write-last-duration
+  write-pending-click
+  write-timer-state
+]
 
 def write-state [status: string, duration: int, remaining: int, end_time: int] {
-  $duration | save --force $last_duration_file
-  { status: $status duration: $duration remaining: $remaining end_time: $end_time elapsed: 0 start_time: 0 } | save --force $state_file
+  write-last-duration $duration
+  write-timer-state { status: $status duration: $duration remaining: $remaining end_time: $end_time elapsed: 0 start_time: 0 }
 }
 
 def write-stopwatch [status: string, elapsed: int, start_time: int] {
-  { status: $status duration: 0 remaining: 0 end_time: 0 elapsed: $elapsed start_time: $start_time } | save --force $state_file
+  write-timer-state { status: $status duration: 0 remaining: 0 end_time: 0 elapsed: $elapsed start_time: $start_time }
 }
 
 def refresh-bar [] {
@@ -32,7 +35,8 @@ def parse-duration [input: string] {
 }
 
 def start-last-timer [state: record] {
-  let seconds = (if ($last_duration_file | path exists) { open $last_duration_file | str trim | into int } else if (($state.duration? | default 0) > 0) { $state.duration } else { 1800 })
+  let last_duration = (read-last-duration)
+  let seconds = (if $last_duration != null { $last_duration } else if (($state.duration? | default 0) > 0) { $state.duration } else { 1800 })
   let now = (date now | format date "%s" | into int)
   write-state running $seconds $seconds ($now + $seconds)
   refresh-bar
@@ -60,20 +64,21 @@ def start-timer-dialog [] {
 
 def toggle-or-reset-timer [state: record] {
   let now = ((date now | into int) // 1000000)
-  if ($pending_left_click_file | path exists) {
-    let previous = (open $pending_left_click_file | str trim | into int)
+  let pending_click = (pending-click-path)
+  if ($pending_click | path exists) {
+    let previous = (try { open $pending_click | str trim | into int } catch { 0 })
     if (($now - $previous) < 350) {
-      rm --force $pending_left_click_file $state_file
+      rm --force $pending_click (timer-state-path)
       refresh-bar
       return
     }
   }
 
-  $now | save --force $pending_left_click_file
+  write-pending-click $now
   sleep 350ms
-  if (($pending_left_click_file | path exists) and ((open $pending_left_click_file | str trim | into int) == $now)) {
-    rm --force $pending_left_click_file
-    let current = (read-state)
+  if (($pending_click | path exists) and ((try { open $pending_click | str trim | into int } catch { 0 }) == $now)) {
+    rm --force $pending_click
+    let current = (read-timer-state)
     if $current.status == "running" {
       let remaining = ([($current.end_time - (date now | format date "%s" | into int)) 0] | math max)
       write-state paused ($current.duration | default $remaining) $remaining 0
@@ -93,19 +98,20 @@ def toggle-or-reset-timer [state: record] {
 
 def idle-left-click [] {
   let now = ((date now | into int) // 1000000)
-  if ($pending_left_click_file | path exists) {
-    let previous = (open $pending_left_click_file | str trim | into int)
+  let pending_click = (pending-click-path)
+  if ($pending_click | path exists) {
+    let previous = (try { open $pending_click | str trim | into int } catch { 0 })
     if (($now - $previous) < 350) {
-      rm --force $pending_left_click_file
+      rm --force $pending_click
       start-timer-dialog
       return
     }
   }
 
-  $now | save --force $pending_left_click_file
+  write-pending-click $now
   sleep 350ms
-  if (($pending_left_click_file | path exists) and ((open $pending_left_click_file | str trim | into int) == $now)) {
-    rm --force $pending_left_click_file
+  if (($pending_click | path exists) and ((try { open $pending_click | str trim | into int } catch { 0 }) == $now)) {
+    rm --force $pending_click
     start-stopwatch
   }
 }
@@ -116,7 +122,7 @@ def dialog-button [message: string, buttons: string, default_button: string] {
 }
 
 def main [] {
-  let state = (read-state)
+  let state = (read-timer-state)
   let button = ($env.BUTTON? | default "")
 
   if $button == "left" and ($state.status in [idle done]) { idle-left-click; return }
@@ -131,7 +137,7 @@ def main [] {
       let choice = (try { dialog-button $message '"Reset", "Pause", "Cancel"' "Pause" } catch { return })
       if $choice == "Pause" {
         if $is_stopwatch { write-stopwatch stopwatch_paused (current-elapsed $state) 0 } else { write-state paused ($state.duration | default $remaining) $remaining 0 }
-      } else if $choice == "Reset" { rm --force $state_file }
+      } else if $choice == "Reset" { rm --force (timer-state-path) }
     }
     paused | stopwatch_paused => {
       let is_stopwatch = ($state.status == "stopwatch_paused")
@@ -140,9 +146,9 @@ def main [] {
       if $choice == "Resume" {
         let now = (date now | format date "%s" | into int)
         if $is_stopwatch { write-stopwatch stopwatch_running ($state.elapsed | default 0) $now } else { write-state running ($state.duration | default ($state.remaining | default 0)) ($state.remaining | default 0) ($now + ($state.remaining | default 0)) }
-      } else if $choice == "Reset" { rm --force $state_file }
+      } else if $choice == "Reset" { rm --force (timer-state-path) }
     }
-    done => { rm --force $state_file }
+    done => { rm --force (timer-state-path) }
     _ => { start-timer-dialog }
   }
 
