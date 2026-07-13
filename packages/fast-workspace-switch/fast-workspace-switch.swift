@@ -1,4 +1,5 @@
 import CoreGraphics
+import Darwin
 import Foundation
 
 @_silgen_name("CGSCopyManagedDisplaySpaces")
@@ -10,8 +11,43 @@ func CGSGetActiveSpace(_ cid: Int32) -> Int
 @_silgen_name("SLSMainConnectionID")
 func SLSMainConnectionID() -> Int32
 
+private let gestureHoldMicroseconds: useconds_t = 15_000
+private let interSwitchDelayMicroseconds: useconds_t = 50_000
+private let minimumPositiveFloat = 1.401298464324817e-45
+private let processLockPath = "/tmp/nc-fast-workspace-switch-\(getuid()).lock"
 
-private let floatMin = 1.401298464324817e-45
+private enum GesturePhase: Int64 {
+    case began = 1
+    case ended = 4
+}
+
+private enum Direction {
+    case left
+    case right
+
+    var magnitude: Double {
+        switch self {
+        case .left: -2.25
+        case .right: 2.25
+        }
+    }
+}
+
+private struct SwipeValues {
+    let magnitude: Double
+    let magnitudeAsInteger: Int64
+    let gestureValue: Double
+
+    init(direction: Direction) {
+        magnitude = direction.magnitude
+        magnitudeAsInteger = Int64(Int32(bitPattern: Float(magnitude).bitPattern))
+        gestureValue = 200.0 * magnitude
+    }
+}
+
+private func writeStderr(_ message: String) {
+    FileHandle.standardError.write(Data(message.utf8))
+}
 
 private func setInteger(_ event: CGEvent, _ field: Int64, _ value: Int64) {
     event.setIntegerValueField(CGEventField(rawValue: UInt32(field))!, value: value)
@@ -21,151 +57,183 @@ private func setDouble(_ event: CGEvent, _ field: Int64, _ value: Double) {
     event.setDoubleValueField(CGEventField(rawValue: UInt32(field))!, value: value)
 }
 
-private func workingSpaceSwitch(_ direction: Int) {
-    let magnitude = direction == 0 ? -2.25 : 2.25
-    let gestureValue = 200.0 * magnitude
+private func createMarkerEvent() -> CGEvent? {
+    guard let event = CGEvent(source: nil) else {
+        return nil
+    }
 
-    let event1a = CGEvent(source: nil)!
-    setInteger(event1a, 0x37, 29)
-    setInteger(event1a, 0x29, 33231)
-
-    let event1b = CGEvent(source: nil)!
-    setInteger(event1b, 0x37, 30)
-    setInteger(event1b, 0x6E, 23)
-    setInteger(event1b, 0x84, 1)
-    setInteger(event1b, 0x86, 1)
-    setDouble(event1b, 0x7C, magnitude)
-
-    let magnitudeAsFloat = Float(magnitude)
-    let magnitudeAsInt = Int64(Int32(bitPattern: magnitudeAsFloat.bitPattern))
-    setInteger(event1b, 0x87, magnitudeAsInt)
-
-    setInteger(event1b, 0x7B, 1)
-    setInteger(event1b, 0xA5, 1)
-    setDouble(event1b, 0x77, floatMin)
-    setDouble(event1b, 0x8B, floatMin)
-    setInteger(event1b, 0x29, 33231)
-    setInteger(event1b, 0x88, 0)
-
-    event1b.post(tap: .cghidEventTap)
-    event1a.post(tap: .cghidEventTap)
-
-    usleep(15_000)
-
-    let event2a = CGEvent(source: nil)!
-    setInteger(event2a, 0x37, 29)
-    setInteger(event2a, 0x29, 33231)
-
-    let event2b = CGEvent(source: nil)!
-    setInteger(event2b, 0x37, 30)
-    setInteger(event2b, 0x6E, 23)
-    setInteger(event2b, 0x84, 4)
-    setInteger(event2b, 0x86, 4)
-    setDouble(event2b, 0x7C, magnitude)
-    setInteger(event2b, 0x87, magnitudeAsInt)
-    setInteger(event2b, 0x7B, 1)
-    setInteger(event2b, 0xA5, 1)
-    setDouble(event2b, 0x77, floatMin)
-    setDouble(event2b, 0x8B, floatMin)
-    setInteger(event2b, 0x29, 33231)
-    setInteger(event2b, 0x88, 0)
-
-    setDouble(event2b, 0x81, gestureValue)
-    setDouble(event2b, 0x82, gestureValue)
-
-    event2b.post(tap: .cghidEventTap)
-    event2a.post(tap: .cghidEventTap)
+    setInteger(event, 0x37, 29)
+    setInteger(event, 0x29, 33231)
+    return event
 }
 
-private func writeStderr(_ message: String) {
-    FileHandle.standardError.write(Data(message.utf8))
+private func createSwipeEvent(_ values: SwipeValues, phase: GesturePhase) -> CGEvent? {
+    guard let event = CGEvent(source: nil) else {
+        return nil
+    }
+
+    setInteger(event, 0x37, 30)
+    setInteger(event, 0x6E, 23)
+    setInteger(event, 0x84, phase.rawValue)
+    setInteger(event, 0x86, phase.rawValue)
+    setDouble(event, 0x7C, values.magnitude)
+    setInteger(event, 0x87, values.magnitudeAsInteger)
+    setInteger(event, 0x7B, 1)
+    setInteger(event, 0xA5, 1)
+    setDouble(event, 0x77, minimumPositiveFloat)
+    setDouble(event, 0x8B, minimumPositiveFloat)
+    setInteger(event, 0x29, 33231)
+    setInteger(event, 0x88, 0)
+
+    if phase == .ended {
+        setDouble(event, 0x81, values.gestureValue)
+        setDouble(event, 0x82, values.gestureValue)
+    }
+
+    return event
+}
+
+private func postSwipe(_ direction: Direction) -> Bool {
+    let values = SwipeValues(direction: direction)
+
+    guard let beginMarkerEvent = createMarkerEvent(),
+          let beginSwipeEvent = createSwipeEvent(values, phase: .began)
+    else {
+        writeStderr("Unable to create Space-switch begin events\n")
+        return false
+    }
+
+    beginSwipeEvent.post(tap: .cghidEventTap)
+    beginMarkerEvent.post(tap: .cghidEventTap)
+
+    usleep(gestureHoldMicroseconds)
+
+    guard let endMarkerEvent = createMarkerEvent(),
+          let endSwipeEvent = createSwipeEvent(values, phase: .ended)
+    else {
+        writeStderr("Unable to create Space-switch end events\n")
+        return false
+    }
+
+    endSwipeEvent.post(tap: .cghidEventTap)
+    endMarkerEvent.post(tap: .cghidEventTap)
+    return true
 }
 
 private func mainDisplaySpaces() -> [Int]? {
-    let cid = SLSMainConnectionID()
-    guard let managedDisplays = CGSCopyManagedDisplaySpaces(cid) as? [[String: Any]] else {
+    let connection = SLSMainConnectionID()
+    guard let managedDisplays = CGSCopyManagedDisplaySpaces(connection) as? [[String: Any]] else {
         return nil
     }
 
     var spacesByDisplay: [String: [Int]] = [:]
     for display in managedDisplays {
-        guard let uuid = display["Display Identifier"] as? String,
+        guard let identifier = display["Display Identifier"] as? String,
               let spaces = display["Spaces"] as? [[String: Any]]
         else {
             continue
         }
-        spacesByDisplay[uuid] = spaces.compactMap { $0["id64"] as? Int }
+
+        spacesByDisplay[identifier] = spaces.compactMap { $0["id64"] as? Int }
     }
 
     return spacesByDisplay["Main"] ?? spacesByDisplay.values.first
 }
 
-private func switchBy(offset: Int) {
-    guard offset != 0 else {
-        return
-    }
-
-    let direction = offset > 0 ? 1 : 0
-    for index in 0..<abs(offset) {
+private func switchRepeatedly(_ direction: Direction, count: Int) -> Bool {
+    for index in 0..<count {
         if index > 0 {
-            usleep(50_000)
+            usleep(interSwitchDelayMicroseconds)
         }
 
-        workingSpaceSwitch(direction)
+        guard postSwipe(direction) else {
+            return false
+        }
     }
+
+    return true
 }
 
-private func gotoSpace(_ target: Int) {
+private func switchBy(offset: Int) -> Bool {
+    guard offset != 0 else {
+        return true
+    }
+
+    let direction: Direction = offset > 0 ? .right : .left
+    return switchRepeatedly(direction, count: abs(offset))
+}
+
+private func gotoSpace(_ target: Int) -> Bool {
     guard let spaces = mainDisplaySpaces() else {
         writeStderr("Unable to read Spaces state\n")
-        exit(1)
+        return false
     }
 
     let currentSpace = CGSGetActiveSpace(SLSMainConnectionID())
     guard let currentIndex = spaces.firstIndex(of: currentSpace) else {
         writeStderr("Unable to determine current Space index\n")
-        exit(1)
+        return false
     }
 
-    switchBy(offset: target - (currentIndex + 1))
+    return switchBy(offset: target - (currentIndex + 1))
 }
 
-let args = CommandLine.arguments
+private func withExclusiveProcessLock(_ operation: () -> Bool) -> Bool {
+    let permissions = mode_t(S_IRUSR | S_IWUSR)
+    let descriptor = open(processLockPath, O_CREAT | O_RDWR | O_CLOEXEC | O_NOFOLLOW, permissions)
+    guard descriptor >= 0 else {
+        writeStderr("Unable to open Space-switch lock\n")
+        return false
+    }
+    defer {
+        _ = flock(descriptor, LOCK_UN)
+        _ = close(descriptor)
+    }
 
-guard args.count == 3 else {
-    writeStderr("Usage: \(args[0]) <left|right> <count> | goto <1-9>\n")
+    guard flock(descriptor, LOCK_EX) == 0 else {
+        writeStderr("Unable to acquire Space-switch lock\n")
+        return false
+    }
+
+    return operation()
+}
+
+let arguments = CommandLine.arguments
+
+guard arguments.count == 3 else {
+    writeStderr("Usage: \(arguments[0]) <left|right> <count> | goto <1-9>\n")
     exit(1)
 }
 
-if args[1] == "goto" {
-    guard let target = Int(args[2]), (1...9).contains(target) else {
-        writeStderr("Invalid target: \(args[2]). Must be 1-9.\n")
+let succeeded: Bool
+if arguments[1] == "goto" {
+    guard let target = Int(arguments[2]), (1...9).contains(target) else {
+        writeStderr("Invalid target: \(arguments[2]). Must be 1-9.\n")
         exit(1)
     }
 
-    gotoSpace(target)
-    exit(0)
-}
-
-let direction: Int
-if args[1] == "right" {
-    direction = 1
-} else if args[1] == "left" {
-    direction = 0
+    succeeded = withExclusiveProcessLock {
+        gotoSpace(target)
+    }
 } else {
-    writeStderr("Invalid direction: \(args[1]). Use 'left' or 'right'.\n")
-    exit(1)
-}
-
-guard let count = Int(args[2]), count > 0 else {
-    writeStderr("Invalid count: \(args[2]). Must be a positive integer.\n")
-    exit(1)
-}
-
-for index in 0..<count {
-    if index > 0 {
-        usleep(50_000)
+    let direction: Direction
+    if arguments[1] == "right" {
+        direction = .right
+    } else if arguments[1] == "left" {
+        direction = .left
+    } else {
+        writeStderr("Invalid direction: \(arguments[1]). Use 'left' or 'right'.\n")
+        exit(1)
     }
 
-    workingSpaceSwitch(direction)
+    guard let count = Int(arguments[2]), count > 0 else {
+        writeStderr("Invalid count: \(arguments[2]). Must be a positive integer.\n")
+        exit(1)
+    }
+
+    succeeded = withExclusiveProcessLock {
+        switchRepeatedly(direction, count: count)
+    }
 }
+
+exit(succeeded ? 0 : 1)

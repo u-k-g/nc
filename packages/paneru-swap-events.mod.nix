@@ -19,7 +19,7 @@
             nativeBuildInputs = nativeBuildInputs ++ singleton pkgs.makeWrapper;
             postInstall = postInstall + ''
               wrapProgram $out/bin/paneru \
-                --set RUST_LOG warn
+                --set RUST_LOG "warn,paneru::manager=info,paneru::ecs::systems=info"
             '';
           }
         );
