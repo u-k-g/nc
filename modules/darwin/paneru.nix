@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  pkgs,
   ...
 }:
 
@@ -13,6 +14,7 @@ in
 
     services.paneru = {
       enable = true;
+      package = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.paneru-swap-events;
 
       settings = {
         options = {
@@ -45,24 +47,7 @@ in
           vertical_padding = 4;
         };
 
-        apps = {
-          helium.name = "Helium";
-          obsidian.name = "Obsidian";
-          ghostty.name = "Ghostty";
-          kitty.name = "kitty";
-          freecad.name = "FreeCAD";
-          codex.name = "Codex";
-          t3.name = "T3 Code (Nightly)";
-        };
-
         bindings = {
-          app_helium = "alt - w";
-          app_obsidian = "alt - o";
-          app_kitty = "alt - semicolon";
-          app_freecad = "alt - c";
-          app_codex = "alt - r";
-          app_t3 = "alt - t";
-
           window_focus_west = "alt - h";
           window_focus_south = "alt - j";
           window_focus_north = "alt - k";

@@ -10,6 +10,13 @@
 - Never use non-new `nix` commands. Prefer `nix build` over `nix-build` and so
   on. Always prefer new (nix3) commands.
 
+# Git Whitelist Rules
+
+- Keep `.gitignore` deny-by-default: start with `*`, then use only `!` rules to
+  admit required directories, root files, extensions, and extensionless paths.
+- Never add targeted ignore rules. Keep the whitelist tight and simple, and
+  admit only what the repository needs to track.
+
 # Nix Style Rules
 
 - Prefer `lib.lists.singleton` over a single item list.

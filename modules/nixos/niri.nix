@@ -7,77 +7,84 @@
 }:
 
 let
-  inherit (lib) getExe;
+  inherit (lib.meta) getExe;
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
-  focusOrLaunch = pkgs.writeShellApplication {
-    name = "nc-focus-or-launch";
-    runtimeInputs = [
-      pkgs.jq
-      pkgs.niri
-    ];
-    text = ''
-      pattern="''${1:-}"
-      shift || exit 64
+  focusOrLaunch = pkgs.writers.writeNuBin "nc-focus-or-launch" ''
+    def main [pattern: string, ...command: string] {
+      if ($command | is-empty) {
+        exit 64
+      }
 
-      id="$(${getExe pkgs.niri} msg -j windows \
-        | ${getExe pkgs.jq} -r --arg pattern "$pattern" '
-          [.[] | select(((.app_id // "") | ascii_downcase) | test($pattern))]
-          | sort_by(.focus_timestamp.secs // 0, .focus_timestamp.nanos // 0)
-          | last
-          | .id // empty
-        ')"
+      let result = (^${getExe pkgs.niri} msg -j windows | complete)
+      let windows = if $result.exit_code == 0 {
+        try { $result.stdout | from json } catch { [] }
+      } else {
+        []
+      }
 
-      if [ -n "$id" ]; then
-        exec ${getExe pkgs.niri} msg action focus-window --id "$id"
-      fi
+      let id = (try {
+        $windows
+        | where {|window|
+            (($window | get --optional app_id | default "" | into string | str downcase) =~ $pattern)
+          }
+        | sort-by {|window|
+            [
+              ($window | get --optional focus_timestamp.secs | default 0)
+              ($window | get --optional focus_timestamp.nanos | default 0)
+            ]
+          }
+        | last
+        | get id
+      } catch {
+        null
+      })
 
-      exec "$@"
-    '';
-  };
-  macCommandKey = pkgs.writeShellApplication {
-    name = "nc-mac-command-key";
-    runtimeInputs = [
-      pkgs.jq
-      pkgs.kitty
-      pkgs.niri
-      pkgs.wtype
-    ];
-    text = ''
-      case "''${1:-}" in
-        c|k|t|v|w) key="$1" ;;
-        *) exit 64 ;;
-      esac
+      if $id != null {
+        exec ${getExe pkgs.niri} msg action focus-window --id $id
+      }
 
-      app_id="$(niri msg -j focused-window 2>/dev/null | jq -r '.app_id // ""')" || app_id=""
-      app_id="''${app_id,,}"
+      exec ...$command
+    }
+  '';
+  macCommandKey = pkgs.writers.writeNuBin "nc-mac-command-key" ''
+    def main [key: string] {
+      let key = ($key | str downcase)
+      if $key not-in [c k t v w] {
+        exit 64
+      }
 
-      case "$app_id" in
-        *kitty*|*ghostty*|*alacritty*|*wezterm*|*foot*|*terminal*)
-          case "$key" in
-            c|v)
-              wtype -M ctrl -M shift "$key" -m shift -m ctrl
-              ;;
-            k)
-              wtype -M ctrl -M shift "$key" -m shift -m ctrl
-              ;;
-            t)
-              wtype -M ctrl -M shift "$key" -m shift -m ctrl
-              ;;
-            w)
-              wtype -M ctrl -M shift "$key" -m shift -m ctrl
-              ;;
-          esac
-          ;;
-        *)
-          wtype -M ctrl "$key" -m ctrl
-          ;;
-      esac
-    '';
-  };
+      let result = (^${getExe pkgs.niri} msg -j focused-window | complete)
+      let app_id = if $result.exit_code == 0 {
+        try {
+          $result.stdout
+          | from json
+          | get --optional app_id
+          | default ""
+          | into string
+          | str downcase
+        } catch {
+          ""
+        }
+      } else {
+        ""
+      }
+
+      let is_terminal = (
+        [kitty ghostty alacritty wezterm foot terminal]
+        | any {|terminal| $app_id | str contains $terminal }
+      )
+
+      if $is_terminal {
+        exec ${getExe pkgs.wtype} -M ctrl -M shift $key -m shift -m ctrl
+      } else {
+        exec ${getExe pkgs.wtype} -M ctrl $key -m ctrl
+      }
+    }
+  '';
   dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-gruvbox.json";
   dmsTheme = {
     dark = {

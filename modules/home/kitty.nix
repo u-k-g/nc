@@ -1,21 +1,41 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
+  inherit (lib.meta) getExe;
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
   tabBarLeftPadding = 2;
   tabBarRightPadding = 2;
-  scrollbackPager = pkgs.writeShellScriptBin "kitty-scrollback-pager" ''
-    line_arg="''${1:-}"
-    export BAT_PAGER="${pkgs.less}/bin/less -FRX --chop-long-lines''${line_arg:+ $line_arg}"
-    exec ${pkgs.bat}/bin/bat --plain --color=always --paging=always --file-name=scrollback -
+  scrollbackPager = pkgs.writers.writeNuBin "kitty-scrollback-pager" ''
+    def main [line_arg?: string] {
+      $env.BAT_PAGER = if $line_arg == null {
+        "${getExe pkgs.less} -FRX --chop-long-lines"
+      } else {
+        $"${getExe pkgs.less} -FRX --chop-long-lines ($line_arg)"
+      }
+
+      exec ${getExe pkgs.bat} --plain --color=always --paging=always --file-name=scrollback -
+    }
   '';
-  scrollbackHx = pkgs.writeShellScriptBin "kitty-scrollback-hx" ''
-    file="$(${pkgs.coreutils}/bin/mktemp -t kitty-scrollback.XXXXXX)"
-    ${pkgs.coreutils}/bin/cat > "$file"
-    lines="$(${pkgs.coreutils}/bin/wc -l < "$file" | ${pkgs.coreutils}/bin/tr -d ' ')"
-    exec ${pkgs.helix}/bin/hx "+''${lines:-1}" "$file"
+  scrollbackHx = pkgs.writers.writeNuBin "kitty-scrollback-hx" ''
+    def main [] {
+      let file = (mktemp --tmpdir kitty-scrollback.XXXXXX)
+      open --raw /dev/stdin | save --raw --force $file
+
+      let line_count = (open --raw $file | lines | length)
+      let cursor_line = ([$line_count 1] | math max)
+
+      ^${getExe pkgs.helix} $"+($cursor_line)" $file
+      let exit_code = $env.LAST_EXIT_CODE
+      rm --force $file
+      exit $exit_code
+    }
   '';
 in
 {

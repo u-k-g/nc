@@ -1,26 +1,26 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
+  inherit (lib.meta) getExe;
   user = config.nc.user;
   dotfiles = ../../dotfiles;
   fastWorkspaceSwitch = pkgs.callPackage ../../packages/fast-workspace-switch { };
-  gotoWorkspace = pkgs.writeShellApplication {
-    name = "goto-workspace";
-    runtimeInputs = [ fastWorkspaceSwitch ];
-    text = ''
-      target="''${1:-}"
+  gotoWorkspace = pkgs.writers.writeNuBin "goto-workspace" ''
+    def main [target?: string] {
+      let workspace = (try { $target | into int } catch { 0 })
+      if $workspace not-in 1..9 {
+        print --stderr "Usage: goto-workspace <1-9>"
+        exit 1
+      }
 
-      case "$target" in
-        1|2|3|4|5|6|7|8|9) ;;
-        *)
-          printf 'Usage: goto-workspace <1-9>\n' >&2
-          exit 1
-          ;;
-      esac
-
-      fast-workspace-switch goto "$target"
-    '';
-  };
+      exec ${getExe fastWorkspaceSwitch} goto $workspace
+    }
+  '';
 in
 {
   system.activationScripts.preActivation.text = ''
@@ -32,7 +32,7 @@ in
   '';
 
   home-manager.users.${user.name} = {
-    home.packages = [ gotoWorkspace ];
+    home.packages = lib.lists.singleton gotoWorkspace;
 
     xdg.configFile."karabiner/karabiner.json".source = dotfiles + /config/karabiner/karabiner.json;
   };

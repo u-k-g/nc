@@ -26,4 +26,6 @@ stdenv.mkDerivation {
     install -Dm755 fast-workspace-switch "$out/bin/fast-workspace-switch"
     runHook postInstall
   '';
+
+  meta.mainProgram = "fast-workspace-switch";
 }
