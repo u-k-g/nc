@@ -2,15 +2,6 @@ import CoreGraphics
 import Darwin
 import Foundation
 
-@_silgen_name("CGSCopyManagedDisplaySpaces")
-func CGSCopyManagedDisplaySpaces(_ cid: Int32) -> CFArray?
-
-@_silgen_name("CGSGetActiveSpace")
-func CGSGetActiveSpace(_ cid: Int32) -> Int
-
-@_silgen_name("SLSMainConnectionID")
-func SLSMainConnectionID() -> Int32
-
 private let gestureHoldMicroseconds: useconds_t = 15_000
 private let interSwitchDelayMicroseconds: useconds_t = 50_000
 private let minimumPositiveFloat = 1.401298464324817e-45
@@ -120,13 +111,14 @@ private func postSwipe(_ direction: Direction) -> Bool {
     return true
 }
 
-private func mainDisplaySpaces() -> [Int]? {
-    let connection = SLSMainConnectionID()
-    guard let managedDisplays = CGSCopyManagedDisplaySpaces(connection) as? [[String: Any]] else {
+private func mainDisplaySpaces() -> [UInt64]? {
+    guard let managedDisplaysReference = NCCopyManagedDisplaySpaces(),
+          let managedDisplays = managedDisplaysReference.takeRetainedValue() as? [[String: Any]]
+    else {
         return nil
     }
 
-    var spacesByDisplay: [String: [Int]] = [:]
+    var spacesByDisplay: [String: [UInt64]] = [:]
     for display in managedDisplays {
         guard let identifier = display["Display Identifier"] as? String,
               let spaces = display["Spaces"] as? [[String: Any]]
@@ -134,7 +126,9 @@ private func mainDisplaySpaces() -> [Int]? {
             continue
         }
 
-        spacesByDisplay[identifier] = spaces.compactMap { $0["id64"] as? Int }
+        spacesByDisplay[identifier] = spaces.compactMap {
+            ($0["id64"] as? NSNumber)?.uint64Value
+        }
     }
 
     return spacesByDisplay["Main"] ?? spacesByDisplay.values.first
@@ -169,7 +163,7 @@ private func gotoSpace(_ target: Int) -> Bool {
         return false
     }
 
-    let currentSpace = CGSGetActiveSpace(SLSMainConnectionID())
+    let currentSpace = NCGetActiveSpace()
     guard let currentIndex = spaces.firstIndex(of: currentSpace) else {
         writeStderr("Unable to determine current Space index\n")
         return false

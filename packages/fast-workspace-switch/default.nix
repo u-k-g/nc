@@ -1,10 +1,35 @@
-{ stdenv, swift }:
+{
+  stdenv,
+  swift,
+  writeText,
+}:
 
 stdenv.mkDerivation {
   pname = "fast-workspace-switch";
   version = "0-unstable";
 
-  src = ./fast-workspace-switch.swift;
+  src = writeText "skylight-shim.h" ''
+    #ifndef NC_SKYLIGHT_SHIM_H
+    #define NC_SKYLIGHT_SHIM_H
+
+    #include <CoreFoundation/CoreFoundation.h>
+    #include <stdint.h>
+
+    extern CFArrayRef CGSCopyManagedDisplaySpaces(int32_t connection);
+    extern uint64_t CGSGetActiveSpace(int32_t connection);
+    extern int32_t SLSMainConnectionID(void);
+
+    static inline CFArrayRef NCCopyManagedDisplaySpaces(void) {
+      return CGSCopyManagedDisplaySpaces(SLSMainConnectionID());
+    }
+
+    static inline uint64_t NCGetActiveSpace(void) {
+      return CGSGetActiveSpace(SLSMainConnectionID());
+    }
+
+    #endif
+  '';
+  swiftSource = ./fast-workspace-switch.swift;
   dontUnpack = true;
 
   nativeBuildInputs = [ swift ];
@@ -12,11 +37,12 @@ stdenv.mkDerivation {
   buildPhase = ''
     runHook preBuild
     swiftc \
+      -import-objc-header "$src" \
       -framework CoreGraphics \
       -framework Foundation \
       -F/System/Library/PrivateFrameworks \
       -framework SkyLight \
-      "$src" \
+      "$swiftSource" \
       -o fast-workspace-switch
     runHook postBuild
   '';
