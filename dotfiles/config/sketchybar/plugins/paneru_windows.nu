@@ -70,34 +70,24 @@ def active-windows [state: record] {
 
   if $workspace == null { return [] }
 
-  let windows = (
-    $workspace.windows
-    | default []
-    | each {|window|
-      let name = ($window.app_name? | default "Unknown")
-      let window_id = ($window.window_id? | default null)
-      {
-        id: $window_id,
-        bundle_id: ($window.bundle_id? | default ""),
-        name: $name,
-        icon: (icon-for-app $name),
-        focused: (($window.focused? | default false) or ($window_id == $focused_window_id)),
-      }
-    }
-  )
-
-  $windows
-  | uniq-by bundle_id name
+  $workspace.windows
+  | default []
   | each {|window|
-      let matching = ($windows | where bundle_id == $window.bundle_id | where name == $window.name)
-      $window | upsert focused ($matching | any {|candidate| $candidate.focused })
+    let name = ($window.app_name? | default "Unknown")
+    let window_id = ($window.window_id? | default null)
+    {
+      id: $window_id,
+      name: $name,
+      icon: (icon-for-app $name),
+      focused: (($window.focused? | default false) or ($window_id == $focused_window_id)),
     }
+  }
 }
 
 def update-sketchybar [] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
   let state = (try { paneru-state } catch { null })
-  if $state == null { return }
+  if $state == null { return [] }
 
   let windows = (active-windows $state)
   mut args = []
@@ -134,30 +124,50 @@ def update-sketchybar [] {
   if ($args | length) > 0 {
     ^$sketchybar ...$args
   }
+
+  $windows | get id
 }
 
-def update-from-paneru-event [] {
+def update-focus [window_ids: list, focused_window_id: any] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
+  mut args = []
 
-  update-sketchybar
-  try { ^$sketchybar --update }
+  for window in ($window_ids | enumerate) {
+    let item = $"paperwm_($window.index)"
+    let color = (if $window.item == $focused_window_id { $focused_color } else { $unfocused_color })
+    $args = ($args | append [
+      --set $item
+      $"icon.color=($color)"
+      $"label.color=($color)"
+    ])
+  }
 
-  # Paneru can emit focus/windows events before `query state` reflects the
-  # whole coalesced batch. A short second pass catches the settled state.
-  sleep 50ms
-  update-sketchybar
+  if ($args | length) > 0 {
+    ^$sketchybar ...$args
+  }
 }
 
 def subscribe-loop [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
 
   loop {
-    update-sketchybar
+    mut window_ids = (update-sketchybar)
     try {
       for line in (^$paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
-        update-from-paneru-event
+
+        let event_name = ($event.event? | default "")
+        if $event_name == "window_focused" {
+          let focused_window_id = ($event.window_id? | default null)
+          if ($window_ids | any {|window_id| $window_id == $focused_window_id }) {
+            update-focus $window_ids $focused_window_id
+          } else {
+            $window_ids = (update-sketchybar)
+          }
+        } else if $event_name != "window_title_changed" {
+          $window_ids = (update-sketchybar)
+        }
       }
     }
     sleep 1sec
