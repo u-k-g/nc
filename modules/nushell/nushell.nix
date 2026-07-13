@@ -154,6 +154,12 @@ let
     substituteInPlace $out --replace-quiet '(^just ' '(^${getExe pkgs.just} '
   '';
 
+  clipboardCopy =
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      "/usr/bin/pbcopy"
+    else
+      lib.getExe' pkgs.wl-clipboard "wl-copy";
+
   wrtcmtmsgConfig = ''
     def wrtcmtmsg [] {
       let diff = (^${getExe pkgs.jujutsu} diff --git --no-pager | complete)
@@ -170,7 +176,33 @@ let
 
       let skill = open --raw ${builtins.toJSON "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
       let prompt = $skill + "\n\n" + $diff.stdout
-      ^${getExe pkgs.opencode} run --model opencode-go/minimax-m3 -- $prompt
+      let run = (^${getExe pkgs.opencode} run --model opencode-go/minimax-m3 -- $prompt | complete)
+
+      print --raw --no-newline $run.stdout
+      print --raw --stderr --no-newline $run.stderr
+
+      if $run.exit_code != 0 {
+        error make {
+          msg: "opencode run failed"
+          label: {
+            text: ($run.stderr | str trim)
+            span: (metadata $run.stderr).span
+          }
+        }
+      }
+
+      let commit_message = (
+        $run.stdout
+        | ansi strip
+        | lines
+        | each { str trim }
+        | where { not ($in | is-empty) }
+        | last
+      )
+
+      if $commit_message != null {
+        $commit_message | ^${clipboardCopy}
+      }
     }
   '';
 
