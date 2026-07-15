@@ -16,8 +16,6 @@ let
   hex = color: "#${color}";
 
   sessionVariables = {
-    BAT_PAGING = "never";
-    BAT_STYLE = "plain";
     CARAPACE_BRIDGES = "inshellisense,carapace,zsh,fish,bash";
     CARGO_HTTP_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     CARGO_NET_GIT_FETCH_WITH_CLI = "true";

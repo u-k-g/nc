@@ -6,9 +6,35 @@
 }:
 
 let
+  inherit (lib.attrsets) mapAttrsToList;
+  inherit (lib.lists) flatten singleton toList;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) concatMapStringsSep;
+  inherit (lib.strings) concatLines concatStringsSep;
   user = config.nc.user;
+
+  toLesskey =
+    sections:
+    sections
+    |> mapAttrsToList (
+      section: entries:
+      let
+        separator = if section == "env" then " = " else " ";
+      in
+      singleton "#${section}"
+      ++ mapAttrsToList (
+        name: value: name + separator + (toList value |> map (entry: "${entry}") |> concatStringsSep " ")
+      ) entries
+    )
+    |> flatten
+    |> concatLines;
+
+  toCliFlagList =
+    attrs:
+    attrs
+    |> mapAttrsToList (
+      name: value: if value == true then "--${name}" else "--${name} '${toString value}'"
+    )
+    |> concatLines;
 
   lessOptions = [
     "--quit-if-one-screen"
@@ -26,17 +52,13 @@ let
     "--RAW-CONTROL-CHARS"
   ];
 
-  manPager = pkgs.writeScriptBin "man-pager" /* nu */ ''
-    #!${getExe pkgs.nushell}
-
+  manPager = pkgs.writers.writeNuBin "man-pager" /* nu */ ''
     ^${getExe pkgs.unixtools.col} -bx
     | ^${getExe pkgs.bat} --language man --plain --color always
     | ^$env.PAGER
   '';
 
-  cat = pkgs.writeScriptBin "cat" /* nu */ ''
-    #!${getExe pkgs.nushell}
-
+  cat = pkgs.writers.writeNuBin "cat" /* nu */ ''
     def --wrapped main [...arguments: string] {
       let split = $arguments | group-by {|arg| if ($arg | path exists) { "files" } else { "options" } }
 
@@ -83,13 +105,12 @@ in
     };
 
     xdg.configFile = {
-      "lesskey".text = ''
-        #env
-        LESS = ${concatMapStringsSep " " (option: option) lessOptions}
-      '';
-      "bat/config".text = ''
-        --theme 'base16'
-      '';
+      "lesskey".text = toLesskey {
+        env.LESS = lessOptions;
+      };
+      "bat/config".text = toCliFlagList {
+        theme = "base16";
+      };
       "bat/themes/base16.tmTheme".text = config.nc.theme.tmTheme;
     };
   };

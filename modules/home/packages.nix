@@ -66,8 +66,6 @@ let
     coreutils
     diffutils
     openssl
-    less
-    bat
     watch
     rsync
     rclone
