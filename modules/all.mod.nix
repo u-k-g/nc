@@ -21,8 +21,10 @@
     opencode = ./home/opencode.nix;
     packages = ./home/packages.nix;
     prismlauncher = ./home/prismlauncher.nix;
+    radicle = ./home/radicle.nix;
     terminal = ./home/terminal.nix;
     version-control = ./home/version-control.nix;
+    watchman = ./home/watchman.nix;
   };
 
   flake.darwinModules = {

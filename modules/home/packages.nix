@@ -80,7 +80,6 @@ let
     git
     jujutsu
     jjui
-    radicle-node
     gh
     mergiraf
 

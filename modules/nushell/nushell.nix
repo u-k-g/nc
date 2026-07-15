@@ -178,18 +178,6 @@ let
       let prompt = $skill + "\n\n" + $diff.stdout
       let run = (^${getExe pkgs.opencode} run --model opencode-go/minimax-m3 -- $prompt | complete)
 
-      let visible_output = (
-        $run.stdout
-        | lines
-        | where { not ($in | ansi strip | str trim | str starts-with "> build ·") }
-        | str join (char newline)
-      )
-
-      if not ($visible_output | is-empty) {
-        print --raw $visible_output
-      }
-      print --raw --stderr --no-newline $run.stderr
-
       if $run.exit_code != 0 {
         error make {
           msg: "opencode run failed"
@@ -211,6 +199,7 @@ let
 
       if $commit_message != null {
         $commit_message | ^${clipboardCopy}
+        print $commit_message
       }
     }
   '';

@@ -7,8 +7,50 @@
 
 let
   inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.meta) getExe;
+
   user = config.nc.user;
   home = config.home-manager.users.${user.name}.home.homeDirectory;
+
+  gh = getExe pkgs.gh;
+  jj = getExe pkgs.jujutsu;
+  jjFork = pkgs.writers.writeNu "jj-fork" /* nu */ ''
+    def remote-names [] {
+      ^${jj} git remote list | lines | parse "{name} {url}" | get name
+    }
+
+    mut renamed_origin = false
+    let remotes = remote-names
+
+    if ("upstream" not-in $remotes) and ("origin" in $remotes) {
+      ^${jj} git remote rename origin upstream
+      $renamed_origin = true
+    }
+
+    if "origin" not-in (remote-names) {
+      let fork = do { ^${gh} repo fork --remote --remote-name origin } | complete
+
+      if $fork.exit_code != 0 {
+        if $renamed_origin {
+          ^${jj} git remote rename upstream origin
+        }
+
+        error make { msg: ($fork.stderr | str trim) }
+      }
+    }
+
+    ^${jj} git fetch
+
+    let trunk_bookmarks = ^${jj} bookmark list \
+      --all-remotes \
+      --revision 'trunk()' \
+      --template 'if(remote && remote != "git", name ++ "@" ++ remote ++ "\n")' \
+      | lines
+
+    if not ($trunk_bookmarks | is-empty) {
+      ^${jj} bookmark track ...$trunk_bookmarks
+    }
+  '';
 in
 {
   home-manager.users.${user.name} = {
@@ -69,7 +111,6 @@ in
 
     xdg.configFile = {
       "jj/config.toml".text = ''
-        max-new-file-size = 2477272
         #:schema https://jj-vcs.github.io/jj/latest/config-schema.json
 
         [user]
@@ -78,33 +119,46 @@ in
 
         [signing]
         backend = "ssh"
-        behavior = "${if pkgs.stdenv.isDarwin then "own" else "drop"}"
+        behavior = "drop"
+        key = "${home}/.ssh/id_rsa.pub"
 
         [signing.backends.ssh]
-        program = "ssh-keygen"
+        program = "${pkgs.openssh}/bin/ssh-keygen"
         allowed-signers = "${home}/.config/git/allowed_signers"
 
         [ui]
         editor = "hx"
+        diff-editor = ":builtin"
         diff-formatter = "difft"
-        conflict-marker-style = "git"
+        conflict-marker-style = "snapshot"
         default-command = "log"
         merge-editor = "mergiraf"
-        graph.style = "square"
+        graph.style = "${if config.nc.theme.cornerRadius > 0 then "curved" else "square"}"
         pager.command = ["${pkgs.bat}/bin/bat", "--plain", "--paging=auto", "--color=always", "--pager", "${pkgs.less}/bin/less -FRX --chop-long-lines"]
 
         [aliases]
-        ba = ["bookmark", "advance", "--to", "@-"]
-        l = ["log", "-r", "all()"]
-        mergiraf = ["resolve", "--tool", "mergiraf"]
-        resolve-ast = ["resolve", "--tool", "mergiraf"]
-        push = ["git", "push", "-r", "closest_bookmark(@-)"]
-        fetch = ["git", "fetch"]
-        d = ["diff", "--tool", "difft"]
-        df = ["diff", "--tool", "difft"]
+        ".." = ["edit", "@-"]
+        ",," = ["edit", "@+"]
+        f = ["git", "fetch"]
+        p = ["git", "push"]
+        cl = ["git", "clone"]
+        i = ["git", "init"]
+        a = ["abandon"]
+        c = ["commit"]
+        ci = ["commit", "--interactive"]
+        d = ["diff"]
+        e = ["edit"]
+        l = ["log"]
+        la = ["log", "--revisions", "::"]
+        s = ["squash"]
+        si = ["squash", "--interactive"]
+        u = ["undo"]
+        fork = ["util", "exec", "--", "${jjFork}"]
+
+        ba = ["bookmark", "advance"]
+        resolve-ast = ["resolve", "--tool", "${getExe pkgs.mergiraf}"]
         fcd = ["diff", "--tool", "fcstd"]
         gd = ["diff", "--git"]
-        gdiff = ["diff", "--git"]
         ls = ["file", "list"]
 
         [revset-aliases]
@@ -113,6 +167,35 @@ in
 
         [template-aliases]
         "format_timestamp(timestamp)" = "timestamp.ago()"
+
+        [templates]
+        draft_commit_description = ''''
+        concat(
+          coalesce(description, "\n"),
+          surround(
+            "\nJJ: This commit contains the following changes:\n", "",
+            indent("JJ:     ", diff.stat(72)),
+          ),
+          "\nJJ: ignore-rest\n",
+          diff.git(),
+        )
+        ''''
+        git_push_bookmark = '"${user.handle}/change-" ++ change_id.short()'
+
+        [remotes."*"]
+        auto-track-bookmarks = "${user.handle}/*"
+        push-new-bookmarks = true
+
+        [git]
+        fetch = ["origin", "upstream", "rad"]
+        push = "origin"
+        sign-on-push = true
+
+        [fsmonitor]
+        backend = "watchman"
+
+        [fsmonitor.watchman]
+        register-snapshot-trigger = true
 
         [merge-tools.mergiraf]
         program = "mergiraf"
@@ -130,7 +213,9 @@ in
         max-new-file-size = 13200000
 
         [revsets]
-        bookmark-advance-to = '@-'
+        bookmark-advance-from = 'heads(::to & bookmarks() & ~immutable())'
+        bookmark-advance-to = 'heads(::@ & mutable() & ~description(exact:"") & (~empty() | merges()))'
+        log = 'present(@) | present(trunk()) | ancestors(remote_bookmarks().. | @.., 8)'
       '';
 
       "jjui/config.toml".text = ''

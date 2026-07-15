@@ -20,6 +20,7 @@
 !flake.lock
 !flake.nix
 !rebuild.nu
+!.watchmanconfig
 
 !*.nix
 !*.nu
