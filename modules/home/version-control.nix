@@ -129,7 +129,7 @@ in
         [ui]
         editor = "hx"
         diff-editor = ":builtin"
-        diff-formatter = "difft"
+        diff-formatter = ["${getExe config.nc.difftastic.package}", "--color", "always", "$left", "$right"]
         conflict-marker-style = "snapshot"
         default-command = "log"
         merge-editor = "mergiraf"
@@ -156,7 +156,7 @@ in
         fork = ["util", "exec", "--", "${jjFork}"]
 
         ba = ["bookmark", "advance"]
-        resolve-ast = ["resolve", "--tool", "${getExe pkgs.mergiraf}"]
+        resolve-ast = ["resolve", "--tool", "mergiraf"]
         fcd = ["diff", "--tool", "fcstd"]
         gd = ["diff", "--git"]
         ls = ["file", "list"]
@@ -198,12 +198,7 @@ in
         register-snapshot-trigger = true
 
         [merge-tools.mergiraf]
-        program = "mergiraf"
-        merge-args = ["merge", "$base", "$left", "$right", "-o", "$output"]
-
-        [merge-tools.difft]
-        program = "difft"
-        diff-args = ["--context", "5", "--color=always", "$left", "$right"]
+        program = "${getExe pkgs.mergiraf}"
 
         [merge-tools.fcstd]
         program = "${home}/.config/nushell/fcdiff.nu"
