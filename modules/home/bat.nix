@@ -109,6 +109,7 @@ in
         env.LESS = lessOptions;
       };
       "bat/config".text = toCliFlagList {
+        style = "plain";
         theme = "base16";
       };
       "bat/themes/base16.tmTheme".text = config.nc.theme.tmTheme;
