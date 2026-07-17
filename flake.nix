@@ -72,6 +72,49 @@
       flake = false;
     };
 
+    homebrew-apple = {
+      url = "github:apple/homebrew-apple";
+      flake = false;
+    };
+
+    homebrew-cmux = {
+      url = "github:manaflow-ai/homebrew-cmux";
+      flake = false;
+    };
+
+    homebrew-felixkratz = {
+      url = "github:FelixKratz/homebrew-formulae";
+      flake = false;
+    };
+
+    homebrew-osx-cross-arm = {
+      url = "github:osx-cross/homebrew-arm";
+      flake = false;
+    };
+
+    # Moving "latest release" URLs: flake.lock pins the content hash, and
+    # `nix flake update` re-fetches them, re-pinning to the latest release.
+    opencode-darwin-arm64 = {
+      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-darwin-arm64.zip";
+      flake = false;
+    };
+
+    opencode-linux-x64 = {
+      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64.tar.gz";
+      flake = false;
+    };
+
+    opencode-linux-x64-baseline = {
+      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64-baseline.tar.gz";
+      flake = false;
+    };
+
+    opencode-desktop = {
+      type = "file";
+      url = "https://opencode.ai/download/stable/darwin-aarch64-dmg";
+      flake = false;
+    };
+
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
