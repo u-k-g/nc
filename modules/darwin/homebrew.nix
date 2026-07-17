@@ -47,6 +47,7 @@
       "mas"
       "ruby"
       "sk"
+      "unar"
       "felixkratz/formulae/borders"
       {
         name = "felixkratz/formulae/sketchybar";

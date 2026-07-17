@@ -8,25 +8,13 @@
 
 let
   inherit (lib.lists) optionals;
-  inherit (lib.meta) getExe hiPrio;
+  inherit (lib.meta) getExe;
   user = config.nc.user;
 
   bunGlobalPackages = [
     "tscircuit@0.0.1837"
   ];
 
-  opencodeCli = hiPrio (
-    pkgs.writeShellScriptBin "opencode" ''
-      exec ${getExe pkgs.opencode} "$@"
-    ''
-  );
-  opencodeDesktopApp = pkgs.symlinkJoin {
-    name = "opencode-desktop-app";
-    paths = [ pkgs.opencode-desktop ];
-    postBuild = ''
-      rm -rf $out/bin
-    '';
-  };
   kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
     exec /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli "$@"
   '';
@@ -102,7 +90,6 @@ let
     eza
     zoxide
     unzip
-    unar
     just
 
     sd
@@ -117,7 +104,6 @@ let
     deno
     nodejs
     corepackPnpm
-    opencodeCli
     zig
     lua
     fnm
@@ -171,11 +157,11 @@ let
     docker-buildx
     kicad
     opencode-desktop
+    unar
   ];
 
-  darwinPackages = with pkgs; [
+  darwinPackages = [
     kicadCli
-    opencodeDesktopApp
     self.packages.${pkgs.stdenv.hostPlatform.system}.t3-code-nightly
   ];
 in
