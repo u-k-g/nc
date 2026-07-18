@@ -115,6 +115,14 @@
       flake = false;
     };
 
+    # The release assets use versioned filenames, so consume the arm64 artifact
+    # from the latest successful nightly release workflow. The lock file pins
+    # its contents until `nix flake update` refreshes it.
+    t3-code-nightly = {
+      url = "https://nightly.link/pingdotgg/t3code/workflows/release.yml/main/desktop-mac-arm64.zip";
+      flake = false;
+    };
+
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {

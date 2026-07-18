@@ -1,23 +1,24 @@
 {
-  fetchurl,
   lib,
   stdenvNoCC,
+  t3CodeNightly,
   unzip,
 }:
 
 let
-  inherit (lib.lists) singleton;
+  inherit (lib.filesystem) listFilesRecursive;
+  inherit (lib.lists) filter head singleton;
+  inherit (lib.strings) hasSuffix removePrefix removeSuffix;
 
-  version = "0.0.29-nightly.20260712.791";
+  archive =
+    head <| filter (path: hasSuffix "-arm64.zip" <| toString path) <| listFilesRecursive t3CodeNightly;
+  version = removeSuffix "-arm64.zip" <| removePrefix "T3-Code-" <| baseNameOf archive;
 in
 stdenvNoCC.mkDerivation {
   pname = "t3-code-nightly";
   inherit version;
 
-  src = fetchurl {
-    url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-arm64.zip";
-    hash = "sha256-I5x2lbIdhUYxEWmWUDauDhUi71S5xoq20pjeJGZkOFE=";
-  };
+  src = archive;
 
   nativeBuildInputs = singleton unzip;
 

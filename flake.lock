@@ -403,6 +403,7 @@
         "paneru": "paneru",
         "paperwm": "paperwm",
         "rust-overlay": "rust-overlay",
+        "t3-code-nightly": "t3-code-nightly",
         "themes": "themes"
       }
     },
@@ -439,6 +440,19 @@
         "owner": "nix-systems",
         "repo": "default",
         "type": "github"
+      }
+    },
+    "t3-code-nightly": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784403236,
+        "narHash": "sha256-RX5ixsujyEWs8m9Zl3rFtDY80RwMJRDPpf+XZKFhgr8=",
+        "type": "tarball",
+        "url": "https://nightly.link/pingdotgg/t3code/workflows/release.yml/main/desktop-mac-arm64.zip"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://nightly.link/pingdotgg/t3code/workflows/release.yml/main/desktop-mac-arm64.zip"
       }
     },
     "themes": {
