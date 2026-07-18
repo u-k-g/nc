@@ -39,6 +39,21 @@ let
       }
     }
 
+    let origin_url = (
+      ^${jj} git remote list
+      | lines
+      | parse "{name} {url}"
+      | where name == "origin"
+      | get url
+      | first
+    )
+
+    if ($origin_url | str starts-with "https://github.com/") {
+      ^${jj} git remote set-url origin (
+        $origin_url | str replace "https://github.com/" "git@github.com:"
+      )
+    }
+
     ^${jj} git fetch
 
     let trunk_bookmarks = (
