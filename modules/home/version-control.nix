@@ -41,11 +41,13 @@ let
 
     ^${jj} git fetch
 
-    let trunk_bookmarks = ^${jj} bookmark list \
-      --all-remotes \
-      --revision 'trunk()' \
-      --template 'if(remote && remote != "git", name ++ "@" ++ remote ++ "\n")' \
+    let trunk_bookmarks = (
+      ^${jj} bookmark list
+        --all-remotes
+        --revision 'trunk()'
+        --template 'if(remote && remote != "git", name ++ "@" ++ remote ++ "\n")'
       | lines
+    )
 
     if not ($trunk_bookmarks | is-empty) {
       ^${jj} bookmark track ...$trunk_bookmarks
