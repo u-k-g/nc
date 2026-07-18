@@ -145,16 +145,16 @@ in
               "ctrl+8" = "goto_tab 8";
               "ctrl+9" = "goto_tab 9";
               "ctrl+0" = "goto_tab 10";
-              "ctrl+shift+k" = "clear_terminal to_cursor active";
+              "ctrl+shift+k" = "send_text all \\x0c";
               "ctrl+shift+t" = "new_tab";
               "ctrl+shift+w" = "close_tab";
-              "super+k" = "clear_terminal to_cursor active";
             }
           else
             { }
         )
         // {
           "super+c" = "copy_to_clipboard";
+          "super+k" = "send_text all \\x0c";
           "super+v" = "paste_from_clipboard";
           "super+t" = "new_tab";
           "super+w" = "close_tab";
