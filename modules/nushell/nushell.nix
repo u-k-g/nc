@@ -6,9 +6,10 @@
 }:
 
 let
+  inherit (lib.attrsets) optionalAttrs;
   inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) optionalString;
+  inherit (lib.strings) makeLibraryPath optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
   home = user.homeDirectory;
@@ -43,6 +44,9 @@ let
     XDG_DATA_HOME = "${home}/.local/share";
     XDG_STATE_HOME = "${home}/.local/state";
     ZDOTDIR = "${home}/.config/zsh";
+  }
+  // optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+    LIBRARY_PATH = makeLibraryPath [ pkgs.libiconv ];
   };
 
   sessionPath = [
