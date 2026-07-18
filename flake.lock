@@ -402,29 +402,8 @@
         "opencode-linux-x64-baseline": "opencode-linux-x64-baseline",
         "paneru": "paneru",
         "paperwm": "paperwm",
-        "rust-overlay": "rust-overlay",
         "t3-code-nightly": "t3-code-nightly",
         "themes": "themes"
-      }
-    },
-    "rust-overlay": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1784265529,
-        "narHash": "sha256-ohQQiPOngux8ofsrSlloHCMDhRMvocXqJiG8uH45Q5k=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "068175006cfb69d5b541a140ed93e361488c9e53",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
       }
     },
     "systems": {
