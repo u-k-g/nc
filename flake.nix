@@ -55,6 +55,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    kopuz.url = "github:temidaradev/kopuz";
+
     homebrew.url = "github:zhaofengli/nix-homebrew";
 
     homebrew-core = {

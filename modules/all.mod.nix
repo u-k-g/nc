@@ -55,6 +55,7 @@
     gaming = ./nixos/gaming.nix;
     graphics = ./nixos/graphics.nix;
     keycode-remap = ./nixos/keycode-remap.nix;
+    kopuz = ./nixos/kopuz.nix;
     nixos = ./nixos/default.nix;
     niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;

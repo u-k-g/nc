@@ -190,6 +190,16 @@ def update-focus [window_ids: list, focused_window_id: any] {
   }
 }
 
+def update-settled-windows [icon_cache: list] {
+  let immediate = (update-sketchybar $icon_cache)
+
+  # Paneru can publish a structural event before `query state` reflects the
+  # complete batch. Reconcile once more after it has settled so stale window
+  # slots cannot remain visible indefinitely.
+  sleep 50ms
+  update-sketchybar $immediate.icon_cache
+}
+
 def subscribe-loop [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
   mut icon_cache = []
@@ -210,12 +220,12 @@ def subscribe-loop [] {
           if ($window_ids | any {|window_id| $window_id == $focused_window_id }) {
             update-focus $window_ids $focused_window_id
           } else {
-            let updated = (update-sketchybar $icon_cache)
+            let updated = (update-settled-windows $icon_cache)
             $window_ids = $updated.window_ids
             $icon_cache = $updated.icon_cache
           }
         } else if $event_name != "window_title_changed" {
-          let updated = (update-sketchybar $icon_cache)
+          let updated = (update-settled-windows $icon_cache)
           $window_ids = $updated.window_ids
           $icon_cache = $updated.icon_cache
         }
