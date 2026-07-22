@@ -5,6 +5,7 @@
     fonts = ./common/fonts.nix;
     home-manager = ./common/home-manager.nix;
     inputs-gcroot = ./common/inputs-gcroot.nix;
+    kopuz = ./common/kopuz.nix;
     nix = ./common/nix.nix;
     theme = ./theme/default.nix;
     user = ./common/user.nix;
@@ -55,7 +56,6 @@
     gaming = ./nixos/gaming.nix;
     graphics = ./nixos/graphics.nix;
     keycode-remap = ./nixos/keycode-remap.nix;
-    kopuz = ./nixos/kopuz.nix;
     nixos = ./nixos/default.nix;
     niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;

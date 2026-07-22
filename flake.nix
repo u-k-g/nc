@@ -9,11 +9,13 @@
     ];
 
     extra-substituters = [
+      "https://kopuz.cachix.org"
       "https://nyx-cache.chaotic.cx/"
       "https://nix-community.cachix.org/"
     ];
 
     extra-trusted-public-keys = [
+      "kopuz.cachix.org-1:J2X3AnAYhKTJW5S3aCLoA1ckonQXVNZMQvhZA0YAufw="
       "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk="
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
     ];
