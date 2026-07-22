@@ -5,7 +5,6 @@
     fonts = ./common/fonts.nix;
     home-manager = ./common/home-manager.nix;
     inputs-gcroot = ./common/inputs-gcroot.nix;
-    kopuz = ./common/kopuz.nix;
     nix = ./common/nix.nix;
     theme = ./theme/default.nix;
     user = ./common/user.nix;
