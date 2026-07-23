@@ -6,23 +6,16 @@
 }:
 
 let
-  inherit (lib) mkForce;
   inherit (lib.lists) singleton;
 in
 {
   environment.systemPackages = singleton self.packages.${pkgs.stdenv.hostPlatform.system}.dns-switch;
-
-  networking = {
-    dns = singleton "127.0.0.1";
-    knownNetworkServices = singleton "Wi-Fi";
-  };
 
   services.dnscrypt-proxy = {
     enable = true;
     settings = {
       server_names = singleton "mullvad-base";
       listen_addresses = singleton "127.0.0.1:53";
-      user_name = "_dnscrypt-proxy";
 
       ipv4_servers = true;
       ipv6_servers = false;
@@ -33,12 +26,5 @@ in
 
       static.mullvad-base.stamp = "sdns://AgMAAAAAAAAACzE5NC4yNDIuMi40ABRiYXNlLmRucy5tdWxsdmFkLm5ldAovZG5zLXF1ZXJ5";
     };
-  };
-
-  # dnscrypt-proxy must start as root to bind port 53. It drops privileges to
-  # _dnscrypt-proxy immediately afterward via settings.user_name above.
-  launchd.daemons.dnscrypt-proxy.serviceConfig = {
-    GroupName = mkForce "wheel";
-    UserName = mkForce "root";
   };
 }
