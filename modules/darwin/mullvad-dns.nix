@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   self,
@@ -11,6 +12,10 @@ let
 in
 {
   environment.systemPackages = singleton self.packages.${pkgs.stdenv.hostPlatform.system}.dns-switch;
+
+  security.sudo.extraConfig = ''
+    ${config.nc.user.name} ALL = (root) NOPASSWD: /run/current-system/sw/bin/dns cycle
+  '';
 
   networking = {
     dns = singleton "127.0.0.1";

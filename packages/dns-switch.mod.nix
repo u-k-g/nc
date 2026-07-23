@@ -131,23 +131,23 @@
 
             set_profile() {
               case "$1" in
-                mullvad|base)
+                mv|mullvad|base)
                   set_mullvad
                   flush_cache
                   echo "DNS: mullvad (base.dns.mullvad.net via encrypted DNS)"
                   ;;
-                cloudflare|1.1.1.1)
+                cf|cloudflare|1.1.1.1)
                   set_cloudflare
                   flush_cache
                   echo "DNS: cloudflare (1.1.1.1)"
                   ;;
-                automatic|auto|none|off)
+                no|automatic|auto|none|off)
                   set_automatic
                   flush_cache
                   echo "DNS: automatic (network-provided DNS)"
                   ;;
                 *)
-                  echo "usage: dns [mullvad|cloudflare|automatic|cycle|status]" >&2
+                  echo "usage: dns [mv|cf|no|cycle|status]" >&2
                   exit 2
                   ;;
               esac
@@ -155,7 +155,7 @@
 
             action="''${1:-cycle}"
             case "$action" in
-              mullvad|base|cloudflare|1.1.1.1|automatic|auto|none|off)
+              mv|mullvad|base|cf|cloudflare|1.1.1.1|no|automatic|auto|none|off)
                 set_profile "$action"
                 ;;
               cycle)
@@ -175,7 +175,7 @@
                 show_status
                 ;;
               *)
-                echo "usage: dns [mullvad|cloudflare|automatic|cycle|status]" >&2
+                echo "usage: dns [mv|cf|no|cycle|status]" >&2
                 exit 2
                 ;;
             esac

@@ -82,6 +82,7 @@ def main [] {
   }
 
   let clock = ($plugin_dir | path join "clock.nu")
+  let dns = ($plugin_dir | path join "dns.nu")
   let timer = ($plugin_dir | path join "timer.nu")
   let timer_menu = ($plugin_dir | path join "timer_menu.nu")
   let volume = ($plugin_dir | path join "volume.nu")
@@ -89,6 +90,9 @@ def main [] {
   let right_items = [
     "--add" "item" "clock" "right"
     "--set" "clock" "update_freq=1" $"script=($clock)" "label.align=right" "label.padding_right=10"
+    "--add" "item" "dns" "right"
+    "--set" "dns" "update_freq=10" $"script=($dns)" $"click_script=($dns)" "icon.drawing=off" "label=✱  ??" "label.width=58" "label.align=right" "width=62" "padding_right=0"
+    "--subscribe" "dns" "system_woke"
     "--add" "item" "timer" "right"
     "--set" "timer" "update_freq=1" $"script=($timer)" $"click_script=($timer_menu)" "icon.drawing=off" "label=00:00" "label.width=72" "label.align=right" "width=78" "padding_right=0"
     "--add" "item" "volume" "e"
