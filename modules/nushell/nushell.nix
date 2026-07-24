@@ -200,6 +200,18 @@ let
       )
 
       if $commit_message != null {
+        let describe = (^${getExe pkgs.jujutsu} describe -m $commit_message | complete)
+
+        if $describe.exit_code != 0 {
+          error make {
+            msg: "jj describe failed"
+            label: {
+              text: ($describe.stderr | str trim)
+              span: (metadata $describe.stderr).span
+            }
+          }
+        }
+
         $commit_message | ^${clipboardCopy}
         print $commit_message
       }
