@@ -209,11 +209,107 @@ def guard []: nothing -> nothing {
   }
 }
 
-def main [
-  action?: string                    # Minutes, on, off, or status.
-  --percent (-p): int = 15           # Battery percentage at which normal sleep is restored.
-] {
-  let action = $action | default "toggle"
+def show-help []: nothing -> nothing {
+  print "Keep DarwinBook awake while its lid is closed.
+
+Usage:
+  amp                         Toggle the sleep override on or off
+  amp on                      Keep running until toggled off or battery cutoff
+  amp <minutes>               Keep running for a limited time
+  amp off                     Restore normal lid-close sleep
+  amp status                  Show state, timer, battery, and cutoff
+
+Options:
+  -p, --percent <1-100>       Restore normal sleep at this battery level
+                              [default: 15]
+  -h, --help                  Show this help
+
+Examples:
+  amp                         Toggle using the 15% cutoff
+  amp 60                      Stay awake for 60 minutes
+  amp 60 -p 25                Stay awake for 60 minutes or until 25% battery
+  amp on --percent 20         Stay awake indefinitely or until 20% battery
+  amp off                     Turn the override off immediately
+
+The timer and battery guard run independently of the terminal.
+Do not put the MacBook in a bag while the override is active."
+}
+
+def usage-error [message: string] {
+  error make {
+    msg: $message
+    help: "Run `amp --help` for usage."
+  }
+}
+
+def parse-arguments [arguments: list] {
+  mut action = ""
+  mut percent = $default_cutoff
+  mut index = 0
+
+  while $index < ($arguments | length) {
+    let argument = ($arguments | get $index | into string)
+
+    if $argument in ["-h" "--help"] {
+      return {
+        help: true
+        action: "toggle"
+        percent: $percent
+      }
+    }
+
+    if $argument in ["-p" "--percent"] {
+      if ($index + 1) >= ($arguments | length) {
+        usage-error $"($argument) requires a percentage"
+      }
+
+      let value = ($arguments | get ($index + 1) | into string)
+      if not ($value =~ '^\d+$') {
+        usage-error $"invalid percentage: ($value)"
+      }
+      $percent = $value | into int
+      $index += 2
+      continue
+    }
+
+    if ($argument | str starts-with "--percent=") {
+      let value = ($argument | str replace "--percent=" "")
+      if not ($value =~ '^\d+$') {
+        usage-error $"invalid percentage: ($value)"
+      }
+      $percent = $value | into int
+      $index += 1
+      continue
+    }
+
+    if ($argument | str starts-with "-") {
+      usage-error $"unknown option: ($argument)"
+    }
+
+    if not ($action | is-empty) {
+      usage-error $"unexpected argument: ($argument)"
+    }
+
+    $action = $argument
+    $index += 1
+  }
+
+  {
+    help: false
+    action: (if ($action | is-empty) { "toggle" } else { $action })
+    percent: $percent
+  }
+}
+
+def --wrapped main [...arguments] {
+  let parsed = parse-arguments $arguments
+  if $parsed.help {
+    show-help
+    return
+  }
+
+  let action = $parsed.action
+  let percent = $parsed.percent
 
   if $action == "toggle" {
     if sleep-disabled {
