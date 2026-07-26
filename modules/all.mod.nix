@@ -28,6 +28,7 @@
   };
 
   flake.darwinModules = {
+    amp = ./darwin/amp.nix;
     desktop = ./darwin/desktop.nix;
     dock = ./darwin/dock.nix;
     darwin-essentials = ./darwin/essentials.nix;
