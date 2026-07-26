@@ -29,6 +29,6 @@ in
     };
     ProcessType = "Background";
     RunAtLoad = true;
-    StartInterval = 30;
+    StartInterval = 10;
   };
 }

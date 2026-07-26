@@ -46,6 +46,73 @@ def battery-percentage [] {
   }
 }
 
+def lid-closed []: nothing -> bool {
+  ^/usr/sbin/ioreg -r -k AppleClamshellState -d 1
+  | lines
+  | any { $in =~ '"AppleClamshellState"\s*=\s*Yes' }
+}
+
+def sleep-displays []: nothing -> nothing {
+  let result = (
+    do {
+      ^/usr/bin/pmset displaysleepnow
+    }
+    | complete
+  )
+
+  if $result.exit_code != 0 {
+    let detail = ($result.stderr | str trim)
+    ^/usr/bin/logger -t amp (
+      if ($detail | is-empty) {
+        "could not put displays to sleep"
+      } else {
+        $"could not put displays to sleep: ($detail)"
+      }
+    )
+  }
+}
+
+def display-state [] {
+  let script = '
+    ObjC.import("CoreGraphics");
+    const id = $.CGMainDisplayID();
+    JSON.stringify({
+      active: Boolean($.CGDisplayIsActive(id)),
+      asleep: Boolean($.CGDisplayIsAsleep(id)),
+      builtin: Boolean($.CGDisplayIsBuiltin(id))
+    });
+  '
+  let result = (
+    do {
+      ^/usr/bin/osascript -l JavaScript -e $script
+    }
+    | complete
+  )
+
+  if $result.exit_code == 0 {
+    try {
+      $result.stdout
+      | str trim
+      | from json
+      | insert available true
+    } catch {
+      {
+        available: false
+        active: null
+        asleep: null
+        builtin: null
+      }
+    }
+  } else {
+    {
+      available: false
+      active: null
+      asleep: null
+      builtin: null
+    }
+  }
+}
+
 def clear-deadline []: nothing -> nothing {
   let file = deadline-file
   if ($file | path exists) {
@@ -196,17 +263,147 @@ def guard []: nothing -> nothing {
   }
 
   let deadline = read-deadline
-  if $deadline == null {
-    return
-  }
-
   let now = (date now | format date "%s" | into int)
-  if $deadline <= $now {
+  if $deadline != null and $deadline <= $now {
     disable
     do {
       ^/usr/bin/logger -t amp "normal sleep restored after timer expired"
     } | complete | ignore
+    return
   }
+
+  if (lid-closed) {
+    sleep-displays
+  }
+}
+
+def test-lid []: nothing -> nothing {
+  if not (sleep-disabled) {
+    error make {
+      msg: "amp is off"
+      help: "Run `amp on`, then run `amp test`."
+    }
+  }
+
+  if (lid-closed) {
+    error make {
+      msg: "the lid must be open when the test starts"
+    }
+  }
+
+  let started_at = (date now | format date "%s" | into int)
+  let started_battery = battery-percentage
+
+  mut previous_at = $started_at
+  mut closed_at = 0
+  mut max_gap = 0
+  mut closed_samples = 0
+  mut display_off_samples = 0
+  mut first_display_off_at = 0
+  mut display_woke_after_sleep = false
+  mut override_stayed_on = true
+  mut inferred_sleep = false
+  mut last_report_at = 0
+
+  print "AMP LID TEST"
+  print "Close the lid, leave it closed for at least 60 seconds, then reopen it."
+  print "The test ends automatically after reopening. Ctrl-C cancels."
+  print ""
+  print "Waiting for lid close..."
+
+  loop {
+    sleep 2sec
+
+    let now = (date now | format date "%s" | into int)
+    let gap = $now - $previous_at
+    if $gap > $max_gap {
+      $max_gap = $gap
+    }
+    $previous_at = $now
+
+    let closed = lid-closed
+    let display = display-state
+    let display_off = (
+      $display.available
+      and ($display.asleep or (not $display.active) or (not $display.builtin))
+    )
+
+    if not (sleep-disabled) {
+      $override_stayed_on = false
+    }
+
+    if $closed {
+      if $closed_at == 0 {
+        $closed_at = $now
+        $last_report_at = $now
+        print $"  (date now | format date '%H:%M:%S') lid=closed; sampling every 2 seconds"
+      }
+
+      $closed_samples += 1
+      if $display_off {
+        $display_off_samples += 1
+        if $first_display_off_at == 0 {
+          $first_display_off_at = $now
+          print $"  (date now | format date '%H:%M:%S') display=asleep"
+        }
+      } else if $first_display_off_at != 0 {
+        $display_woke_after_sleep = true
+      }
+
+      if ($now - $last_report_at) >= 10 {
+        let display_text = if not $display.available {
+          "unknown"
+        } else if $display_off {
+          "asleep"
+        } else {
+          "awake"
+        }
+        print $"  (date now | format date '%H:%M:%S') heartbeat; display=($display_text)"
+        $last_report_at = $now
+      }
+    } else if $closed_at != 0 {
+      break
+    } else if $gap > 10 {
+      $inferred_sleep = true
+      break
+    }
+
+    if ($now - $started_at) >= 300 {
+      error make {
+        msg: "test timed out after 5 minutes"
+        help: "Reopen the lid and run `amp test` again."
+      }
+    }
+  }
+
+  let ended_at = (date now | format date "%s" | into int)
+  let ended_battery = battery-percentage
+  let closed_seconds = if $closed_at == 0 { 0 } else { $ended_at - $closed_at }
+  let heartbeat_passed = (
+    (not $inferred_sleep)
+    and $closed_samples > 0
+    and $max_gap <= 6
+  )
+  let display_passed = (
+    $first_display_off_at != 0
+    and ($first_display_off_at - $closed_at) <= 20
+    and (not $display_woke_after_sleep)
+  )
+  let overall_passed = (
+    $heartbeat_passed
+    and $display_passed
+    and $override_stayed_on
+    and $closed_seconds >= 55
+  )
+
+  print ""
+  print "AMP TEST RESULT"
+  print $"  overall:          (if $overall_passed { 'PASS' } else { 'FAIL' })"
+  print $"  lid closed:       ($closed_seconds)s \(need at least 55s\)"
+  print $"  system awake:     (if $heartbeat_passed { 'PASS' } else { 'FAIL' }) \(max heartbeat gap ($max_gap)s\)"
+  print $"  display asleep:   (if $display_passed { 'PASS' } else { 'FAIL' }) \(($display_off_samples)/($closed_samples) closed-lid samples\)"
+  print $"  override active:  (if $override_stayed_on { 'PASS' } else { 'FAIL' })"
+  print $"  battery:          ($started_battery)% -> ($ended_battery)%"
 }
 
 def show-help []: nothing -> nothing {
@@ -218,6 +415,7 @@ Usage:
   amp <minutes>               Keep running for a limited time
   amp off                     Restore normal lid-close sleep
   amp status                  Show state, timer, battery, and cutoff
+  amp test                    Test lid, display, heartbeat, and sleep override
 
 Options:
   -p, --percent <1-100>       Restore normal sleep at this battery level
@@ -229,8 +427,10 @@ Examples:
   amp 60                      Stay awake for 60 minutes
   amp 60 -p 25                Stay awake for 60 minutes or until 25% battery
   amp on --percent 20         Stay awake indefinitely or until 20% battery
+  amp test                    Close for one minute, reopen, and get a report
   amp off                     Turn the override off immediately
 
+Closing the lid explicitly sleeps the displays while processes keep running.
 The timer and battery guard run independently of the terminal.
 Do not put the MacBook in a bag while the override is active."
 }
@@ -312,7 +512,7 @@ def --wrapped main [...arguments] {
   let percent = $parsed.percent
 
   if $action == "toggle" {
-    if sleep-disabled {
+    if (sleep-disabled) {
       disable
       print "amp: off; normal lid-close sleep restored"
     } else {
@@ -325,6 +525,8 @@ def --wrapped main [...arguments] {
     print "amp: off; normal lid-close sleep restored"
   } else if $action == "status" {
     status
+  } else if $action == "test" {
+    test-lid
   } else if $action == "guard" {
     guard
   } else if $action =~ '^\d+$' {
