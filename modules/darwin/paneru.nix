@@ -37,6 +37,7 @@ in
 
         swipe = {
           sensitivity = 0.88;
+          snap_to_window = true;
           gesture = {
             fingers_count = 3;
             direction = "Reversed";
