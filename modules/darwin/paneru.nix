@@ -49,14 +49,17 @@ in
 
         bindings = {
           window_focus_west = "alt - h";
-          window_focus_south = "alt - j";
-          window_focus_north = "alt - k";
+          window_focus_south = "alt + cmd - j";
+          window_focus_north = "alt + cmd - k";
           window_focus_east = "alt - l";
 
           window_swap_west = "alt + shift - h";
-          window_swap_south = "alt + shift - j";
-          window_swap_north = "alt + shift - k";
           window_swap_east = "alt + shift - l";
+
+          window_virtual_south = "alt - j";
+          window_virtual_north = "alt - k";
+          window_virtualmove_south = "alt + shift - j";
+          window_virtualmove_north = "alt + shift - k";
 
           window_stack = "alt + shift - t";
           window_unstack = "alt + shift - g";
