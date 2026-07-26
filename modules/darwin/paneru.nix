@@ -37,7 +37,11 @@ in
 
         swipe = {
           sensitivity = 0.88;
-          gesture.direction = "Reversed";
+          gesture = {
+            fingers_count = 3;
+            direction = "Reversed";
+            vertical = true;
+          };
           scroll.modifier = "ctrl + shift + cmd";
         };
 
