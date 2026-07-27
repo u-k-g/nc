@@ -154,7 +154,7 @@ in
         )
         // {
           "super+c" = "copy_to_clipboard";
-          "super+k" = "send_text all \\x0c";
+          "super+k" = "combine : clear_terminal to_cursor_scroll active : send_text all \\x0c";
           "super+v" = "paste_from_clipboard";
           "super+t" = "new_tab";
           "super+w" = "close_tab";
