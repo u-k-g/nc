@@ -1,32 +1,31 @@
-# NC
+<h1 align="center">nc</h1>
 
-**nix collective**
+<p align="center">
+  nix configuration collection
+</p>
 
-this repo borrows heavily from RGBCube's ncc:
-https://github.com/RGBCube/ncc
+<details open>
+<summary><strong>overview</strong></summary>
 
-## secrets
+- nix-darwin configuration for `darwinbook`
+- NixOS configuration for `desktop`
+- shared Home Manager modules
 
-create or edit a secret:
+also on
+[rad:zCbwSk9rkZR9Cqc4GS4gq2gL2zgo](https://radicle.network/nodes/seed.radicle.garden/rad:zCbwSk9rkZR9Cqc4GS4gq2gL2zgo).
 
-```sh
-RULES=./secrets.nix agenix -e secrets/name.age -i ~/.config/agenix/keys.txt
-```
+</details>
 
-rekey all secrets after changing `keys.nix`:
+<details open>
+<summary><strong>"upstream"</strong></summary>
 
-```sh
-RULES=./secrets.nix agenix -r -i ~/.config/agenix/keys.txt
-```
+NC borrows heavily from [RGBCube's ncc](https://github.com/RGBCube/ncc).
 
-decrypt a secret:
+</details>
 
-```sh
-agenix -d secrets/name.age -i ~/.config/agenix/keys.txt
-```
+<details>
+<summary><strong>license</strong></summary>
 
-use a secret in nix:
+NC is available under the [MIT License](LICENSE.md).
 
-```nix
-config.age.secrets.name.path
-```
+</details>

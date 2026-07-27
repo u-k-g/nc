@@ -16,6 +16,7 @@
 !secrets/**/
 
 !AGENTS.md
+!LICENSE.md
 !README.md
 !flake.lock
 !flake.nix

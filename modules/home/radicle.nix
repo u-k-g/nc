@@ -20,14 +20,16 @@ in
     owner = config.system.primaryUser;
   };
 
+  environment.variables.RAD_HOME = "${user.homeDirectory}/.radicle";
+
   home-manager.users.${user.name} =
     { config, osConfig, ... }:
     {
       home.packages = singleton pkgs.radicle-node;
 
-      home.sessionVariables.RAD_HOME = "${config.xdg.dataHome}/radicle";
+      home.sessionVariables.RAD_HOME = "${config.home.homeDirectory}/.radicle";
 
-      xdg.dataFile."radicle/config.json" = {
+      home.file.".radicle/config.json" = {
         force = true;
         text = toJSON { } {
           publicExplorer = "https://radicle.network/nodes/$host/$rid$path";
@@ -40,10 +42,15 @@ in
         };
       };
 
-      xdg.dataFile."radicle/keys/radicle".source =
-        config.lib.file.mkOutOfStoreSymlink osConfig.secrets.radicle.path;
-      xdg.dataFile."radicle/keys/radicle.pub".text = ''
-        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINzDlJy403zDuRlof2dJcMGxHz9XZwSMIJkb4a64Hs5Z
-      '';
+      home.file.".radicle/keys/radicle" = {
+        force = true;
+        source = config.lib.file.mkOutOfStoreSymlink osConfig.secrets.radicle.path;
+      };
+      home.file.".radicle/keys/radicle.pub" = {
+        force = true;
+        text = ''
+          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINzDlJy403zDuRlof2dJcMGxHz9XZwSMIJkb4a64Hs5Z
+        '';
+      };
     };
 }

@@ -203,6 +203,10 @@ in
         auto-track-bookmarks = "${user.handle}/*"
         push-new-bookmarks = true
 
+        [remotes.rad]
+        fetch-bookmarks = "*"
+        fetch-tags = "*"
+
         [git]
         push = "origin"
         sign-on-push = true
