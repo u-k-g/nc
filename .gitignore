@@ -24,6 +24,7 @@
 
 !*.nix
 !*.nu
+!*.age
 
 !dotfiles/config/FreeCAD/v1-1/system.cfg
 !dotfiles/config/FreeCAD/v1-1/user.cfg
