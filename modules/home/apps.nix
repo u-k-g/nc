@@ -8,7 +8,6 @@
 let
   inherit (lib.lists) optionals;
   user = config.nc.user;
-  dotfiles = ../../dotfiles;
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   discord =
     (pkgs.discord.override {
@@ -37,7 +36,6 @@ in
         pkgs.ghostty-bin
       ]
       ++ optionals pkgs.stdenv.isLinux [
-        pkgs.freecad
         pkgs.ghostty
         heliumBrowser
         pkgs.orca-slicer
@@ -45,10 +43,6 @@ in
         zed-editor
         discord
       ];
-
-    xdg.configFile = {
-      "FreeCAD".source = dotfiles + /config/FreeCAD;
-    };
 
     xdg.dataFile = lib.mkIf pkgs.stdenv.isLinux {
       "applications/helium.desktop" = {

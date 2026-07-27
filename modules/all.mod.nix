@@ -16,6 +16,7 @@
     desktop-theme = ./home/desktop-theme.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
+    freecad = ./home/freecad.nix;
     ghostty = ./home/ghostty.nix;
     kitty = ./home/kitty.nix;
     opencode = ./home/opencode.nix;
@@ -33,6 +34,7 @@
     dock = ./darwin/dock.nix;
     darwin-essentials = ./darwin/essentials.nix;
     finder = ./darwin/finder.nix;
+    freecad = ./darwin/freecad.nix;
     homebrew = ./darwin/homebrew.nix;
     karabiner = ./darwin/karabiner.nix;
     login = ./darwin/login.nix;
