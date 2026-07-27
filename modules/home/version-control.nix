@@ -156,7 +156,7 @@ in
         [aliases]
         ".." = ["edit", "@-"]
         ",," = ["edit", "@+"]
-        f = ["git", "fetch"]
+        f = ["git", "fetch", "--all-remotes"]
         p = ["git", "push"]
         cl = ["git", "clone"]
         i = ["git", "init"]
@@ -204,7 +204,6 @@ in
         push-new-bookmarks = true
 
         [git]
-        fetch = ["origin", "upstream", "rad"]
         push = "origin"
         sign-on-push = true
 
