@@ -1,0 +1,136 @@
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+
+let
+  inherit (lib.meta) getExe;
+  inherit (lib.modules) mkIf;
+  user = config.nc.user;
+
+  homeManager = config.home-manager.users.${user.name};
+  t3CodeDataDir = "${user.homeDirectory}/.local/share/t3-code";
+  t3CodeApp = "${t3CodeDataDir}/T3 Code.app";
+  t3CodeState = "${user.homeDirectory}/.local/state/t3-code/source";
+in
+{
+  home-manager.users.${user.name} = {
+    home.file."Applications/T3 Code.app" = mkIf pkgs.stdenv.hostPlatform.isDarwin {
+      source = homeManager.lib.file.mkOutOfStoreSymlink t3CodeApp;
+    };
+
+    home.activation.t3-code-latest =
+      mkIf pkgs.stdenv.hostPlatform.isDarwin
+      <| homeManager.lib.dag.entryAfter [ "writeBoundary" ] ''
+        (
+          set -euo pipefail
+
+          api=https://api.github.com/repos/pingdotgg/t3code/releases/latest
+          t3_code_app=${lib.escapeShellArg t3CodeApp}
+          t3_code_data_dir=${lib.escapeShellArg t3CodeDataDir}
+          state_file=${lib.escapeShellArg t3CodeState}
+          new_app="$t3_code_data_dir/.T3 Code.app.new"
+          old_app="$t3_code_data_dir/.T3 Code.app.old"
+
+          app_is_valid() {
+            local app=$1
+            local executable
+
+            [ -f "$app/Contents/Info.plist" ] || return 1
+            executable="$(/usr/bin/plutil -extract CFBundleExecutable raw "$app/Contents/Info.plist")" || return 1
+            [ -x "$app/Contents/MacOS/$executable" ]
+          }
+
+          ${pkgs.coreutils}/bin/mkdir --parents "$t3_code_data_dir"
+          if [ ! -e "$t3_code_app" ] && [ -e "$old_app" ]; then
+            ${pkgs.coreutils}/bin/mv "$old_app" "$t3_code_app"
+          fi
+          ${pkgs.coreutils}/bin/rm -rf "$new_app"
+          if [ -e "$t3_code_app" ]; then
+            ${pkgs.coreutils}/bin/rm -rf "$old_app"
+          fi
+
+          release_probe="$t3_code_data_dir/.t3-code-release.json"
+          if ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_probe"; then
+            tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$release_probe")"
+            version="''${tag#v}"
+            asset_name="T3-Code-$version-arm64.zip"
+            asset_url="$(${getExe pkgs.jq} --raw-output --arg name "$asset_name" \
+              '.assets[] | select(.name == $name) | .browser_download_url' "$release_probe")"
+            ${pkgs.coreutils}/bin/rm -f "$release_probe"
+          else
+            ${pkgs.coreutils}/bin/rm -f "$release_probe"
+            if app_is_valid "$t3_code_app"; then
+              installed_version="$(/usr/bin/plutil \
+                -extract CFBundleShortVersionString raw \
+                "$t3_code_app/Contents/Info.plist")"
+              printf 'warning: failed to check latest T3 Code release; keeping T3 Code %s\n' "$installed_version" >&2
+              exit 0
+            fi
+            printf 'error: failed to check latest T3 Code release and T3 Code is not installed\n' >&2
+            exit 1
+          fi
+
+          if [ -z "$tag" ] || [ -z "$asset_url" ]; then
+            printf 'error: failed to resolve T3 Code asset %s from latest release metadata\n' "$asset_name" >&2
+            exit 1
+          fi
+
+          state_value="$tag $asset_name $asset_url"
+          if app_is_valid "$t3_code_app" \
+            && [ -f "$state_file" ] \
+            && [ "$(< "$state_file")" = "$state_value" ]; then
+            installed_version="$(/usr/bin/plutil \
+              -extract CFBundleShortVersionString raw \
+              "$t3_code_app/Contents/Info.plist")"
+            printf 'T3 Code %s is already installed\n' "$installed_version"
+            exit 0
+          fi
+
+          temp_dir="$(${pkgs.coreutils}/bin/mktemp --directory -t t3-code.XXXXXXXXXX)"
+          cleanup() {
+            ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
+          }
+          trap cleanup EXIT
+
+          archive="$temp_dir/$asset_name"
+          extract_dir="$temp_dir/extract"
+          ${pkgs.coreutils}/bin/mkdir --parents "$extract_dir"
+          printf 'Installing T3 Code %s from %s\n' "$tag" "$asset_url"
+          ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$archive"
+          ${getExe pkgs.unzip} -q "$archive" -d "$extract_dir"
+
+          if ! app_is_valid "$extract_dir/T3 Code.app"; then
+            printf 'error: the T3 Code archive does not contain a valid T3 Code.app\n' >&2
+            exit 1
+          fi
+
+          /usr/bin/ditto "$extract_dir/T3 Code.app" "$new_app"
+          /usr/bin/codesign --verify --deep --strict "$new_app"
+
+          if [ -e "$t3_code_app" ]; then
+            ${pkgs.coreutils}/bin/mv "$t3_code_app" "$old_app"
+          fi
+          if ! ${pkgs.coreutils}/bin/mv "$new_app" "$t3_code_app"; then
+            if [ -e "$old_app" ]; then
+              ${pkgs.coreutils}/bin/mv "$old_app" "$t3_code_app"
+            fi
+            exit 1
+          fi
+          ${pkgs.coreutils}/bin/rm -rf "$old_app"
+
+          state_dir="$(${pkgs.coreutils}/bin/dirname "$state_file")"
+          ${pkgs.coreutils}/bin/mkdir --parents "$state_dir"
+          printf '%s' "$state_value" > "$state_file.new"
+          ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
+
+          installed_version="$(/usr/bin/plutil \
+            -extract CFBundleShortVersionString raw \
+            "$t3_code_app/Contents/Info.plist")"
+          printf 'Installed T3 Code %s at %s\n' "$installed_version" "$t3_code_app"
+        )
+      '';
+  };
+}

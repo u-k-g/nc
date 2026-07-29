@@ -21,7 +21,8 @@ let
   '';
 in
 {
-  system.defaults.CustomSystemPreferences."org.hammerspoon.Hammerspoon".MJConfigFile = "~/.config/hammerspoon/init.lua";
+  system.defaults.CustomSystemPreferences."org.hammerspoon.Hammerspoon".MJConfigFile =
+    "~/.config/hammerspoon/init.lua";
 
   home-manager.users.${user.name} = {
     home.file.".hammerspoon/init.lua".text = ''

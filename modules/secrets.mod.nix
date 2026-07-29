@@ -23,6 +23,7 @@
       config = mkMerge [
         {
           age.identityPaths = mkDefault [
+            "/etc/ssh/ssh_host_ed25519_key"
             "${config.nc.user.homeDirectory}/.config/agenix/keys.txt"
             "${config.nc.user.homeDirectory}/.ssh/id_ed25519"
           ];

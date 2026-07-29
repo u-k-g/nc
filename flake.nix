@@ -87,37 +87,6 @@
       flake = false;
     };
 
-    # Moving "latest release" URLs: flake.lock pins the content hash, and
-    # `nix flake update` re-fetches them, re-pinning to the latest release.
-    opencode-darwin-arm64 = {
-      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-darwin-arm64.zip";
-      flake = false;
-    };
-
-    opencode-linux-x64 = {
-      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64.tar.gz";
-      flake = false;
-    };
-
-    opencode-linux-x64-baseline = {
-      url = "https://github.com/anomalyco/opencode/releases/latest/download/opencode-linux-x64-baseline.tar.gz";
-      flake = false;
-    };
-
-    opencode-desktop = {
-      type = "file";
-      url = "https://opencode.ai/download/stable/darwin-aarch64-dmg";
-      flake = false;
-    };
-
-    # The release assets use versioned filenames, so consume the arm64 artifact
-    # from the latest successful nightly release workflow. The lock file pins
-    # its contents until `nix flake update` refreshes it.
-    t3-code-nightly = {
-      url = "https://nightly.link/pingdotgg/t3code/workflows/release.yml/main/desktop-mac-arm64.zip";
-      flake = false;
-    };
-
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {

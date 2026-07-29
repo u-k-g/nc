@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  self,
   ...
 }:
 
@@ -161,7 +160,6 @@ let
 
   darwinPackages = [
     kicadCli
-    self.packages.${pkgs.stdenv.hostPlatform.system}.t3-code-nightly
   ];
 in
 {

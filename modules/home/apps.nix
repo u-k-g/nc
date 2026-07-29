@@ -6,7 +6,10 @@
 }:
 
 let
+  inherit (lib.attrsets) genAttrs;
   inherit (lib.lists) optionals;
+  inherit (lib.modules) mkIf;
+  inherit (lib.trivial) const flip;
   user = config.nc.user;
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   discord =
@@ -26,6 +29,12 @@ let
 in
 {
   home-manager.users.${user.name} = {
+    xdg.mimeApps.defaultApplications =
+      mkIf pkgs.stdenv.isLinux
+      <| flip genAttrs (const "discord.desktop") [
+        "x-scheme-handler/discord"
+      ];
+
     home.packages =
       with pkgs;
       [
@@ -44,7 +53,7 @@ in
         discord
       ];
 
-    xdg.dataFile = lib.mkIf pkgs.stdenv.isLinux {
+    xdg.dataFile = mkIf pkgs.stdenv.isLinux {
       "applications/helium.desktop" = {
         source = "${heliumBrowser}/share/applications/helium.desktop";
       };

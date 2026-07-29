@@ -4,6 +4,13 @@
   ...
 }:
 
+let
+  modrinthApp = pkgs.modrinth-app.overrideAttrs (_: {
+    # nixpkgs' symlinkJoin package calls wrapGAppsHook manually, outside the
+    # normal fixupPhase scope where this variable is usually defined.
+    output = "out";
+  });
+in
 {
   services = {
     dbus.enable = true;
@@ -36,7 +43,7 @@
     kdePackages.kcalc
     kdePackages.spectacle
     kdePackages.dolphin
-    modrinth-app
+    modrinthApp
     wl-clipboard
     xclip
   ];

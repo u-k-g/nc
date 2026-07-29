@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 {
   perSystem =
@@ -7,9 +7,6 @@
       packages =
         lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
           fast-workspace-switch = pkgs.callPackage ./fast-workspace-switch { };
-          t3-code-nightly = pkgs.callPackage ./t3-code-nightly {
-            t3CodeNightly = inputs.t3-code-nightly;
-          };
         }
         // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           helium-browser = pkgs.callPackage ./helium-browser { };

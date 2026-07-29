@@ -23,6 +23,7 @@
     packages = ./home/packages.nix;
     prismlauncher = ./home/prismlauncher.nix;
     radicle = ./home/radicle.nix;
+    t3-code = ./home/t3-code.nix;
     terminal = ./home/terminal.nix;
     version-control = ./home/version-control.nix;
     watchman = ./home/watchman.nix;

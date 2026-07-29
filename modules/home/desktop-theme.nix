@@ -42,8 +42,13 @@ let
     e = 14;
     f = 15;
   };
-  hexPairToDec = value: offset: 16 * hexDigit.${builtins.substring offset 1 value} + hexDigit.${builtins.substring (offset + 1) 1 value};
-  hexToRgb = value: "${toString (hexPairToDec value 0)},${toString (hexPairToDec value 2)},${toString (hexPairToDec value 4)}";
+  hexPairToDec =
+    value: offset:
+    16 * hexDigit.${builtins.substring offset 1 value}
+    + hexDigit.${builtins.substring (offset + 1) 1 value};
+  hexToRgb =
+    value:
+    "${toString (hexPairToDec value 0)},${toString (hexPairToDec value 2)},${toString (hexPairToDec value 4)}";
   rgb = {
     bg0 = hexToRgb theme.base00;
     bg1 = hexToRgb theme.base01;
