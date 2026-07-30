@@ -11,6 +11,7 @@ let
 
   user = config.nc.user;
   home = config.home-manager.users.${user.name}.home.homeDirectory;
+  signingKey = "${home}/.ssh/id_ed25519.pub";
 
   gh = getExe pkgs.gh;
   jj = getExe pkgs.jujutsu;
@@ -79,7 +80,7 @@ in
         user = {
           name = user.fullName;
           email = user.email;
-          signingkey = "${home}/.ssh/id_rsa.pub";
+          signingkey = signingKey;
         };
 
         http = {
@@ -137,7 +138,7 @@ in
         [signing]
         backend = "ssh"
         behavior = "drop"
-        key = "${home}/.ssh/id_rsa.pub"
+        key = "${signingKey}"
 
         [signing.backends.ssh]
         program = "${pkgs.openssh}/bin/ssh-keygen"

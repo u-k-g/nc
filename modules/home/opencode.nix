@@ -179,7 +179,10 @@ in
             ${getExe pkgs.unzip} -q "$archive" -d "$extract_dir"
             ;;
           *.tar.gz)
-            ${getExe pkgs.gnutar} -xzf "$archive" -C "$extract_dir"
+            ${getExe pkgs.gnutar} \
+              --use-compress-program=${getExe pkgs.gzip} \
+              -xf "$archive" \
+              -C "$extract_dir"
             ;;
           *)
             printf 'error: unsupported OpenCode archive type: %s\n' "$asset_name" >&2

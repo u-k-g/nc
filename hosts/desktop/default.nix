@@ -17,6 +17,7 @@
   networking.hostName = "desktop";
 
   nc.nixos.nvidia.enable = true;
+  nc.radicle.enable = false;
 
   services.desktopManager.plasma6.enable = lib.mkForce false;
 
