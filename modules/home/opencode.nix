@@ -111,6 +111,8 @@ in
       (
         set -euo pipefail
 
+        export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+
         install_dir=${lib.escapeShellArg opencodeInstallDir}
         state_file=${lib.escapeShellArg opencodeCliState}
         api=https://api.github.com/repos/anomalyco/opencode/releases/latest
@@ -214,6 +216,8 @@ in
       <| homeManager.lib.dag.entryAfter [ "writeBoundary" ] ''
         (
           set -euo pipefail
+
+          export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
 
           api=https://api.github.com/repos/anomalyco/opencode/releases/latest
           asset_name=opencode-desktop-mac-arm64.dmg

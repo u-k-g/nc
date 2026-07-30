@@ -27,7 +27,9 @@ in
         (
           set -euo pipefail
 
-          api=https://api.github.com/repos/pingdotgg/t3code/releases/latest
+          export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+
+          api='https://api.github.com/repos/pingdotgg/t3code/releases?per_page=100'
           t3_code_app=${lib.escapeShellArg t3CodeApp}
           t3_code_data_dir=${lib.escapeShellArg t3CodeDataDir}
           state_file=${lib.escapeShellArg t3CodeState}
@@ -54,12 +56,26 @@ in
 
           release_probe="$t3_code_data_dir/.t3-code-release.json"
           if ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_probe"; then
-            tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$release_probe")"
-            version="''${tag#v}"
-            asset_name="T3-Code-$version-arm64.zip"
-            asset_url="$(${getExe pkgs.jq} --raw-output --arg name "$asset_name" \
-              '.assets[] | select(.name == $name) | .browser_download_url' "$release_probe")"
+            release="$(${getExe pkgs.jq} --compact-output '
+              [
+                .[]
+                | select(.draft | not) as $release
+                | $release.assets[]
+                | select(.name | endswith("-arm64.dmg"))
+                | {
+                    asset_name: .name,
+                    asset_url: .browser_download_url,
+                    published_at: $release.published_at,
+                    tag: $release.tag_name
+                  }
+              ]
+              | sort_by(.published_at)
+              | last // {}
+            ' "$release_probe")"
             ${pkgs.coreutils}/bin/rm -f "$release_probe"
+            tag="$(printf '%s' "$release" | ${getExe pkgs.jq} --raw-output '.tag // empty')"
+            asset_name="$(printf '%s' "$release" | ${getExe pkgs.jq} --raw-output '.asset_name // empty')"
+            asset_url="$(printf '%s' "$release" | ${getExe pkgs.jq} --raw-output '.asset_url // empty')"
           else
             ${pkgs.coreutils}/bin/rm -f "$release_probe"
             if app_is_valid "$t3_code_app"; then
@@ -69,12 +85,12 @@ in
               printf 'warning: failed to check latest T3 Code release; keeping T3 Code %s\n' "$installed_version" >&2
               exit 0
             fi
-            printf 'error: failed to check latest T3 Code release and T3 Code is not installed\n' >&2
-            exit 1
+            printf 'warning: failed to check latest T3 Code release; skipping T3 Code install\n' >&2
+            exit 0
           fi
 
-          if [ -z "$tag" ] || [ -z "$asset_url" ]; then
-            printf 'error: failed to resolve T3 Code asset %s from latest release metadata\n' "$asset_name" >&2
+          if [ -z "$tag" ] || [ -z "$asset_name" ] || [ -z "$asset_url" ]; then
+            printf 'error: failed to resolve the newest T3 Code arm64 DMG from release metadata\n' >&2
             exit 1
           fi
 
@@ -90,25 +106,48 @@ in
           fi
 
           temp_dir="$(${pkgs.coreutils}/bin/mktemp --directory -t t3-code.XXXXXXXXXX)"
+          mount_dir="$temp_dir/mount"
+          mounted=false
           cleanup() {
+            if [ "$mounted" = true ]; then
+              /usr/bin/hdiutil detach "$mount_dir" >/dev/null || true
+            fi
             ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
           }
           trap cleanup EXIT
 
-          archive="$temp_dir/$asset_name"
-          extract_dir="$temp_dir/extract"
-          ${pkgs.coreutils}/bin/mkdir --parents "$extract_dir"
+          dmg="$temp_dir/$asset_name"
           printf 'Installing T3 Code %s from %s\n' "$tag" "$asset_url"
-          ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$archive"
-          ${getExe pkgs.unzip} -q "$archive" -d "$extract_dir"
+          ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$dmg"
 
-          if ! app_is_valid "$extract_dir/T3 Code.app"; then
-            printf 'error: the T3 Code archive does not contain a valid T3 Code.app\n' >&2
+          ${pkgs.coreutils}/bin/mkdir --parents "$mount_dir"
+          /usr/bin/hdiutil attach \
+            -nobrowse \
+            -readonly \
+            -mountpoint "$mount_dir" \
+            "$dmg" >/dev/null
+          mounted=true
+
+          source_app=
+          for candidate in "$mount_dir"/*.app; do
+            [ -d "$candidate" ] || continue
+            if [ -n "$source_app" ]; then
+              printf 'error: the T3 Code disk image contains multiple top-level app bundles\n' >&2
+              exit 1
+            fi
+            source_app=$candidate
+          done
+
+          if [ -z "$source_app" ] || ! app_is_valid "$source_app"; then
+            printf 'error: the T3 Code disk image does not contain one valid top-level app bundle\n' >&2
             exit 1
           fi
 
-          /usr/bin/ditto "$extract_dir/T3 Code.app" "$new_app"
+          /usr/bin/ditto "$source_app" "$new_app"
           /usr/bin/codesign --verify --deep --strict "$new_app"
+
+          /usr/bin/hdiutil detach "$mount_dir" >/dev/null
+          mounted=false
 
           if [ -e "$t3_code_app" ]; then
             ${pkgs.coreutils}/bin/mv "$t3_code_app" "$old_app"
