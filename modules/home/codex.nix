@@ -19,7 +19,6 @@ let
     "archimport"
     "backfill"
     "bisect"
-    "checkout"
     "checkout-index"
     "cherry-pick"
     "clean"
@@ -33,17 +32,14 @@ let
     "cvsserver"
     "daemon"
     "fast-import"
-    "fetch"
     "fetch-pack"
     "filter-branch"
-    "gc"
     "gui"
     "history"
     "imap-send"
     "index-pack"
     "init"
     "instaweb"
-    "maintenance"
     "merge"
     "merge-file"
     "merge-index"
@@ -56,14 +52,11 @@ let
     "pack-objects"
     "pack-refs"
     "p4"
-    "prune"
     "prune-packed"
-    "pull"
     "push"
     "quiltimport"
     "read-tree"
     "rebase"
-    "repack"
     "replay"
     "reset"
     "restore"
@@ -74,7 +67,6 @@ let
     "send-pack"
     "sparse-checkout"
     "svn"
-    "switch"
     "tag"
     "unpack-objects"
     "update-index"
@@ -84,7 +76,6 @@ let
   ];
 
   allowedGitSubcommands = [
-    "add"
     "annotate"
     "archive"
     "blame"
@@ -93,6 +84,7 @@ let
     "check-ignore"
     "check-mailmap"
     "check-ref-format"
+    "checkout"
     "cherry"
     "clone"
     "column"
@@ -105,8 +97,10 @@ let
     "diff-tree"
     "difftool"
     "fast-export"
+    "fetch"
     "for-each-ref"
     "fsck"
+    "gc"
     "get-tar-commit-id"
     "grep"
     "help"
@@ -115,11 +109,15 @@ let
     "ls-files"
     "ls-remote"
     "ls-tree"
+    "maintenance"
     "merge-base"
     "merge-tree"
     "name-rev"
     "pack-redundant"
+    "prune"
+    "pull"
     "range-diff"
+    "repack"
     "repo"
     "request-pull"
     "rev-list"
@@ -130,6 +128,8 @@ let
     "show-index"
     "show-ref"
     "status"
+    "submodule"
+    "switch"
     "var"
     "verify-commit"
     "verify-pack"
@@ -149,7 +149,6 @@ let
     import sys
 
     ALLOW_ANY = {
-        "add",
         "annotate",
         "archive",
         "blame",
@@ -170,8 +169,10 @@ let
         "diff-tree",
         "difftool",
         "fast-export",
+        "fetch",
         "for-each-ref",
         "fsck",
+        "gc",
         "get-tar-commit-id",
         "grep",
         "help",
@@ -180,11 +181,15 @@ let
         "ls-files",
         "ls-remote",
         "ls-tree",
+        "maintenance",
         "merge-base",
         "merge-tree",
         "name-rev",
         "pack-redundant",
+        "prune",
+        "pull",
         "range-diff",
+        "repack",
         "repo",
         "rev-list",
         "rev-parse",
@@ -195,6 +200,7 @@ let
         "show-ref",
         "shortlog",
         "status",
+        "submodule",
         "var",
         "verify-commit",
         "verify-pack",
@@ -206,7 +212,6 @@ let
         "archimport",
         "backfill",
         "bisect",
-        "checkout",
         "checkout-index",
         "cherry-pick",
         "clean",
@@ -220,17 +225,14 @@ let
         "cvsserver",
         "daemon",
         "fast-import",
-        "fetch",
         "fetch-pack",
         "filter-branch",
-        "gc",
         "gui",
         "history",
         "imap-send",
         "index-pack",
         "init",
         "instaweb",
-        "maintenance",
         "merge",
         "merge-file",
         "merge-index",
@@ -243,17 +245,13 @@ let
         "pack-objects",
         "pack-refs",
         "p4",
-        "prune",
         "prune-packed",
-        "pull",
         "push",
         "quiltimport",
         "read-tree",
         "rebase",
-        "repack",
         "replay",
         "reset",
-        "restore",
         "revert",
         "rm",
         "scalar",
@@ -261,7 +259,6 @@ let
         "send-pack",
         "sparse-checkout",
         "svn",
-        "switch",
         "tag",
         "unpack-objects",
         "update-index",
@@ -324,7 +321,6 @@ let
     NOTES_INSPECT_MODES = {"list", "show"}
     REPLACE_INSPECT_MODES = {"-l", "--list"}
     RERERE_INSPECT_MODES = {"diff", "status"}
-    SUBMODULE_INSPECT_MODES = {"status", "summary"}
     SYMBOLIC_REF_INSPECT_FLAGS = {"--short", "-q", "--quiet", "--recurse-submodules"}
     WORKTREE_INSPECT_MODES = {"list"}
 
@@ -444,6 +440,18 @@ let
         if subcommand == "bugreport":
             return False
 
+        if subcommand == "checkout":
+            branch_creation_flags = {"-b", "-B", "-t", "--orphan", "--track"}
+            return not any(
+                arg in branch_creation_flags
+                or arg.startswith("-b")
+                or arg.startswith("-B")
+                or arg.startswith("-t")
+                or arg.startswith("--orphan=")
+                or arg.startswith("--track=")
+                for arg in rest
+            )
+
         if subcommand == "bundle":
             return len(rest) >= 1 and rest[0] in BUNDLE_INSPECT_MODES
 
@@ -503,8 +511,27 @@ let
         if subcommand == "stash":
             return rest == ["list"] or (len(rest) >= 1 and rest[0] == "show")
 
-        if subcommand == "submodule":
-            return len(rest) >= 1 and rest[0] in SUBMODULE_INSPECT_MODES
+        if subcommand == "switch":
+            branch_creation_flags = {
+                "-c",
+                "-C",
+                "-t",
+                "--create",
+                "--force-create",
+                "--orphan",
+                "--track",
+            }
+            return not any(
+                arg in branch_creation_flags
+                or arg.startswith("-c")
+                or arg.startswith("-C")
+                or arg.startswith("-t")
+                or arg.startswith("--create=")
+                or arg.startswith("--force-create=")
+                or arg.startswith("--orphan=")
+                or arg.startswith("--track=")
+                for arg in rest
+            )
 
         if subcommand == "symbolic-ref":
             return is_safe_symbolic_ref(rest)
@@ -537,11 +564,34 @@ let
         print(json.dumps(payload))
 
 
+    def patch_touches_git_metadata(patch):
+        path_prefixes = (
+            "*** Add File: ",
+            "*** Update File: ",
+            "*** Delete File: ",
+            "*** Move to: ",
+        )
+
+        for line in patch.splitlines():
+            for prefix in path_prefixes:
+                if line.startswith(prefix):
+                    path = line[len(prefix):].strip().replace("\\", "/")
+                    if ".git" in path.split("/"):
+                        return True
+
+        return False
+
+
     data = json.load(sys.stdin)
     event_name = data.get("hook_event_name", "PreToolUse")
     command = data.get("tool_input", {}).get("command")
 
     if not isinstance(command, str):
+        sys.exit(0)
+
+    if data.get("tool_name") == "apply_patch":
+        if patch_touches_git_metadata(command):
+            deny(event_name, "Direct edits to Git metadata are blocked.")
         sys.exit(0)
 
     try:
@@ -553,7 +603,7 @@ let
     for argv in commands:
         git_argv = find_git_argv(argv)
         if git_argv is not None and not is_safe_git(git_argv):
-            deny(event_name, "Git command is not on the read-only allowlist.")
+            deny(event_name, "Git command is not on the protected-repository allowlist.")
             sys.exit(0)
   '';
 
@@ -576,7 +626,7 @@ in
       managed_dir = "${codexHookDir}"
 
       [[hooks.PreToolUse]]
-      matcher = "^Bash$"
+      matcher = "^(Bash|apply_patch)$"
 
       [[hooks.PreToolUse.hooks]]
       type = "command"
@@ -585,7 +635,7 @@ in
       statusMessage = "${hook.statusMessage}"
 
       [[hooks.PermissionRequest]]
-      matcher = "^Bash$"
+      matcher = "^(Bash|apply_patch)$"
 
       [[hooks.PermissionRequest.hooks]]
       type = "command"
@@ -595,7 +645,7 @@ in
 
       [rules]
       prefix_rules = [
-        { pattern = [{ token = "git" }, { any_of = ${gitSubcommandList blockedGitSubcommands} }], decision = "forbidden", justification = "Use read-only git commands; mutating git operations are blocked." },
+        { pattern = [{ token = "git" }, { any_of = ${gitSubcommandList blockedGitSubcommands} }], decision = "forbidden", justification = "Git staging, history, remote configuration, and publishing operations are blocked." },
         { pattern = [{ token = "git" }, { token = "branch" }, { any_of = ${
           gitSubcommandList [
             "-c"
@@ -627,15 +677,6 @@ in
             "save"
           ]
         } }], decision = "forbidden" },
-        { pattern = [{ token = "git" }, { token = "submodule" }, { any_of = ${
-          gitSubcommandList [
-            "add"
-            "deinit"
-            "foreach"
-            "sync"
-            "update"
-          ]
-        } }], decision = "forbidden" },
         { pattern = [{ token = "git" }, { token = "worktree" }, { any_of = ${
           gitSubcommandList [
             "add"
@@ -656,8 +697,8 @@ in
     home.file = {
       ".codex/rules/git.rules".text = ''
         # Codex rules are prefix-based. Do not add a broad forbidden ["git"]
-        # rule here: forbidden rules override more specific read-only allows.
-        # The managed hook blocks mutating branch forms like `git branch name`.
+        # rule here: forbidden rules override more specific operation allows.
+        # The managed hook blocks staging, history, ref, and remote mutations.
 
         ${concatMapStringsSep "\n" allowGitRule allowedGitSubcommands}
         prefix_rule(pattern = ["git", "apply", "--check"], decision = "allow")
@@ -690,19 +731,17 @@ in
         prefix_rule(pattern = ["git", "replace", ["-l", "--list"]], decision = "allow")
         prefix_rule(pattern = ["git", "rerere", ["diff", "status"]], decision = "allow")
         prefix_rule(pattern = ["git", "stash", ["list", "show"]], decision = "allow")
-        prefix_rule(pattern = ["git", "submodule", ["status", "summary"]], decision = "allow")
         prefix_rule(pattern = ["git", "symbolic-ref", ["--short", "-q", "--quiet", "--recurse-submodules"]], decision = "allow")
         prefix_rule(pattern = ["git", "worktree", "list"], decision = "allow")
 
         prefix_rule(
             pattern = ["git", ${gitSubcommandList blockedGitSubcommands}],
             decision = "forbidden",
-            justification = "Use read-only git commands; mutating git operations are blocked.",
+            justification = "Git staging, history, remote configuration, and publishing operations are blocked.",
         )
         prefix_rule(pattern = ["git", "branch", ["-c", "-C", "-d", "-D", "-m", "-M"]], decision = "forbidden")
         prefix_rule(pattern = ["git", "remote", ["add", "remove", "rename", "set-url", "prune", "update"]], decision = "forbidden")
         prefix_rule(pattern = ["git", "stash", ["apply", "branch", "clear", "drop", "pop", "push", "save"]], decision = "forbidden")
-        prefix_rule(pattern = ["git", "submodule", ["add", "deinit", "foreach", "sync", "update"]], decision = "forbidden")
         prefix_rule(pattern = ["git", "tag"], decision = "forbidden")
         prefix_rule(pattern = ["git", "worktree", ["add", "lock", "move", "prune", "remove", "unlock"]], decision = "forbidden")
       '';

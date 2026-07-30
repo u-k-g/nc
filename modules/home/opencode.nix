@@ -34,6 +34,14 @@ in
         };
 
         permission = {
+          edit = {
+            "*" = "allow";
+            ".git" = "deny";
+            ".git/*" = "deny";
+            "*/.git" = "deny";
+            "*/.git/*" = "deny";
+          };
+
           read = {
             "*" = "allow";
             "*.env" = "deny";
@@ -50,6 +58,17 @@ in
             "git branch -a" = "allow";
             "git branch -r" = "allow";
             "git cat-file *" = "allow";
+            "git checkout" = "allow";
+            "git checkout *" = "allow";
+            "git checkout --orphan*" = "deny";
+            "git checkout --track*" = "deny";
+            "git checkout -B *" = "deny";
+            "git checkout -B*" = "deny";
+            "git checkout -b *" = "deny";
+            "git checkout -b*" = "deny";
+            "git checkout -t *" = "deny";
+            "git checkout -t*" = "deny";
+            "git clone *" = "allow";
             "git config --get *" = "allow";
             "git config --get-regexp *" = "allow";
             "git config --list" = "allow";
@@ -58,18 +77,28 @@ in
             "git diff" = "allow";
             "git diff *" = "allow";
             "git diff-tree *" = "allow";
+            "git fetch" = "allow";
+            "git fetch *" = "allow";
             "git for-each-ref" = "allow";
             "git for-each-ref *" = "allow";
+            "git gc" = "allow";
+            "git gc *" = "allow";
             "git grep *" = "allow";
             "git log" = "allow";
             "git log *" = "allow";
             "git ls-remote" = "allow";
             "git ls-remote *" = "allow";
             "git ls-tree *" = "allow";
+            "git maintenance" = "allow";
+            "git maintenance *" = "allow";
             "git ls-files" = "allow";
             "git ls-files *" = "allow";
             "git merge-base *" = "allow";
             "git name-rev *" = "allow";
+            "git prune" = "allow";
+            "git prune *" = "allow";
+            "git pull" = "allow";
+            "git pull *" = "allow";
             "git reflog" = "allow";
             "git reflog show *" = "allow";
             "git remote" = "allow";
@@ -79,6 +108,10 @@ in
             "git rev-list *" = "allow";
             "git rev-parse" = "allow";
             "git rev-parse *" = "allow";
+            "git repack" = "allow";
+            "git repack *" = "allow";
+            "git restore" = "deny";
+            "git restore *" = "deny";
             "git show" = "allow";
             "git show *" = "allow";
             "git shortlog" = "allow";
@@ -87,8 +120,19 @@ in
             "git stash show *" = "allow";
             "git status" = "allow";
             "git status *" = "allow";
-            "git submodule status" = "allow";
-            "git submodule status *" = "allow";
+            "git submodule" = "allow";
+            "git submodule *" = "allow";
+            "git switch *" = "allow";
+            "git switch --create*" = "deny";
+            "git switch --force-create*" = "deny";
+            "git switch --orphan*" = "deny";
+            "git switch --track*" = "deny";
+            "git switch -C *" = "deny";
+            "git switch -C*" = "deny";
+            "git switch -c *" = "deny";
+            "git switch -c*" = "deny";
+            "git switch -t *" = "deny";
+            "git switch -t*" = "deny";
             "git tag" = "allow";
             "git tag --list *" = "allow";
             "git whatchanged" = "allow";
