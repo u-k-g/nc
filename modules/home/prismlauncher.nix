@@ -600,6 +600,33 @@ in
         '';
       };
 
+      xdg.dataFile."applications/org.kde.dolphin.desktop" = {
+        force = true;
+        text = ''
+          [Desktop Entry]
+          Type=Application
+          Name=Dolphin
+          GenericName=File Manager
+          Comment=Manage your files
+          Exec=${getExe pkgs.kdePackages.dolphin} %u
+          Icon=org.kde.dolphin
+          Terminal=false
+          Categories=Qt;KDE;System;FileTools;FileManager;
+          MimeType=inode/directory;
+          Actions=minecraft-drag-and-drop;
+          InitialPreference=10
+          StartupWMClass=dolphin
+          X-DBUS-ServiceName=org.kde.dolphin
+          X-DocPath=dolphin/index.html
+          X-KDE-Shortcuts=Meta+E
+
+          [Desktop Action minecraft-drag-and-drop]
+          Name=Open for Minecraft Drag-and-Drop
+          Exec=${getExe pkgs.kdePackages.dolphin} --new-window --platform xcb
+          Icon=org.kde.dolphin
+        '';
+      };
+
       home.activation.mcsr-standardsettings =
         config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
           ''

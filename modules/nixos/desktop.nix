@@ -39,10 +39,8 @@ in
 
   environment.systemPackages = with pkgs; [
     crossmacro
-    kdePackages.ark
     kdePackages.kcalc
     kdePackages.spectacle
-    kdePackages.dolphin
     modrinthApp
     wl-clipboard
     xclip

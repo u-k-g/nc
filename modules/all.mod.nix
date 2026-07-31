@@ -13,10 +13,12 @@
     bat = ./home/bat.nix;
     btop = ./home/btop.nix;
     codex = ./home/codex.nix;
+    communication = ./home/communication.nix;
     desktop-theme = ./home/desktop-theme.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
     freecad = ./home/freecad.nix;
+    file-explorer = ./home/file-explorer.nix;
     ghostty = ./home/ghostty.nix;
     kitty = ./home/kitty.nix;
     opencode = ./home/opencode.nix;
@@ -54,15 +56,16 @@
 
   flake.nixosModules = {
     audio = ./nixos/audio.nix;
-    bluetooth = ./nixos/bluetooth.nix;
     desktop = ./nixos/desktop.nix;
     gaming = ./nixos/gaming.nix;
     graphics = ./nixos/graphics.nix;
+    hardware = ./nixos/hardware.nix;
     keycode-remap = ./nixos/keycode-remap.nix;
     mullvad-dns = ./nixos/mullvad-dns.nix;
     nixos = ./nixos/default.nix;
     niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;
     printing = ./nixos/printing.nix;
+    steam = ./nixos/steam.nix;
   };
 }
