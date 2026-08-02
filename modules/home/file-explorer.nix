@@ -13,6 +13,8 @@ let
 in
 {
   home-manager.users.${user.name} = {
+    xdg.configFile."mimeapps.list".force = mkIf pkgs.stdenv.isLinux true;
+
     xdg.mimeApps.enable = mkIf pkgs.stdenv.isLinux true;
 
     xdg.mimeApps.defaultApplications =

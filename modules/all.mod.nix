@@ -57,6 +57,7 @@
   flake.nixosModules = {
     audio = ./nixos/audio.nix;
     desktop = ./nixos/desktop.nix;
+    flatpak = ./nixos/flatpak.nix;
     gaming = ./nixos/gaming.nix;
     graphics = ./nixos/graphics.nix;
     hardware = ./nixos/hardware.nix;
