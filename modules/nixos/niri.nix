@@ -7,6 +7,7 @@
 }:
 
 let
+  inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
   user = config.nc.user;
   theme = config.nc.theme;
@@ -85,10 +86,10 @@ let
       }
     }
   '';
-  dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-gruvbox.json";
+  dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-${theme.slug}.json";
   dmsTheme = {
     dark = {
-      name = "NC Gruvbox Dark";
+      name = "NC ${theme.name} Dark";
       surface = hex theme.base00;
       surfaceText = hex theme.base05;
       surfaceVariant = hex theme.base01;
@@ -110,7 +111,7 @@ let
       matugen_type = "scheme-tonal-spot";
     };
     light = {
-      name = "NC Gruvbox Light";
+      name = "NC ${theme.name} Light";
       surface = hex theme.base07;
       surfaceText = hex theme.base00;
       surfaceVariant = hex theme.base06;
@@ -309,6 +310,7 @@ in
 
   home-manager.users.${user.name}.xdg.configFile = {
     "niri/config.kdl" = {
+      force = true;
       text = ''
         input {
             keyboard {
@@ -442,11 +444,14 @@ in
       '';
     };
 
-    "DankMaterialShell/themes/nc-gruvbox.json" = {
-      text = builtins.toJSON dmsTheme;
+    "DankMaterialShell/themes/nc-${theme.slug}.json" = {
+      force = true;
+      text = toJSON { } dmsTheme;
     };
     "DankMaterialShell/settings.json" = {
-      text = builtins.toJSON dmsSettings;
+      force = true;
+      text = toJSON { } dmsSettings;
     };
   };
+
 }

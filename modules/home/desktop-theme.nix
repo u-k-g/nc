@@ -6,11 +6,12 @@
 }:
 
 let
-  inherit (lib) mkIf;
+  inherit (lib.modules) mkIf;
+  inherit (lib.strings) substring;
   user = config.nc.user;
   theme = config.nc.theme;
-  gtkThemeName = "Gruvbox-Dark";
-  kdeColorSchemeName = "NCGruvboxDark";
+  gtkThemeName = "Adwaita-dark";
+  kdeColorSchemeName = "NC-${theme.slug}";
   gtkSettings = ''
     [Settings]
     gtk-application-prefer-dark-theme=true
@@ -44,8 +45,7 @@ let
   };
   hexPairToDec =
     value: offset:
-    16 * hexDigit.${builtins.substring offset 1 value}
-    + hexDigit.${builtins.substring (offset + 1) 1 value};
+    16 * hexDigit.${substring offset 1 value} + hexDigit.${substring (offset + 1) 1 value};
   hexToRgb =
     value:
     "${toString (hexPairToDec value 0)},${toString (hexPairToDec value 2)},${toString (hexPairToDec value 4)}";
@@ -81,10 +81,7 @@ let
 in
 {
   home-manager.users.${user.name} = mkIf pkgs.stdenv.isLinux {
-    home.packages = [
-      pkgs.gruvbox-gtk-theme
-      theme.icons.package
-    ];
+    home.packages = lib.lists.singleton theme.icons.package;
 
     home.sessionVariables = {
       GTK_THEME = gtkThemeName;
@@ -110,11 +107,13 @@ in
         force = true;
         text = gtkSettings;
       };
+      "gtk-3.0/gtk.css" = {
+        force = true;
+        text = theme.adwaitaGtkCss;
+      };
       "gtk-4.0/gtk.css" = {
         force = true;
-        text = ''
-          @import url("file://${pkgs.gruvbox-gtk-theme}/share/themes/${gtkThemeName}/gtk-4.0/gtk.css");
-        '';
+        text = theme.adwaitaGtkCss;
       };
 
       "kdeglobals" = {
@@ -122,7 +121,7 @@ in
         text = ''
           [General]
           ColorScheme=${kdeColorSchemeName}
-          Name=NC Gruvbox Dark
+          Name=NC ${theme.name}
           shadeSortColumn=true
 
           [Icons]
@@ -148,77 +147,81 @@ in
       };
     };
 
-    xdg.dataFile."color-schemes/${kdeColorSchemeName}.colors".text = ''
-      [ColorEffects:Disabled]
-      Color=${rgb.bg3}
-      ColorAmount=0
-      ColorEffect=0
-      ContrastAmount=0.65
-      ContrastEffect=1
-      IntensityAmount=0.1
-      IntensityEffect=2
+    xdg.dataFile."color-schemes/${kdeColorSchemeName}.colors" = {
+      force = true;
+      text = ''
+        [ColorEffects:Disabled]
+        Color=${rgb.bg3}
+        ColorAmount=0
+        ColorEffect=0
+        ContrastAmount=0.65
+        ContrastEffect=1
+        IntensityAmount=0.1
+        IntensityEffect=2
 
-      [ColorEffects:Inactive]
-      ChangeSelectionColor=true
-      Color=${rgb.bg3}
-      ColorAmount=0.025
-      ColorEffect=2
-      ContrastAmount=0.1
-      ContrastEffect=2
-      Enable=false
-      IntensityAmount=0
-      IntensityEffect=0
+        [ColorEffects:Inactive]
+        ChangeSelectionColor=true
+        Color=${rgb.bg3}
+        ColorAmount=0.025
+        ColorEffect=2
+        ContrastAmount=0.1
+        ContrastEffect=2
+        Enable=false
+        IntensityAmount=0
+        IntensityEffect=0
 
-      [Colors:Button]
-      ${colorSet rgb.bg1 rgb.bg2}
+        [Colors:Button]
+        ${colorSet rgb.bg1 rgb.bg2}
 
-      [Colors:Complementary]
-      ${colorSet rgb.bg0 rgb.bg1}
+        [Colors:Complementary]
+        ${colorSet rgb.bg0 rgb.bg1}
 
-      [Colors:Header]
-      ${colorSet rgb.bg1 rgb.bg0}
+        [Colors:Header]
+        ${colorSet rgb.bg1 rgb.bg0}
 
-      [Colors:Header][Inactive]
-      ${colorSet rgb.bg0 rgb.bg1}
+        [Colors:Header][Inactive]
+        ${colorSet rgb.bg0 rgb.bg1}
 
-      [Colors:Selection]
-      BackgroundAlternate=${rgb.bg2}
-      BackgroundNormal=${rgb.bg2}
-      DecorationFocus=${rgb.yellow}
-      DecorationHover=${rgb.aqua}
-      ForegroundActive=${rgb.fg1}
-      ForegroundInactive=${rgb.bg3}
-      ForegroundLink=${rgb.yellow}
-      ForegroundNegative=${rgb.red}
-      ForegroundNeutral=${rgb.orange}
-      ForegroundNormal=${rgb.fg1}
-      ForegroundPositive=${rgb.green}
-      ForegroundVisited=${rgb.purple}
+        [Colors:Selection]
+        BackgroundAlternate=${rgb.bg2}
+        BackgroundNormal=${rgb.bg2}
+        DecorationFocus=${rgb.yellow}
+        DecorationHover=${rgb.aqua}
+        ForegroundActive=${rgb.fg1}
+        ForegroundInactive=${rgb.bg3}
+        ForegroundLink=${rgb.yellow}
+        ForegroundNegative=${rgb.red}
+        ForegroundNeutral=${rgb.orange}
+        ForegroundNormal=${rgb.fg1}
+        ForegroundPositive=${rgb.green}
+        ForegroundVisited=${rgb.purple}
 
-      [Colors:Tooltip]
-      ${colorSet rgb.bg1 rgb.bg0}
+        [Colors:Tooltip]
+        ${colorSet rgb.bg1 rgb.bg0}
 
-      [Colors:View]
-      ${colorSet rgb.bg0 rgb.bg1}
+        [Colors:View]
+        ${colorSet rgb.bg0 rgb.bg1}
 
-      [Colors:Window]
-      ${colorSet rgb.bg0 rgb.bg1}
+        [Colors:Window]
+        ${colorSet rgb.bg0 rgb.bg1}
 
-      [General]
-      ColorScheme=${kdeColorSchemeName}
-      Name=NC Gruvbox Dark
-      shadeSortColumn=true
+        [General]
+        ColorScheme=${kdeColorSchemeName}
+        Name=NC ${theme.name}
+        shadeSortColumn=true
 
-      [KDE]
-      contrast=4
+        [KDE]
+        contrast=4
 
-      [WM]
-      activeBackground=${rgb.bg1}
-      activeBlend=${rgb.fg0}
-      activeForeground=${rgb.fg0}
-      inactiveBackground=${rgb.bg0}
-      inactiveBlend=${rgb.bg3}
-      inactiveForeground=${rgb.bg3}
-    '';
+        [WM]
+        activeBackground=${rgb.bg1}
+        activeBlend=${rgb.fg0}
+        activeForeground=${rgb.fg0}
+        inactiveBackground=${rgb.bg0}
+        inactiveBlend=${rgb.bg3}
+        inactiveForeground=${rgb.bg3}
+      '';
+    };
+
   };
 }

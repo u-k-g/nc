@@ -235,7 +235,7 @@ records = true
 enabled = true
 
 [theme]
-name = "catppuccin-mocha-lavender"
+name = "nc"
 ## Color theme to use for rendering in the terminal.
 ## There are some built-in themes, including the base theme ("default"),
 ## "autumn" and "marine". You can add your own themes to the "./themes" subdirectory of your

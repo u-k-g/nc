@@ -15,6 +15,7 @@
     codex = ./home/codex.nix;
     communication = ./home/communication.nix;
     desktop-theme = ./home/desktop-theme.nix;
+    mutable-desktop-settings = ./home/mutable-desktop-settings.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
     freecad = ./home/freecad.nix;

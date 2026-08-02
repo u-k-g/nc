@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -9,12 +10,25 @@ let
   inherit (lib.attrsets) optionalAttrs;
   inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) makeLibraryPath optionalString;
+  inherit (lib.strings)
+    concatMapStringsSep
+    makeLibraryPath
+    optionalString
+    substring
+    ;
+  inherit (inputs.themes.lib.strings) fromHexString;
   user = config.nc.user;
   theme = config.nc.theme;
   home = user.homeDirectory;
   dotfiles = ../../dotfiles;
   hex = color: "#${color}";
+  rgb =
+    color:
+    concatMapStringsSep ";" (offset: toString <| fromHexString <| substring offset 2 color) [
+      0
+      2
+      4
+    ];
 
   sessionVariables = {
     CARAPACE_BRIDGES = "inshellisense,carapace,zsh,fish,bash";
@@ -25,10 +39,10 @@ let
     DETSYS_IDS_TELEMETRY = "disabled";
     EDITOR = "hx";
     FZF_DEFAULT_OPTS = lib.concatStringsSep " " [
-      "--color=bg:#1d2021,bg+:#3c3836,fg:#ebdbb2,fg+:#fbf1c7"
-      "--color=hl:#fabd2f,hl+:#fabd2f,pointer:#fe8019,prompt:#b8bb26"
-      "--color=info:#83a598,border:#665c54,marker:#d3869b,spinner:#8ec07c"
-      "--color=header:#928374,label:#fbf1c7,query:#fbf1c7"
+      "--color=bg:${hex theme.base00},bg+:${hex theme.base02},fg:${hex theme.base05},fg+:${hex theme.base06}"
+      "--color=hl:${hex theme.base0A},hl+:${hex theme.base0A},pointer:${hex theme.base09},prompt:${hex theme.base0B}"
+      "--color=info:${hex theme.base0D},border:${hex theme.base03},marker:${hex theme.base0E},spinner:${hex theme.base0C}"
+      "--color=header:${hex theme.base04},label:${hex theme.base06},query:${hex theme.base06}"
     ];
     GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
@@ -68,10 +82,31 @@ let
     "${home}/.lmstudio/bin"
   ];
 
-  lsColors = pkgs.runCommand "ls-colors" { } ''
-    mkdir -p $out/share
-    ${getExe pkgs.vivid} generate gruvbox-dark-hard > $out/share/LS_COLORS
-  '';
+  lsColors =
+    pkgs.writeTextDir "share/LS_COLORS"
+    <| lib.concatStringsSep ":" [
+      "di=1;38;2;${rgb theme.base0D}"
+      "ln=38;2;${rgb theme.base0C}"
+      "so=38;2;${rgb theme.base0E}"
+      "pi=38;2;${rgb theme.base09}"
+      "ex=1;38;2;${rgb theme.base0B}"
+      "bd=38;2;${rgb theme.base08}"
+      "cd=38;2;${rgb theme.base08}"
+      "*.tar=38;2;${rgb theme.base08}"
+      "*.gz=38;2;${rgb theme.base08}"
+      "*.zip=38;2;${rgb theme.base08}"
+      "*.7z=38;2;${rgb theme.base08}"
+      "*.jpg=38;2;${rgb theme.base09}"
+      "*.jpeg=38;2;${rgb theme.base09}"
+      "*.png=38;2;${rgb theme.base09}"
+      "*.gif=38;2;${rgb theme.base09}"
+      "*.mp3=38;2;${rgb theme.base0E}"
+      "*.flac=38;2;${rgb theme.base0E}"
+      "*.mp4=38;2;${rgb theme.base0E}"
+      "*.mkv=38;2;${rgb theme.base0E}"
+      "*.md=38;2;${rgb theme.base0A}"
+      "*.pdf=38;2;${rgb theme.base0A}"
+    ];
 
   shadowPath = "${home}/.local/share/shadow";
 

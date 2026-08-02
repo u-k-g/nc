@@ -14,6 +14,9 @@
     homeDirectory = "/home/ukg";
   };
 
+  # Also available: "gruvbox-dark-hard", "rose-pine", and "matte-black".
+  nc.themePreset = "black-metal";
+
   networking.hostName = "desktop";
 
   nc.nixos.nvidia.enable = true;

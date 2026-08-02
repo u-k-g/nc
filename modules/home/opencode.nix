@@ -142,7 +142,7 @@ in
       };
 
       tui = {
-        theme = "gruvbox";
+        theme = "system";
         scroll_speed = 4;
       };
     };

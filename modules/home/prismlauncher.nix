@@ -13,6 +13,7 @@ let
     mkMerge
     ;
   user = config.nc.user;
+  theme = config.nc.theme;
   json = pkgs.formats.json { };
   ninjabrainBotJar = pkgs.fetchurl {
     url = "https://github.com/Ninjabrain1/Ninjabrain-Bot/releases/download/1.5.2/Ninjabrain-Bot-1.5.2.jar";
@@ -365,7 +366,7 @@ in
             ninb_autoshow_text = waywall.text(text, {
                 x = ${toString (monitorWidth - 160)},
                 y = ${toString (monitorHeight - 120)},
-                color = "#fabd2fff",
+                color = "#${theme.base0A}ff",
                 size = 2,
                 depth = 20,
             })
@@ -420,7 +421,7 @@ in
             },
 
             theme = {
-                background = "#1d2021ff",
+                background = "#${theme.base00}ff",
                 ninb_anchor = "right",
                 ninb_opacity = 0.8,
             },
