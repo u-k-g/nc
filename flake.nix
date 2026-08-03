@@ -55,7 +55,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    homebrew.url = "github:zhaofengli/nix-homebrew";
+    # Temporary compatibility pin: homebrew-core uses install-step DSL
+    # features that require Homebrew 6.0.15+. Return to the upstream
+    # zhaofengli/nix-homebrew input once PR #167 (or an equivalent bump)
+    # is merged.
+    homebrew.url = "github:Azd325/nix-homebrew/212a0902eac8642c8e01a990c9031250d9408a74";
 
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
