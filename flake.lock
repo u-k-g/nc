@@ -300,11 +300,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1785116923,
-        "narHash": "sha256-V3Uu6AqS+Y6ClUBE7aDm9g9BCa1QfD9QZxmadas/AzQ=",
+        "lastModified": 1785785136,
+        "narHash": "sha256-kRmeqjVTVrWaYPBs0BtFeeZo01Vk1g566PRyLgdO4Uw=",
         "owner": "u-k-g",
         "repo": "paneru",
-        "rev": "cc0d74648d0e6ada590b46ac51cbc8c49a17a913",
+        "rev": "daa19b9688c82a3ea0bfbf27e3fa4dd3268139a9",
         "type": "github"
       },
       "original": {
