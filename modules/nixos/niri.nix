@@ -14,6 +14,10 @@ let
   hex = color: "#${color}";
   heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
   dms = getExe pkgs.dms-shell;
+  qtEnvironment = [
+    "QT_QPA_PLATFORMTHEME=${config.qt.platformTheme}"
+    "QT_STYLE_OVERRIDE=${config.qt.style}"
+  ];
   focusOrLaunch = pkgs.writers.writeNuBin "nc-focus-or-launch" ''
     def main [pattern: string, ...command: string] {
       if ($command | is-empty) {
@@ -138,15 +142,29 @@ let
     currentThemeCategory = "custom";
     customThemeFile = dmsThemePath;
     matugenScheme = "scheme-tonal-spot";
+    popupTransparency = 0.38;
 
-    fontFamily = theme.font.sans.name;
+    fontFamily = "RecMonoLinear Nerd Font";
     monoFontFamily = "Iosevka Nerd Font Mono";
     fontScale = 1.0;
 
-    cornerRadius = theme.cornerRadius;
+    cornerRadius = 5;
     niriLayoutGapsOverride = 16;
     niriLayoutRadiusOverride = theme.cornerRadius;
     niriLayoutBorderSize = 0;
+
+    firstDayOfWeek = 2;
+    clockFormat = "12h";
+    showSeconds = true;
+    padHours12Hour = true;
+    clockDateFormat = "M/d";
+    lockDateFormat = "ddd dd.MM";
+
+    animationSpeed = 4;
+    customAnimationDuration = 100;
+
+    blurEnabled = true;
+    blurWallpaperOnOverview = true;
 
     widgetBackgroundColor = "sch";
     widgetColorMode = "default";
@@ -166,8 +184,6 @@ let
     runningAppsCurrentWorkspace = true;
     runningAppsGroupByApp = false;
 
-    use24HourClock = true;
-    showSeconds = false;
     weatherEnabled = false;
     showWeather = false;
 
@@ -177,79 +193,100 @@ let
     dankLauncherV2Size = "compact";
     dankLauncherV2BorderEnabled = true;
     dankLauncherV2BorderColor = "primary";
+    spotlightBarShowModeChips = true;
+
+    cursorSettings = {
+      theme = "breeze_cursors";
+      size = 22;
+      niri = {
+        hideWhenTyping = false;
+        hideAfterInactiveMs = 0;
+      };
+      hyprland = {
+        hideOnKeyPress = false;
+        hideOnTouch = false;
+        inactiveTimeout = 0;
+      };
+      dwl.cursorHideTimeout = 0;
+      mango.cursorHideTimeout = 0;
+    };
 
     gtkThemingEnabled = true;
     qtThemingEnabled = true;
     syncModeWithPortal = true;
 
-    barConfigs = [
-      {
-        id = "default";
-        name = "Main Bar";
-        enabled = true;
-        position = 0;
-        screenPreferences = [ "all" ];
-        showOnLastDisplay = true;
-        leftWidgets = [
-          "launcherButton"
-          "workspaceSwitcher"
-          "focusedWindow"
-        ];
-        centerWidgets = [
-          "clock"
-          "music"
-        ];
-        rightWidgets = [
-          "systemTray"
-          "clipboard"
-          "cpuUsage"
-          "memUsage"
-          "notificationButton"
-          "battery"
-          "controlCenterButton"
-        ];
-        spacing = 4;
-        innerPadding = 4;
-        bottomGap = 0;
-        transparency = 1.0;
-        widgetTransparency = 1.0;
-        squareCorners = false;
-        noBackground = false;
-        maximizeWidgetIcons = false;
-        maximizeWidgetText = false;
-        removeWidgetPadding = false;
-        widgetPadding = theme.padding;
-        gothCornersEnabled = false;
-        gothCornerRadiusOverride = false;
-        gothCornerRadiusValue = theme.cornerRadius;
-        borderEnabled = false;
-        borderColor = "surfaceText";
-        borderOpacity = 1.0;
-        borderThickness = 1;
-        widgetOutlineEnabled = false;
-        widgetOutlineColor = "primary";
-        widgetOutlineOpacity = 1.0;
-        widgetOutlineThickness = 1;
-        fontScale = 1.0;
-        iconScale = 1.0;
-        autoHide = false;
-        autoHideDelay = 250;
-        showOnWindowsOpen = false;
-        openOnOverview = false;
-        visible = true;
-        popupGapsAuto = true;
-        popupGapsManual = 4;
-        maximizeDetection = true;
-        scrollEnabled = true;
-        scrollXBehavior = "column";
-        scrollYBehavior = "workspace";
-        shadowIntensity = 0;
-        shadowOpacity = 60;
-        shadowColorMode = "text";
-        shadowCustomColor = "#000000";
-        clickThrough = false;
-      }
-    ];
+    showDock = true;
+    dockSmartAutoHide = true;
+    dockOpenOnOverview = true;
+
+    screenPreferences.wallpaper = lib.lists.singleton "all";
+
+    barConfigs = lib.lists.singleton {
+      id = "default";
+      name = "Main Bar";
+      enabled = true;
+      position = 0;
+      screenPreferences = lib.lists.singleton "all";
+      showOnLastDisplay = true;
+      leftWidgets = [
+        "launcherButton"
+        "workspaceSwitcher"
+        "focusedWindow"
+      ];
+      centerWidgets = [
+        "clock"
+        "music"
+      ];
+      rightWidgets = [
+        "systemTray"
+        "clipboard"
+        "cpuUsage"
+        "memUsage"
+        "notificationButton"
+        "battery"
+        "controlCenterButton"
+      ];
+      spacing = 4;
+      innerPadding = 4;
+      bottomGap = 0;
+      transparency = 0.5;
+      widgetTransparency = 1.0;
+      squareCorners = false;
+      noBackground = false;
+      maximizeWidgetIcons = false;
+      maximizeWidgetText = false;
+      removeWidgetPadding = false;
+      widgetPadding = theme.padding;
+      gothCornersEnabled = false;
+      gothCornerRadiusOverride = false;
+      gothCornerRadiusValue = 10;
+      borderEnabled = false;
+      borderColor = "surfaceText";
+      borderOpacity = 1.0;
+      borderThickness = 1;
+      widgetOutlineEnabled = false;
+      widgetOutlineColor = "primary";
+      widgetOutlineOpacity = 1.0;
+      widgetOutlineThickness = 1;
+      fontScale = 1.0;
+      iconScale = 0.9;
+      autoHide = false;
+      autoHideDelay = 250;
+      showOnWindowsOpen = false;
+      openOnOverview = false;
+      visible = true;
+      popupGapsAuto = true;
+      popupGapsManual = 4;
+      maximizeDetection = true;
+      scrollEnabled = true;
+      scrollXBehavior = "column";
+      scrollYBehavior = "workspace";
+      shadowIntensity = 0;
+      shadowOpacity = 60;
+      shadowColorMode = "text";
+      shadowCustomColor = "#000000";
+      clickThrough = false;
+    };
   };
 in
 
@@ -304,8 +341,13 @@ in
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
-    XCURSOR_THEME = "Adwaita";
-    XCURSOR_SIZE = "24";
+    XCURSOR_THEME = dmsSettings.cursorSettings.theme;
+    XCURSOR_SIZE = toString dmsSettings.cursorSettings.size;
+  };
+
+  systemd.user.services = {
+    dms.serviceConfig.Environment = qtEnvironment;
+    dsearch.serviceConfig.Environment = qtEnvironment;
   };
 
   home-manager.users.${user.name}.xdg.configFile = {
@@ -377,8 +419,8 @@ in
             Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe pkgs.zed-editor}"; }
 
             Alt+H { focus-column-left; }
-            Alt+J { focus-window-down; }
-            Alt+K { focus-window-up; }
+            Alt+J { focus-workspace-down; }
+            Alt+K { focus-workspace-up; }
             Alt+L { focus-column-right; }
 
             Alt+Shift+H { move-column-left; }

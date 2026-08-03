@@ -37,6 +37,14 @@ in
     xdgOpenUsePortal = true;
   };
 
+  qt = {
+    enable = true;
+    platformTheme = "kde";
+    style = "breeze";
+  };
+
+  programs.kdeconnect.enable = true;
+
   environment.systemPackages = with pkgs; [
     crossmacro
     kdePackages.kcalc
