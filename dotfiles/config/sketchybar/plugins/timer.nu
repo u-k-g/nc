@@ -13,7 +13,7 @@ def format-time [total: int] {
 def main [] {
   let now = (date now | format date "%s" | into int)
   mut state = (read-timer-state)
-  mut color = "0xffffffff"
+  mut color = "0xff@base05@"
   mut label = "00:00"
 
   if $state.status == "running" {
@@ -27,14 +27,14 @@ def main [] {
     }
   } else if $state.status == "paused" {
     $label = (format-time ($state.remaining | default 0))
-    $color = "0x99ffffff"
+    $color = "0xff@base04@"
   } else if $state.status == "stopwatch_running" {
     $label = (format-time (($state.elapsed | default 0) + ($now - ($state.start_time | default $now))))
   } else if $state.status == "stopwatch_paused" {
     $label = (format-time ($state.elapsed | default 0))
-    $color = "0x99ffffff"
+    $color = "0xff@base04@"
   } else if $state.status == "done" {
-    if (($now mod 2) == 0) { $color = "0xffff7777" } else { $color = "0x40ff7777" }
+    if (($now mod 2) == 0) { $color = "0xff@base08@" } else { $color = "0x40@base08@" }
   }
 
   ^sketchybar --set timer $"label=($label)" $"label.color=($color)"

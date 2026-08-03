@@ -6,9 +6,86 @@
 }:
 
 let
+  inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
   inherit (lib.modules) mkIf;
   user = config.nc.user;
+  theme = config.nc.theme;
+  themeName = "nc-${theme.slug}";
+
+  opencodeTheme = {
+    "$schema" = "https://opencode.ai/theme.json";
+    defs = {
+      base00 = "#${theme.base00}";
+      base01 = "#${theme.base01}";
+      base02 = "#${theme.base02}";
+      base03 = "#${theme.base03}";
+      base04 = "#${theme.base04}";
+      base05 = "#${theme.base05}";
+      base06 = "#${theme.base06}";
+      base07 = "#${theme.base07}";
+      base08 = "#${theme.base08}";
+      base09 = "#${theme.base09}";
+      base0A = "#${theme.base0A}";
+      base0B = "#${theme.base0B}";
+      base0C = "#${theme.base0C}";
+      base0D = "#${theme.base0D}";
+      base0E = "#${theme.base0E}";
+      base0F = "#${theme.base0F}";
+    };
+    theme = {
+      primary = "base0D";
+      secondary = "base0E";
+      accent = "base0A";
+      error = "base08";
+      warning = "base09";
+      success = "base0B";
+      info = "base0C";
+      text = "base05";
+      textMuted = "base03";
+      background = "base00";
+      backgroundPanel = "base01";
+      backgroundElement = "base02";
+      border = "base02";
+      borderActive = "base0A";
+      borderSubtle = "base01";
+      diffAdded = "base0B";
+      diffRemoved = "base08";
+      diffContext = "base04";
+      diffHunkHeader = "base0D";
+      diffHighlightAdded = "base0B";
+      diffHighlightRemoved = "base08";
+      diffAddedBg = "base01";
+      diffRemovedBg = "base01";
+      diffContextBg = "base00";
+      diffLineNumber = "base03";
+      diffAddedLineNumberBg = "base01";
+      diffRemovedLineNumberBg = "base01";
+      markdownText = "base05";
+      markdownHeading = "base0D";
+      markdownLink = "base0C";
+      markdownLinkText = "base0D";
+      markdownCode = "base0B";
+      markdownBlockQuote = "base04";
+      markdownEmph = "base0E";
+      markdownStrong = "base0A";
+      markdownHorizontalRule = "base03";
+      markdownListItem = "base0D";
+      markdownListEnumeration = "base0C";
+      markdownImage = "base0E";
+      markdownImageText = "base0D";
+      markdownCodeBlock = "base05";
+      syntaxComment = "base03";
+      syntaxKeyword = "base0E";
+      syntaxFunction = "base0D";
+      syntaxVariable = "base08";
+      syntaxString = "base0B";
+      syntaxNumber = "base09";
+      syntaxType = "base0A";
+      syntaxOperator = "base05";
+      syntaxPunctuation = "base04";
+    };
+  };
 
   homeManager = config.home-manager.users.${user.name};
   opencodeInstallDir = "${user.homeDirectory}/.opencode/bin";
@@ -142,10 +219,12 @@ in
       };
 
       tui = {
-        theme = "system";
+        theme = themeName;
         scroll_speed = 4;
       };
     };
+
+    xdg.configFile."opencode/themes/${themeName}.json".text = toJSON { } opencodeTheme;
 
     home.file."Applications/OpenCode.app" = mkIf pkgs.stdenv.hostPlatform.isDarwin {
       source = homeManager.lib.file.mkOutOfStoreSymlink opencodeDesktopApp;

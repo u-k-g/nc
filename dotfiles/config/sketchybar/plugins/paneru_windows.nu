@@ -1,8 +1,8 @@
 #!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
 
 const max_items = 12
-const focused_color = "0xffffffff"
-const unfocused_color = "0x60ffffff"
+const focused_color = "0xff@base05@"
+const unfocused_color = "0xff@base03@"
 const legacy_pid_file = "/tmp/sketchybar_paneru_windows.pid"
 const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
 

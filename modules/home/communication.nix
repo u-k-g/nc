@@ -36,8 +36,9 @@ in
 
     home.packages = optional pkgs.stdenv.isLinux discord;
 
-    xdg.configFile."Vencord/settings/quickCss.css".force = mkIf pkgs.stdenv.isLinux true;
-    xdg.configFile."Vencord/settings/quickCss.css".text =
-      mkIf pkgs.stdenv.isLinux config.nc.theme.discordCss;
+    xdg.configFile."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.isLinux {
+      force = true;
+      text = config.nc.theme.discordCss;
+    };
   };
 }

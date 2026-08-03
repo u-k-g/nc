@@ -23,7 +23,7 @@ def main [] {
   let bar = [
     "shadow=off"
     "height=37"
-    "color=0x55000000"
+    "color=0x55@base00@"
     "position=top"
     "blur_radius=60"
     "notch_width=200"
@@ -37,8 +37,8 @@ def main [] {
     "padding_right=4"
     "icon.font=DepartureMono Nerd Font Mono:Regular:18.0"
     "label.font=DepartureMono Nerd Font Mono:Regular:15.0"
-    "icon.color=0xffffffff"
-    "label.color=0xffffffff"
+    "icon.color=0xff@base05@"
+    "label.color=0xff@base05@"
     "icon.y_offset=0"
     "label.y_offset=0"
     "icon.padding_left=4"
@@ -54,7 +54,7 @@ def main [] {
     "label.drawing=off"
     "icon.font=sketchybar-app-font:Regular:16.0"
     "icon.y_offset=0"
-    "icon.color=0x60ffffff"
+    "icon.color=0xff@base03@"
     "padding_left=4"
     "padding_right=4"
   ]
