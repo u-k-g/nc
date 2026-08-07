@@ -1,4 +1,8 @@
-{ pkgs, ... }:
+{
+  pkgs,
+  self,
+  ...
+}:
 
 {
   fonts.packages = with pkgs; [
@@ -11,6 +15,8 @@
     nerd-fonts.martian-mono
     nerd-fonts.recursive-mono
     nerd-fonts.symbols-only
+    inter
+    self.packages.${pkgs.stdenv.hostPlatform.system}.instrument-serif
     ibm-plex
     fraunces
     lora
