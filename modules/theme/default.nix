@@ -27,8 +27,8 @@ let
       base0A = "69D69A";
       base0B = "9EE4BE";
       base0C = "69D69A";
-      base0D = "E3B34E";
-      base0E = "E6BC63";
+      base0D = "69D69A";
+      base0E = "69D69A";
       base0F = "F07372";
     };
     gruvbox-dark-hard = inputs.themes.raw.gruvbox-dark-hard;
