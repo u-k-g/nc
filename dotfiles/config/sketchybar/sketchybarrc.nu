@@ -54,7 +54,7 @@ def main [] {
     "label.drawing=off"
     "icon.font=sketchybar-app-font:Regular:16.0"
     "icon.y_offset=0"
-    "icon.color=0xff@base03@"
+    "icon.color=0x80@base05@"
     "padding_left=4"
     "padding_right=4"
   ]

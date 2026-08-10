@@ -16,11 +16,9 @@ let
       substituteInPlace \
         $out/sketchybarrc.nu \
         --replace-fail '@base00@' '${theme.base00}' \
-        --replace-fail '@base03@' '${theme.base03}' \
         --replace-fail '@base05@' '${theme.base05}'
       substituteInPlace \
         $out/plugins/paneru_windows.nu \
-        --replace-fail '@base03@' '${theme.base03}' \
         --replace-fail '@base05@' '${theme.base05}'
       substituteInPlace \
         $out/plugins/timer.nu \
