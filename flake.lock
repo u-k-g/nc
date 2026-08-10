@@ -236,6 +236,22 @@
         "type": "github"
       }
     },
+    "homebrew-tinycast": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786321024,
+        "narHash": "sha256-Irh+w+eJeA7lTtPzUUM9rDPvErmnu71g1OatFlIgZqA=",
+        "owner": "abue-ammar",
+        "repo": "homebrew-tinycast",
+        "rev": "3116a693468646f2e799065d774d3335bc4d1c86",
+        "type": "github"
+      },
+      "original": {
+        "owner": "abue-ammar",
+        "repo": "homebrew-tinycast",
+        "type": "github"
+      }
+    },
     "import-tree": {
       "locked": {
         "lastModified": 1773693634,
@@ -344,6 +360,7 @@
         "homebrew-core": "homebrew-core",
         "homebrew-felixkratz": "homebrew-felixkratz",
         "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",
+        "homebrew-tinycast": "homebrew-tinycast",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
         "paneru": "paneru",

@@ -12,6 +12,7 @@
     user = config.nc.user.name;
 
     taps = {
+      "abue-ammar/homebrew-tinycast" = inputs.homebrew-tinycast;
       "apple/homebrew-apple" = inputs.homebrew-apple;
       "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
@@ -33,6 +34,7 @@
     };
 
     taps = [
+      "abue-ammar/tinycast"
       "apple/apple"
       "felixkratz/formulae"
       "homebrew/cask"
@@ -59,6 +61,7 @@
     ];
 
     casks = [
+      "abue-ammar/tinycast/tinycast@beta"
       "battery"
       "blip"
       "cmux"

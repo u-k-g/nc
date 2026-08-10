@@ -91,6 +91,11 @@
       flake = false;
     };
 
+    homebrew-tinycast = {
+      url = "github:abue-ammar/homebrew-tinycast";
+      flake = false;
+    };
+
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
