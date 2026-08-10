@@ -14,8 +14,8 @@
     homeDirectory = "/home/ukg";
   };
 
-  # Also available: "gruvbox-dark-hard", "rose-pine", and "matte-black".
-  nc.themePreset = "black-metal";
+  # Also available: "black-metal", "gruvbox-dark-hard", "rose-pine", and "matte-black".
+  nc.themePreset = "grove";
 
   networking.hostName = "desktop";
 

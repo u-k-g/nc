@@ -11,6 +11,26 @@ let
   inherit (lib.types) attrs enum;
   themePresets = {
     black-metal = inputs.themes.raw.black-metal;
+    grove = {
+      name = "Grove";
+      author = "T3 Code";
+      base00 = "1B2821";
+      base01 = "21362B";
+      base02 = "36654C";
+      base03 = "919595";
+      base04 = "A9ABAB";
+      base05 = "FFFAFF";
+      base06 = "FFFAFF";
+      base07 = "FFFAFF";
+      base08 = "FB414A";
+      base09 = "FE9A00";
+      base0A = "69D69A";
+      base0B = "9EE4BE";
+      base0C = "69D69A";
+      base0D = "E3B34E";
+      base0E = "E6BC63";
+      base0F = "F07372";
+    };
     gruvbox-dark-hard = inputs.themes.raw.gruvbox-dark-hard;
     rose-pine = inputs.themes.raw.rose-pine;
     matte-black = {
@@ -40,11 +60,12 @@ in
     themePreset = mkOption {
       type = enum [
         "black-metal"
+        "grove"
         "gruvbox-dark-hard"
         "rose-pine"
         "matte-black"
       ];
-      default = "black-metal";
+      default = "grove";
       description = "Color preset used by every themed NC application.";
     };
 
