@@ -45,7 +45,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Applications/Helium.app'"
+                    "shell_command": "/usr/bin/open -b net.imput.helium"
                   }
                 ]
               },
@@ -88,7 +88,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Users/uzair/Applications/Home Manager Apps/Obsidian.app'"
+                    "shell_command": "/usr/bin/open -b md.obsidian"
                   }
                 ]
               },
@@ -131,14 +131,14 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Users/uzair/Applications/Home Manager Apps/kitty.app'"
+                    "shell_command": "/usr/bin/open -b net.kovidgoyal.kitty"
                   }
                 ]
               },
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "c",
+                  "key_code": "grave_accent_and_tilde",
                   "modifiers": {
                     "mandatory": [
                       "option"
@@ -156,8 +156,8 @@
                 "conditions": [
                   {
                     "type": "frontmost_application_if",
-                    "file_paths": [
-                      "^/Applications/FreeCAD\\.app/"
+                    "bundle_identifiers": [
+                      "^net\\.kovidgoyal\\.kitty$"
                     ]
                   }
                 ]
@@ -165,7 +165,7 @@
               {
                 "type": "basic",
                 "from": {
-                  "key_code": "c",
+                  "key_code": "grave_accent_and_tilde",
                   "modifiers": {
                     "mandatory": [
                       "option"
@@ -174,7 +174,50 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Applications/FreeCAD.app'"
+                    "shell_command": "/usr/bin/open -b net.kovidgoyal.kitty"
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "a",
+                  "modifiers": {
+                    "mandatory": [
+                      "option"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "key_code": "grave_accent_and_tilde",
+                    "modifiers": [
+                      "left_command"
+                    ]
+                  }
+                ],
+                "conditions": [
+                  {
+                    "type": "frontmost_application_if",
+                    "bundle_identifiers": [
+                      "^com\\.writer-computer$"
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "basic",
+                "from": {
+                  "key_code": "a",
+                  "modifiers": {
+                    "mandatory": [
+                      "option"
+                    ]
+                  }
+                },
+                "to": [
+                  {
+                    "shell_command": "/usr/bin/open -b com.writer-computer"
                   }
                 ]
               },
@@ -219,7 +262,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/System/Library/CoreServices/Finder.app'"
+                    "shell_command": "/usr/bin/open -b com.apple.finder"
                   }
                 ]
               },
@@ -244,8 +287,8 @@
                 "conditions": [
                   {
                     "type": "frontmost_application_if",
-                    "file_paths": [
-                      "^/Applications/ChatGPT\\.app/"
+                    "bundle_identifiers": [
+                      "^com\\.openai\\.codex$"
                     ]
                   }
                 ]
@@ -262,7 +305,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Applications/ChatGPT.app'"
+                    "shell_command": "/usr/bin/open -b com.openai.codex"
                   }
                 ]
               },
@@ -305,7 +348,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Users/uzair/Applications/Home Manager Apps/T3 Code (Nightly).app'"
+                    "shell_command": "/usr/bin/open -b com.t3tools.t3code"
                   }
                 ]
               },
@@ -348,7 +391,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -a '/Applications/Zed.app'"
+                    "shell_command": "/usr/bin/open -b dev.zed.Zed"
                   }
                 ]
               }
