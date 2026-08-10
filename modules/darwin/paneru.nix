@@ -52,6 +52,12 @@ in
           vertical_padding = 4;
         };
 
+        windows.antinote = {
+          title = ".*";
+          bundle_id = "com.chabomakers.Antinote";
+          floating = true;
+        };
+
         bindings = {
           window_virtualnum_1 = "alt - 1";
           window_virtualnum_2 = "alt - 2";
