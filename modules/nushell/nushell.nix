@@ -247,7 +247,6 @@ let
           }
         }
 
-        $commit_message | ^${clipboardCopy}
         print $commit_message
       }
     }
