@@ -172,11 +172,12 @@ let
   nuTheme = ''
     let themenix_theme = ${toJSON {
       base00 = hex theme.base00;
+      base02 = hex theme.base02;
       base03 = hex theme.base03;
       base04 = hex theme.base04;
       base05 = hex theme.base05;
+      base06 = hex theme.base06;
       base0A = hex theme.base0A;
-      base0B = hex theme.base0B;
     }}
   '';
 
