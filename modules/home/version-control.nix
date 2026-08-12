@@ -198,7 +198,7 @@ in
           diff.git(),
         )
         ''''
-        git_push_bookmark = '"${user.handle}/change-" ++ change_id.short()'
+        git_push_bookmark = '"ukg/change-" ++ change_id.short()'
 
         [remotes."*"]
         auto-track-bookmarks = "${user.handle}/*"

@@ -204,12 +204,13 @@ in
       MUTED = as_rgb(0x${theme.base03})
       LEFT_PADDING = ${toString tabBarLeftPadding}
       RIGHT_PADDING = ${toString tabBarRightPadding}
+      SUPERSCRIPT_DIGITS = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
 
 
       def draw_title(data):
           tab = data.get("tab")
           title = str(data.get("title") or "")
-          index = data.get("index") or ""
+          index = str(data.get("index") or "").translate(SUPERSCRIPT_DIGITS)
 
           exe = ""
           wd = ""
