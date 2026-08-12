@@ -64,7 +64,6 @@ let
     yazi
     lazyssh
     dialog
-    fzf
     inshellisense
     fish
     hyperfine

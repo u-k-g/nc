@@ -8,7 +8,6 @@
 
 let
   inherit (lib.attrsets) optionalAttrs;
-  inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
   inherit (lib.strings)
     concatMapStringsSep
@@ -38,6 +37,8 @@ let
     DENO_CONFIG = "${home}/.config/deno/config.json";
     DETSYS_IDS_TELEMETRY = "disabled";
     EDITOR = "hx";
+    FZF_ALT_C_COMMAND = "";
+    FZF_CTRL_T_COMMAND = "";
     FZF_DEFAULT_OPTS = lib.concatStringsSep " " [
       "--color=bg:${hex theme.base00},bg+:${hex theme.base02},fg:${hex theme.base05},fg+:${hex theme.base06}"
       "--color=hl:${hex theme.base0A},hl+:${hex theme.base0A},pointer:${hex theme.base09},prompt:${hex theme.base0B}"
@@ -283,7 +284,7 @@ in
         enable = true;
         enableBashIntegration = false;
         enableFishIntegration = false;
-        enableNushellIntegration = true;
+        enableNushellIntegration = false;
         enableZshIntegration = false;
 
         settings = {
@@ -365,6 +366,14 @@ in
         enableNushellIntegration = true;
       };
 
+      programs.fzf = {
+        enable = true;
+        enableBashIntegration = false;
+        enableFishIntegration = false;
+        enableNushellIntegration = true;
+        enableZshIntegration = false;
+      };
+
       programs.nushell = {
         enable = true;
         extraConfig = nuConfig;
@@ -372,14 +381,10 @@ in
 
       home.sessionVariables = sessionVariables;
       home.sessionPath = sessionPath;
-      home.packages =
-        optionals pkgs.stdenv.isLinux [
-          pkgs.skim
-        ]
-        ++ [
-          pkgs.vivid
-          lsColors
-        ];
+      home.packages = [
+        pkgs.vivid
+        lsColors
+      ];
 
       home.activation.shadow-xcode = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
         lib.hm.dag.entryAfter [ "writeBoundary" ] ''

@@ -85,35 +85,18 @@ $env.config.menus = [
   }
 ]
 
-def nu-history-search []: nothing -> nothing {
-  let query = (commandline | str trim)
-  let query_args = if ($query | is-empty) { [] } else { [$"--query=($query)"] }
-  let sk_args = [
-    "--read0"
-    "--tiebreak=score,index,-begin"
-    "--no-sort"
-    "--layout=reverse"
-    "--height=100%"
-    "--border=rounded"
-    "--prompt=history> "
-  ] | append $query_args
-
-  let selected = try {
-    history
-    | get command
-    | reverse
-    | uniq
-    | str join (char nul)
-    | ^sk ...$sk_args
-    | str trim
-  } catch {
-    ""
+$env.config.keybindings ++= [
+  {
+    name: cdi
+    modifier: alt
+    keycode: char_c
+    mode: [emacs vi_insert vi_normal]
+    event: {
+      send: executehostcommand
+      cmd: "cdi"
+    }
   }
-
-  if ($selected | is-not-empty) {
-    commandline edit $selected
-  }
-}
+]
 
 $env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default [] | append [
   {||
