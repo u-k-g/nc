@@ -83,6 +83,33 @@ $env.config.menus = [
       selected_match_text: { attr: ur }
     }
   }
+  {
+    name: history_menu
+    only_buffer_difference: true
+    marker: $"(ansi {fg: $themenix_theme.base03 attr: b})╰─ (ansi {fg: $themenix_theme.base0A attr: b}):(ansi reset) "
+    type: {
+      layout: list
+      page_size: 10
+    }
+    style: {
+      text: $themenix_theme.base05
+      selected_text: {
+        fg: $themenix_theme.base00
+        bg: $themenix_theme.base0A
+        attr: b
+      }
+      description_text: $themenix_theme.base04
+      match_text: {
+        fg: $themenix_theme.base0B
+        attr: u
+      }
+      selected_match_text: {
+        fg: $themenix_theme.base00
+        bg: $themenix_theme.base0A
+        attr: bu
+      }
+    }
+  }
 ]
 
 $env.config.keybindings ++= [

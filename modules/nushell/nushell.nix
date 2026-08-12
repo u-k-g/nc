@@ -14,6 +14,7 @@ let
     makeLibraryPath
     optionalString
     substring
+    toJSON
     ;
   inherit (inputs.themes.lib.strings) fromHexString;
   user = config.nc.user;
@@ -37,8 +38,6 @@ let
     DENO_CONFIG = "${home}/.config/deno/config.json";
     DETSYS_IDS_TELEMETRY = "disabled";
     EDITOR = "hx";
-    FZF_ALT_C_COMMAND = "";
-    FZF_CTRL_T_COMMAND = "";
     FZF_DEFAULT_OPTS = lib.concatStringsSep " " [
       "--color=bg:${hex theme.base00},bg+:${hex theme.base02},fg:${hex theme.base05},fg+:${hex theme.base06}"
       "--color=hl:${hex theme.base0A},hl+:${hex theme.base0A},pointer:${hex theme.base09},prompt:${hex theme.base0B}"
@@ -170,6 +169,17 @@ let
     ] | append ($env.XDG_DATA_DIRS? | default "" | split row (char esep)) | uniq | str join (char esep))
   '';
 
+  nuTheme = ''
+    let themenix_theme = ${toJSON {
+      base00 = hex theme.base00;
+      base03 = hex theme.base03;
+      base04 = hex theme.base04;
+      base05 = hex theme.base05;
+      base0A = hex theme.base0A;
+      base0B = hex theme.base0B;
+    }}
+  '';
+
   shadowXcodePath = optionalString pkgs.stdenv.hostPlatform.isDarwin ''
     do --env {
       let usr_bin_index = ($env.PATH | enumerate | where item == /usr/bin | get --optional 0.index)
@@ -256,6 +266,7 @@ let
   nuConfig = lib.concatStringsSep "\n" [
     nuVariables
     nuPath
+    nuTheme
     shadowXcodePath
     (builtins.readFile ./nushell.config.nu)
     "use ${terminfoAutogen}/terminfo-autogen.nu"
@@ -370,7 +381,7 @@ in
         enable = true;
         enableBashIntegration = false;
         enableFishIntegration = false;
-        enableNushellIntegration = true;
+        enableNushellIntegration = false;
         enableZshIntegration = false;
       };
 

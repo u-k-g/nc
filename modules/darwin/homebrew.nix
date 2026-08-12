@@ -50,7 +50,6 @@
       "glslviewer"
       "mas"
       "ruby"
-      "sk"
       "unar"
       "felixkratz/formulae/borders"
       {
