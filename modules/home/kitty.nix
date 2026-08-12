@@ -224,7 +224,7 @@ in
           else:
               name = exe_name or title
 
-          return f" {index} {name}"
+          return f" {index}{name}"
 
 
       def draw_right_status(screen):
