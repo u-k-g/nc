@@ -14,7 +14,6 @@ let
     makeLibraryPath
     optionalString
     substring
-    toJSON
     ;
   inherit (inputs.themes.lib.strings) fromHexString;
   user = config.nc.user;
@@ -169,18 +168,6 @@ let
     ] | append ($env.XDG_DATA_DIRS? | default "" | split row (char esep)) | uniq | str join (char esep))
   '';
 
-  nuTheme = ''
-    let themenix_theme = ${toJSON {
-      base00 = hex theme.base00;
-      base02 = hex theme.base02;
-      base03 = hex theme.base03;
-      base04 = hex theme.base04;
-      base05 = hex theme.base05;
-      base06 = hex theme.base06;
-      base0A = hex theme.base0A;
-    }}
-  '';
-
   shadowXcodePath = optionalString pkgs.stdenv.hostPlatform.isDarwin ''
     do --env {
       let usr_bin_index = ($env.PATH | enumerate | where item == /usr/bin | get --optional 0.index)
@@ -267,7 +254,6 @@ let
   nuConfig = lib.concatStringsSep "\n" [
     nuVariables
     nuPath
-    nuTheme
     shadowXcodePath
     (builtins.readFile ./nushell.config.nu)
     "use ${terminfoAutogen}/terminfo-autogen.nu"
@@ -296,7 +282,7 @@ in
         enable = true;
         enableBashIntegration = false;
         enableFishIntegration = false;
-        enableNushellIntegration = false;
+        enableNushellIntegration = true;
         enableZshIntegration = false;
 
         settings = {

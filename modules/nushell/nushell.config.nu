@@ -83,57 +83,9 @@ $env.config.menus = [
       selected_match_text: { attr: ur }
     }
   }
-  {
-    name: history_menu
-    input_mode: diff
-    marker: $"(ansi {fg: $themenix_theme.base03 attr: b})╰─ (ansi {fg: $themenix_theme.base0A attr: b}):(ansi reset) "
-    type: {
-      layout: list
-      page_size: 10
-      max_entry_lines: 1
-    }
-    style: {
-      text: $themenix_theme.base05
-      selected_text: {
-        fg: $themenix_theme.base06
-        bg: $themenix_theme.base02
-        attr: b
-      }
-      description_text: {
-        fg: $themenix_theme.base03
-        attr: i
-      }
-      match_text: {
-        fg: $themenix_theme.base0A
-        attr: bu
-      }
-      selected_match_text: {
-        fg: $themenix_theme.base0A
-        bg: $themenix_theme.base02
-        attr: bu
-      }
-    }
-  }
 ]
 
 $env.config.keybindings ++= [
-  {
-    name: vi_normal_escape
-    modifier: none
-    keycode: escape
-    mode: vi_insert
-    event: {send: vichangemode mode: normal}
-  }
-  {
-    name: history_menu
-    modifier: control
-    keycode: char_r
-    mode: [emacs vi_insert vi_normal]
-    event: [
-      {send: vichangemode mode: normal}
-      {send: menu name: history_menu}
-    ]
-  }
   {
     name: cdi
     modifier: alt
@@ -145,16 +97,6 @@ $env.config.keybindings ++= [
     }
   }
 ]
-
-$env.config.keybindings ++= (1..9 | each {|index|
-  {
-    name: $"history_menu_select_($index)"
-    modifier: control
-    keycode: $"char_($index)"
-    mode: vi_normal
-    event: {edit: insertstring value: $"!($index)"}
-  }
-})
 
 $env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default [] | append [
   {||
