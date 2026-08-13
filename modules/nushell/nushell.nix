@@ -51,6 +51,7 @@ let
     NIX_PROFILES = "/nix/var/nix/profiles/default /run/current-system/sw /etc/profiles/per-user/${user.name}";
     NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+    PNPM_HOME = "${home}/.local/share/pnpm";
     SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     XDG_CACHE_HOME = "${home}/.cache";
     XDG_CONFIG_HOME = "${home}/.config";
@@ -65,6 +66,7 @@ let
   sessionPath = [
     "${home}/.bun/bin"
     "${home}/.deno/bin"
+    "${home}/.local/share/pnpm"
     "${home}/.platformio/penv/bin"
     "${home}/.platformio/packages/toolchain-gccarmnoneeabi-teensy/bin"
     "/etc/profiles/per-user/${user.name}/bin"
@@ -391,29 +393,38 @@ in
       );
 
       xdg.configFile = {
-        "zsh/.zshrc".text = ''
-          export HOME='${home}'
-          export USER='${user.name}'
-          export PATH='${lib.concatStringsSep ":" sessionPath}':"$PATH"
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: value: "export ${name}='${value}'") sessionVariables
-          )}
+        "zsh/.zshrc" = {
+          force = true;
+          text = ''
+            export HOME='${home}'
+            export USER='${user.name}'
+            export PATH='${lib.concatStringsSep ":" sessionPath}':"$PATH"
+            ${lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (name: value: "export ${name}='${value}'") sessionVariables
+            )}
 
-          if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
-            export SHELL='${getExe pkgs.nushell}'
-            exec '${getExe pkgs.nushell}' --login --config '${home}/.config/nushell/config.nu'
-          fi
-        '';
+            if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
+              export SHELL='${getExe pkgs.nushell}'
+              exec '${getExe pkgs.nushell}' --login --config '${home}/.config/nushell/config.nu'
+            fi
+          '';
+        };
         "nushell/fcdiff.nu" = {
           source = dotfiles + /config/nushell/fcdiff.nu;
           executable = true;
         };
       };
 
-      home.file.".zshrc".text = ''
-        export XDG_CONFIG_HOME="''${XDG_CONFIG_HOME:-${home}/.config}"
-        export ZDOTDIR="''${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"
-        [ -f "$ZDOTDIR/.zshrc" ] && source "$ZDOTDIR/.zshrc"
-      '';
+      home.file = {
+        "${home}/.config/nushell/config.nu".force = true;
+        ".zshrc" = {
+          force = true;
+          text = ''
+            export XDG_CONFIG_HOME="''${XDG_CONFIG_HOME:-${home}/.config}"
+            export ZDOTDIR="''${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"
+            [ -f "$ZDOTDIR/.zshrc" ] && source "$ZDOTDIR/.zshrc"
+          '';
+        };
+      };
     };
 }
