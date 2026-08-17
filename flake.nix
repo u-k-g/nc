@@ -72,11 +72,6 @@
       flake = false;
     };
 
-    homebrew-cmux = {
-      url = "github:manaflow-ai/homebrew-cmux";
-      flake = false;
-    };
-
     homebrew-felixkratz = {
       url = "github:FelixKratz/homebrew-formulae";
       flake = false;
@@ -95,7 +90,7 @@
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
-      url = "github:u-k-g/PaperWM.spoon/a0fd35ae";
+      url = "git+ssh://git@github.com/mogenson/PaperWM.spoon.git";
       flake = false;
     };
 

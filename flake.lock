@@ -171,30 +171,14 @@
         "type": "github"
       }
     },
-    "homebrew-cmux": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1782212236,
-        "narHash": "sha256-GBfbIdIV0mazErHiN241x5K2TPB49ABE6n2X3S8Us14=",
-        "owner": "manaflow-ai",
-        "repo": "homebrew-cmux",
-        "rev": "acf60b95d5bf43f4cbeef2c6c81cf06c48c4caf6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "manaflow-ai",
-        "repo": "homebrew-cmux",
-        "type": "github"
-      }
-    },
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1786971487,
-        "narHash": "sha256-IrczRdtOByir4pg8l+9qvCQJ46/iJVY7VnLfV9sh858=",
+        "lastModified": 1786994466,
+        "narHash": "sha256-JdozDTFSDJmYsPT6zfS+0wr/oOLAFrMh10MaIT19lGc=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "2b55fdc4ec944c9cea51878a03bba79f45bb046f",
+        "rev": "ff1f6062dd1d9547043ccdd89fe807f5a837b38a",
         "type": "github"
       },
       "original": {
@@ -238,11 +222,11 @@
     "homebrew-tinycast": {
       "flake": false,
       "locked": {
-        "lastModified": 1786321024,
-        "narHash": "sha256-Irh+w+eJeA7lTtPzUUM9rDPvErmnu71g1OatFlIgZqA=",
+        "lastModified": 1786987976,
+        "narHash": "sha256-6RdC8FLs/X5MvZC0HhBA1AxzxPNveV7UWHiiT5ScDaw=",
         "owner": "abue-ammar",
         "repo": "homebrew-tinycast",
-        "rev": "3116a693468646f2e799065d774d3335bc4d1c86",
+        "rev": "989a39cfaf0a4ae1bf5b642f33055ef4ffe8b808",
         "type": "github"
       },
       "original": {
@@ -332,18 +316,17 @@
     "paperwm": {
       "flake": false,
       "locked": {
-        "lastModified": 1779834078,
-        "narHash": "sha256-DCxXSt5n0kGA04XgLlmebvdNkq1U2QeRFjtyzcTS2jQ=",
-        "owner": "u-k-g",
-        "repo": "PaperWM.spoon",
-        "rev": "a0fd35ae90df0dec997c8467bd76cf027b9ceb97",
-        "type": "github"
+        "lastModified": 1785587501,
+        "narHash": "sha256-FS0DobdVJ8U8S1lviNFeT0aV4GIj00ON7BCgWO0DkE8=",
+        "ref": "refs/heads/main",
+        "rev": "a291a40a8adb3f2986bac57f2482ba34a679850b",
+        "revCount": 268,
+        "type": "git",
+        "url": "ssh://git@github.com/mogenson/PaperWM.spoon.git"
       },
       "original": {
-        "owner": "u-k-g",
-        "ref": "a0fd35ae",
-        "repo": "PaperWM.spoon",
-        "type": "github"
+        "type": "git",
+        "url": "ssh://git@github.com/mogenson/PaperWM.spoon.git"
       }
     },
     "root": {
@@ -355,7 +338,6 @@
         "homebrew": "homebrew",
         "homebrew-apple": "homebrew-apple",
         "homebrew-cask": "homebrew-cask",
-        "homebrew-cmux": "homebrew-cmux",
         "homebrew-core": "homebrew-core",
         "homebrew-felixkratz": "homebrew-felixkratz",
         "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",

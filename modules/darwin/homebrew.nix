@@ -17,7 +17,6 @@
       "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-core" = inputs.homebrew-core;
-      "manaflow-ai/homebrew-cmux" = inputs.homebrew-cmux;
       "osx-cross/homebrew-arm" = inputs.homebrew-osx-cross-arm;
     };
 
@@ -39,7 +38,6 @@
       "felixkratz/formulae"
       "homebrew/cask"
       "homebrew/core"
-      "manaflow-ai/cmux"
       "osx-cross/arm"
     ];
 
@@ -63,7 +61,6 @@
       "abue-ammar/tinycast/tinycast@beta"
       "battery"
       "blip"
-      "cmux"
       "codex"
       "font-sketchybar-app-font"
       "hammerspoon"
