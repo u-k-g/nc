@@ -7,7 +7,7 @@
 
 let
   inherit (lib.attrsets) genAttrs;
-  inherit (lib.lists) optional;
+  inherit (lib.lists) optionals;
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
@@ -34,7 +34,10 @@ in
         "x-scheme-handler/discord"
       ];
 
-    home.packages = optional pkgs.stdenv.isLinux discord;
+    home.packages = optionals pkgs.stdenv.isLinux [
+      pkgs.cinny-desktop
+      discord
+    ];
 
     xdg.configFile."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.isLinux {
       force = true;
