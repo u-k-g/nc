@@ -67,6 +67,21 @@
         "type": "github"
       }
     },
+    "crane": {
+      "locked": {
+        "lastModified": 1785541369,
+        "narHash": "sha256-6VCYI5xashcnAR1lambqt9FGh0F6kYhg1P2Z0VDlr48=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "508ff4829aefddee8ea62291e86b144b58365724",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -158,11 +173,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1786994243,
-        "narHash": "sha256-hMdcZpAQChFkvijtZUJjwcPQhfWVQoZgCIlJFIHEHtM=",
+        "lastModified": 1787256639,
+        "narHash": "sha256-1asqSHoiS/HPuZv2RJfUXV1yOGK6cN/HFGf0lUgaKBQ=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "2e6caf0a81488bed78ca843c535b6d5c906fc985",
+        "rev": "532d42db709fcff52cb213407a9c3d533ab5fdad",
         "type": "github"
       },
       "original": {
@@ -174,11 +189,11 @@
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1786994466,
-        "narHash": "sha256-JdozDTFSDJmYsPT6zfS+0wr/oOLAFrMh10MaIT19lGc=",
+        "lastModified": 1787260581,
+        "narHash": "sha256-8FEGPaZuKZWM8BONQTNc1nrQE0P9Q+jeWP54KlJBvWk=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "ff1f6062dd1d9547043ccdd89fe807f5a837b38a",
+        "rev": "a2c7b5dacea30acf154cda415aa24cef0baa3e56",
         "type": "github"
       },
       "original": {
@@ -222,11 +237,11 @@
     "homebrew-tinycast": {
       "flake": false,
       "locked": {
-        "lastModified": 1786987976,
-        "narHash": "sha256-6RdC8FLs/X5MvZC0HhBA1AxzxPNveV7UWHiiT5ScDaw=",
+        "lastModified": 1787262656,
+        "narHash": "sha256-DCXu605QQtg07pwfI1YgOlA+59OYF174J8n+2I7wLvw=",
         "owner": "abue-ammar",
         "repo": "homebrew-tinycast",
-        "rev": "989a39cfaf0a4ae1bf5b642f33055ef4ffe8b808",
+        "rev": "c2a12f00388ee1f6b7f480f96f310acf4b8efaa2",
         "type": "github"
       },
       "original": {
@@ -237,11 +252,11 @@
     },
     "import-tree": {
       "locked": {
-        "lastModified": 1773693634,
-        "narHash": "sha256-BtZ2dtkBdSUnFPPFc+n0kcMbgaTxzFNPv2iaO326Ffg=",
+        "lastModified": 1784254960,
+        "narHash": "sha256-iI88R3wHz8wTKQb5orvpc51L/Xr64AJyxid/0MKa/b8=",
         "owner": "vic",
         "repo": "import-tree",
-        "rev": "c41e7d58045f9057880b0d85e1152d6a4430dbf1",
+        "rev": "4ebb10ae17d5f1ad366e7aef5b92cb8eecf24f69",
         "type": "github"
       },
       "original": {
@@ -288,6 +303,7 @@
     },
     "paneru": {
       "inputs": {
+        "crane": "crane",
         "flake-parts": [
           "flake-parts"
         ],
@@ -300,11 +316,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1786830663,
-        "narHash": "sha256-woj/w8eF3z1jZ29DkhNQWR+5LRJFcupe8YUJKeANK1c=",
+        "lastModified": 1787262737,
+        "narHash": "sha256-xLzVqauBinhma75y1bY8FeuALv61cLUffTVyx3/99Cw=",
         "owner": "u-k-g",
         "repo": "paneru",
-        "rev": "2894ad4bf2f8b9c1beff7adbb9e7ac7313e8d1c3",
+        "rev": "8980be5a331f43913d5b7c48f185a5bfd25b09d9",
         "type": "github"
       },
       "original": {
@@ -316,11 +332,11 @@
     "paperwm": {
       "flake": false,
       "locked": {
-        "lastModified": 1785587501,
-        "narHash": "sha256-FS0DobdVJ8U8S1lviNFeT0aV4GIj00ON7BCgWO0DkE8=",
+        "lastModified": 1787063726,
+        "narHash": "sha256-tbz2MJQZogdh643kMvfUI9XMTBhC2Mzd//nHChShkMQ=",
         "ref": "refs/heads/main",
-        "rev": "a291a40a8adb3f2986bac57f2482ba34a679850b",
-        "revCount": 268,
+        "rev": "cb6dd31a392a0d79ed090befc03f05d0ad375bba",
+        "revCount": 270,
         "type": "git",
         "url": "ssh://git@github.com/mogenson/PaperWM.spoon.git"
       },
