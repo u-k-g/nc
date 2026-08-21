@@ -236,10 +236,10 @@ def subscribe-loop [] {
 }
 
 def main [mode?: string] {
-  kill-existing
   if $mode == "once" {
     update-sketchybar [] | ignore
   } else {
+    kill-existing
     subscribe-loop
   }
 }

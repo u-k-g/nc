@@ -29,6 +29,21 @@ let
   ) { };
 in
 {
+  launchd.user.agents."sketchybar.paneru-windows".serviceConfig = {
+    ProgramArguments = [
+      "${sketchybarConfig}/plugins/paneru_windows.nu"
+    ];
+    EnvironmentVariables = {
+      CONFIG_DIR = "${sketchybarConfig}";
+      HOME = user.homeDirectory;
+      PANERU = "/etc/profiles/per-user/${user.name}/bin/paneru";
+      SKETCHYBAR = "/opt/homebrew/bin/sketchybar";
+    };
+    KeepAlive = true;
+    ProcessType = "Background";
+    RunAtLoad = true;
+  };
+
   system.defaults.NSGlobalDomain = {
     AppleIconAppearanceTheme = if theme.isDark then "RegularDark" else null;
     AppleInterfaceStyle = if theme.isDark then "Dark" else null;

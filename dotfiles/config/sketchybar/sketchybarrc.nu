@@ -9,16 +9,7 @@ def main [] {
     | default ($env.HOME | path join ".config" "sketchybar")
   )
   let plugin_dir = ($config_dir | path join "plugins")
-  let temporary = ($env.TMPDIR? | default "" | str trim)
-  let runtime_dir = if ($temporary | is-empty) {
-    $env.HOME | path join "Library" "Caches" "sketchybar"
-  } else {
-    $temporary
-  }
   let sketchybar = ($env.SKETCHYBAR? | default "/opt/homebrew/bin/sketchybar")
-
-  mkdir $runtime_dir
-  try { ^/bin/chmod 700 $runtime_dir }
 
   let bar = [
     "shadow=off"
@@ -64,23 +55,6 @@ def main [] {
   }
 
   let paneru_windows = ($plugin_dir | path join "paneru_windows.nu")
-  let subscriber_log = ($runtime_dir | path join "sketchybar_paneru_windows.log")
-  let subscriber_label = "org.nixos.sketchybar.paneru-windows"
-  let user_domain = $"gui/(^/usr/bin/id -u | str trim)"
-  ^/bin/launchctl bootout $"($user_domain)/($subscriber_label)" | complete | ignore
-
-  let subscriber = (
-    ^/bin/launchctl submit
-      -l $subscriber_label
-      -o $subscriber_log
-      -e $subscriber_log
-      -- $paneru_windows
-    | complete
-  )
-  if $subscriber.exit_code != 0 {
-    print --stderr ($subscriber.stderr | str trim)
-  }
-
   let clock = ($plugin_dir | path join "clock.nu")
   let dns = ($plugin_dir | path join "dns.nu")
   let timer = ($plugin_dir | path join "timer.nu")
@@ -104,4 +78,5 @@ def main [] {
   ]
   ^$sketchybar ...$right_items
   ^$sketchybar --update
+  ^$paneru_windows once
 }
