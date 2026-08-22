@@ -224,7 +224,13 @@ def subscribe-loop [] {
             $window_ids = $updated.window_ids
             $icon_cache = $updated.icon_cache
           }
-        } else if $event_name != "window_title_changed" {
+        # Geometry-only `on_screen_changed` events arrive for every animation
+        # frame. Membership, workspace, display, and focus have dedicated events.
+        } else if $event_name in [
+          "display_changed"
+          "virtual_workspace_changed"
+          "windows_changed"
+        ] {
           let updated = (update-settled-windows $icon_cache)
           $window_ids = $updated.window_ids
           $icon_cache = $updated.icon_cache
