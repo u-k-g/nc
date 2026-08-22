@@ -20,7 +20,7 @@ def convert-path [src: path, dest: path] {
 def convert-file [src: path, dest: path] {
     mkdir ($dest | path dirname)
 
-    if ($src | str downcase | str ends-with ".fcstd") {
+    if ($src | str lowercase | str ends-with ".fcstd") {
         let xml_dest = $"($dest).Document.xml"
         unzip -p $src Document.xml | save --force $xml_dest
     } else {
@@ -36,11 +36,17 @@ def main [left: path, right: path] {
     convert-path $left $left_converted
     convert-path $right $right_converted
 
-    try {
-        difft --context 5 --color=always $left_converted $right_converted
-    } catch {
-        diff -ru $left_converted $right_converted
-    }
+    let diff = (
+        ^git diff --no-index --no-ext-diff --color=always -- $left_converted $right_converted
+        | complete
+    )
+
+    print --raw --no-newline $diff.stdout
+    print --raw --no-newline --stderr $diff.stderr
 
     rm --recursive --force $temp
+
+    if $diff.exit_code > 1 {
+        exit $diff.exit_code
+    }
 }
