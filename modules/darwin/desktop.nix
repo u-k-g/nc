@@ -1,13 +1,17 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
 
 let
+  inherit (lib.meta) getExe';
+
   user = config.nc.user;
   theme = config.nc.theme;
   dotfiles = ../../dotfiles;
+  coreutilsTimeout = getExe' pkgs.coreutils "timeout";
   sketchybarConfig = pkgs.callPackage (
     { runCommand }:
     runCommand "sketchybar-config-${theme.slug}" { } ''
@@ -19,7 +23,8 @@ let
         --replace-fail '@base05@' '${theme.base05}'
       substituteInPlace \
         $out/plugins/paneru_windows.nu \
-        --replace-fail '@base05@' '${theme.base05}'
+        --replace-fail '@base05@' '${theme.base05}' \
+        --replace-fail '@timeout@' '${coreutilsTimeout}'
       substituteInPlace \
         $out/plugins/timer.nu \
         --replace-fail '@base04@' '${theme.base04}' \

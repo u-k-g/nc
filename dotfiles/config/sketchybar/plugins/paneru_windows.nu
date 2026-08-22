@@ -5,6 +5,7 @@ const focused_color = "0xff@base05@"
 const unfocused_color = "0x80@base05@"
 const legacy_pid_file = "/tmp/sketchybar_paneru_windows.pid"
 const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
+const timeout_bin = "@timeout@"
 
 def env-default [name: string, fallback: string] {
   $env | get --optional $name | default $fallback
@@ -123,7 +124,9 @@ def active-windows [state: record] {
 def update-sketchybar [icon_cache: list] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
   let state = (try { paneru-state } catch { null })
-  if $state == null { return { window_ids: [] icon_cache: $icon_cache } }
+  if $state == null {
+    return { window_ids: [] focused_window_id: null icon_cache: $icon_cache }
+  }
 
   let active = (active-windows $state | first $max_items)
   mut cache = $icon_cache
@@ -168,7 +171,11 @@ def update-sketchybar [icon_cache: list] {
     ^$sketchybar ...$args
   }
 
-  { window_ids: ($windows | get id) icon_cache: $cache }
+  {
+    window_ids: ($windows | get id)
+    focused_window_id: ($state.active.focused_window_id? | default null)
+    icon_cache: $cache
+  }
 }
 
 def update-focus [window_ids: list, focused_window_id: any] {
@@ -208,24 +215,35 @@ def subscribe-loop [] {
     try {
       let initial = (update-sketchybar $icon_cache)
       mut window_ids = $initial.window_ids
+      mut focused_window_id = $initial.focused_window_id
       $icon_cache = $initial.icon_cache
 
-      for line in (^$paneru subscribe --json | lines) {
+      # A dropped Mach subscription can remain open without producing more
+      # bytes. Bound each client so the full refresh above also acts as a
+      # periodic reconciliation and reconnect watchdog.
+      for line in (^$timeout_bin 1s $paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
 
         let event_name = ($event.event? | default "")
-        if $event_name == "window_focused" {
-          let focused_window_id = ($event.window_id? | default null)
-          if ($window_ids | any {|window_id| $window_id == $focused_window_id }) {
-            update-focus $window_ids $focused_window_id
+        if $event_name in ["on_screen_changed" "window_focused"] {
+          let event_focused_window_id = if $event_name == "window_focused" {
+            $event.window_id? | default null
           } else {
-            let updated = (update-settled-windows $icon_cache)
-            $window_ids = $updated.window_ids
-            $icon_cache = $updated.icon_cache
+            $event.active.focused_window_id? | default null
           }
-        # Geometry-only `on_screen_changed` events arrive for every animation
-        # frame. Membership, workspace, display, and focus have dedicated events.
+
+          if ($event_focused_window_id != null) and ($event_focused_window_id != $focused_window_id) {
+            if ($window_ids | any {|window_id| $window_id == $event_focused_window_id }) {
+              update-focus $window_ids $event_focused_window_id
+              $focused_window_id = $event_focused_window_id
+            } else {
+              let updated = (update-settled-windows $icon_cache)
+              $window_ids = $updated.window_ids
+              $focused_window_id = $updated.focused_window_id
+              $icon_cache = $updated.icon_cache
+            }
+          }
         } else if $event_name in [
           "display_changed"
           "virtual_workspace_changed"
@@ -233,11 +251,12 @@ def subscribe-loop [] {
         ] {
           let updated = (update-settled-windows $icon_cache)
           $window_ids = $updated.window_ids
+          $focused_window_id = $updated.focused_window_id
           $icon_cache = $updated.icon_cache
         }
       }
     }
-    sleep 1sec
+    sleep 100ms
   }
 }
 
