@@ -1,7 +1,5 @@
 #!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
 
-const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
-
 use timer_state.nu [
   read-last-duration
   read-timer-state
@@ -9,6 +7,7 @@ use timer_state.nu [
   write-last-duration
   write-timer-state
 ]
+use clock.nu [update-status]
 
 def write-state [status: string, duration: int, remaining: int, end_time: int] {
   write-last-duration $duration
@@ -20,7 +19,7 @@ def write-stopwatch [status: string, elapsed: int, start_time: int] {
 }
 
 def refresh-bar [] {
-  try { ^$nu_bin --no-config-file (($env.CONFIG_DIR? | default ($env.HOME + "/.config/sketchybar")) | path join plugins timer.nu) }
+  try { update-status }
 }
 
 def format-time [total: int] {

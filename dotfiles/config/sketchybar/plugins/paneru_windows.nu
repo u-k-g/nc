@@ -4,8 +4,8 @@ const max_items = 12
 const focused_color = "0xff@base05@"
 const unfocused_color = "0x80@base05@"
 const legacy_pid_file = "/tmp/sketchybar_paneru_windows.pid"
-const nu_bin = "/etc/profiles/per-user/uzair/bin/nu"
-const timeout_bin = "@timeout@"
+
+use icon_map.nu [icon-for-app load-icon-map]
 
 def env-default [name: string, fallback: string] {
   $env | get --optional $name | default $fallback
@@ -62,24 +62,6 @@ def app-label [name: string] {
   if (($capitals | str length) == 2) { $capitals } else { $name | str substring 0..1 }
 }
 
-def resolve-icon [name: string, cache: list] {
-  let cached = ($cache | where name == $name | get --optional 0.icon | default null)
-  if $cached != null { return { icon: $cached cache: $cache } }
-
-  let config_dir = (env-default CONFIG_DIR ($env.HOME + "/.config/sketchybar"))
-  let icon_map = ($config_dir | path join "plugins" "icon_map.nu")
-
-  let icon = (try {
-    let result = (^$nu_bin --no-config-file $icon_map $name | complete)
-    let icon = ($result.stdout | str trim | lines | first | default "")
-    if ($result.exit_code == 0) and (not ($icon | is-empty)) { $icon } else { ":default:" }
-  } catch {
-    ":default:"
-  })
-
-  { icon: $icon cache: ($cache | append { name: $name icon: $icon }) }
-}
-
 def paneru-state [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
   let result = (^$paneru query state --json | complete)
@@ -121,70 +103,86 @@ def active-windows [state: record] {
   }
 }
 
-def update-sketchybar [icon_cache: list] {
+def render-windows [previous: list, windows: list] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
-  let state = (try { paneru-state } catch { null })
-  if $state == null {
-    return { window_ids: [] focused_window_id: null icon_cache: $icon_cache }
-  }
-
-  let active = (active-windows $state | first $max_items)
-  mut cache = $icon_cache
-  mut windows = []
-  for window in $active {
-    let resolved = (resolve-icon $window.name $cache)
-    $cache = $resolved.cache
-    $windows = ($windows | append ($window | insert icon $resolved.icon))
-  }
   mut args = []
 
   for index in 0..(($max_items) - 1) {
     let item = $"paperwm_($index)"
+    let current = ($windows | get --optional $index | default null)
+    let old = ($previous | get --optional $index | default null)
 
-    if $index < ($windows | length) {
-      let window = ($windows | get $index)
-      let color = (if $window.focused { $focused_color } else { $unfocused_color })
-      $args = ($args | append [--set $item drawing=on])
+    if $current == null {
+      if $old != null { $args = ($args | append [--set $item drawing=off]) }
+      continue
+    }
 
-      if $window.icon == ":default:" {
+    let identity_changed = (
+      ($old == null)
+      or ($old.id != $current.id)
+      or ($old.name != $current.name)
+      or ($old.icon != $current.icon)
+    )
+    let focus_changed = (($old == null) or ($old.focused != $current.focused))
+    if not ($identity_changed or $focus_changed) { continue }
+
+    let color = (if $current.focused { $focused_color } else { $unfocused_color })
+    $args = ($args | append [--set $item])
+
+    if $identity_changed {
+      $args = ($args | append [drawing=on])
+
+      if $current.icon == ":default:" {
         $args = ($args | append [
           icon.drawing=off
           label.drawing=on
-          $"label=(shell-escape (app-label $window.name))"
+          $"label=(shell-escape (app-label $current.name))"
           "label.font=DepartureMono Nerd Font Mono:Regular:14.0"
-          $"label.color=($color)"
         ])
       } else {
         $args = ($args | append [
           label.drawing=off
           icon.drawing=on
-          $"icon=($window.icon)"
-          $"icon.color=($color)"
+          $"icon=($current.icon)"
         ])
       }
-    } else {
-      $args = ($args | append [--set $item drawing=off])
     }
+
+    $args = ($args | append [$"icon.color=($color)" $"label.color=($color)"])
   }
 
   if ($args | length) > 0 {
     ^$sketchybar ...$args
   }
+}
+
+def update-sketchybar [previous: list, icon_map: list] {
+  let state = (try { paneru-state } catch { null })
+  if $state == null {
+    return { windows: $previous focused_window_id: null }
+  }
+
+  let windows = (
+    active-windows $state
+    | first $max_items
+    | each {|window| $window | insert icon (icon-for-app $window.name $icon_map) }
+  )
+  render-windows $previous $windows
 
   {
-    window_ids: ($windows | get id)
+    windows: $windows
     focused_window_id: ($state.active.focused_window_id? | default null)
-    icon_cache: $cache
   }
 }
 
-def update-focus [window_ids: list, focused_window_id: any] {
+def update-focus [windows: list, previous_focused_window_id: any, focused_window_id: any] {
   let sketchybar = (env-default SKETCHYBAR "/opt/homebrew/bin/sketchybar")
   mut args = []
 
-  for window in ($window_ids | enumerate) {
+  for window in ($windows | enumerate) {
+    if not ($window.item.id in [$previous_focused_window_id $focused_window_id]) { continue }
     let item = $"paperwm_($window.index)"
-    let color = (if $window.item == $focused_window_id { $focused_color } else { $unfocused_color })
+    let color = (if $window.item.id == $focused_window_id { $focused_color } else { $unfocused_color })
     $args = ($args | append [
       --set $item
       $"icon.color=($color)"
@@ -197,31 +195,19 @@ def update-focus [window_ids: list, focused_window_id: any] {
   }
 }
 
-def update-settled-windows [icon_cache: list] {
-  let immediate = (update-sketchybar $icon_cache)
-
-  # Paneru can publish a structural event before `query state` reflects the
-  # complete batch. Reconcile once more after it has settled so stale window
-  # slots cannot remain visible indefinitely.
-  sleep 50ms
-  update-sketchybar $immediate.icon_cache
-}
-
 def subscribe-loop [] {
   let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
-  mut icon_cache = []
+  let icon_map = (load-icon-map)
+  mut windows = []
+  mut focused_window_id = null
 
   loop {
     try {
-      let initial = (update-sketchybar $icon_cache)
-      mut window_ids = $initial.window_ids
-      mut focused_window_id = $initial.focused_window_id
-      $icon_cache = $initial.icon_cache
+      let initial = (update-sketchybar $windows $icon_map)
+      $windows = $initial.windows
+      $focused_window_id = $initial.focused_window_id
 
-      # A dropped Mach subscription can remain open without producing more
-      # bytes. Bound each client so the full refresh above also acts as a
-      # periodic reconciliation and reconnect watchdog.
-      for line in (^$timeout_bin 1s $paneru subscribe --json | lines) {
+      for line in (^$paneru subscribe --json | lines) {
         let event = (try { $line | from json } catch { null })
         if $event == null { continue }
 
@@ -234,14 +220,14 @@ def subscribe-loop [] {
           }
 
           if ($event_focused_window_id != null) and ($event_focused_window_id != $focused_window_id) {
-            if ($window_ids | any {|window_id| $window_id == $event_focused_window_id }) {
-              update-focus $window_ids $event_focused_window_id
+            if ($windows | any {|window| $window.id == $event_focused_window_id }) {
+              update-focus $windows $focused_window_id $event_focused_window_id
+              $windows = ($windows | each {|window| $window | upsert focused ($window.id == $event_focused_window_id) })
               $focused_window_id = $event_focused_window_id
             } else {
-              let updated = (update-settled-windows $icon_cache)
-              $window_ids = $updated.window_ids
+              let updated = (update-sketchybar $windows $icon_map)
+              $windows = $updated.windows
               $focused_window_id = $updated.focused_window_id
-              $icon_cache = $updated.icon_cache
             }
           }
         } else if $event_name in [
@@ -249,20 +235,19 @@ def subscribe-loop [] {
           "virtual_workspace_changed"
           "windows_changed"
         ] {
-          let updated = (update-settled-windows $icon_cache)
-          $window_ids = $updated.window_ids
+          let updated = (update-sketchybar $windows $icon_map)
+          $windows = $updated.windows
           $focused_window_id = $updated.focused_window_id
-          $icon_cache = $updated.icon_cache
         }
       }
     }
-    sleep 100ms
+    sleep 50ms
   }
 }
 
 def main [mode?: string] {
   if $mode == "once" {
-    update-sketchybar [] | ignore
+    update-sketchybar [] (load-icon-map) | ignore
   } else {
     kill-existing
     subscribe-loop

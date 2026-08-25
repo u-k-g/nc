@@ -6,25 +6,27 @@
 }:
 
 let
-  inherit (lib.meta) getExe';
+  inherit (lib.meta) getExe;
 
   user = config.nc.user;
   theme = config.nc.theme;
   dotfiles = ../../dotfiles;
-  coreutilsTimeout = getExe' pkgs.coreutils "timeout";
   sketchybarConfig = pkgs.callPackage (
     { runCommand }:
     runCommand "sketchybar-config-${theme.slug}" { } ''
       cp --recursive ${dotfiles + /config/sketchybar} $out
       chmod --recursive u+w $out
+      CONFIG_DIR=$out ${getExe pkgs.nushell} --no-config-file \
+        $out/plugins/icon_map.nu --dump \
+        > $out/icon_map.nuon
+      mv $out/icon_map.nuon $out/plugins/icon_map.nuon
       substituteInPlace \
         $out/sketchybarrc.nu \
         --replace-fail '@base00@' '${theme.base00}' \
         --replace-fail '@base05@' '${theme.base05}'
       substituteInPlace \
         $out/plugins/paneru_windows.nu \
-        --replace-fail '@base05@' '${theme.base05}' \
-        --replace-fail '@timeout@' '${coreutilsTimeout}'
+        --replace-fail '@base05@' '${theme.base05}'
       substituteInPlace \
         $out/plugins/timer.nu \
         --replace-fail '@base04@' '${theme.base04}' \
@@ -45,7 +47,22 @@ in
       SKETCHYBAR = "/opt/homebrew/bin/sketchybar";
     };
     KeepAlive = true;
-    ProcessType = "Background";
+    ProcessType = "Interactive";
+    RunAtLoad = true;
+  };
+
+  launchd.user.agents."sketchybar.status".serviceConfig = {
+    ProgramArguments = [
+      "${sketchybarConfig}/plugins/clock.nu"
+    ];
+    EnvironmentVariables = {
+      CONFIG_DIR = "${sketchybarConfig}";
+      DNS_COMMAND = "/run/current-system/sw/bin/dns";
+      HOME = user.homeDirectory;
+      SKETCHYBAR = "/opt/homebrew/bin/sketchybar";
+    };
+    KeepAlive = true;
+    ProcessType = "Interactive";
     RunAtLoad = true;
   };
 

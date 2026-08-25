@@ -1,6 +1,6 @@
 #!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
 
-def dns-label [dns_command: string] {
+export def dns-label [dns_command: string] {
   let status = (^$dns_command status | complete)
   if $status.exit_code != 0 {
     return "??"

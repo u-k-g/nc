@@ -5,10 +5,14 @@ def volume-icon [volume: int] {
 }
 
 def main [] {
-  if (($env.SENDER? | default "") != "volume_change") { return }
-
   let name = ($env.NAME? | default "volume")
-  let volume = ($env.INFO? | default 0 | into int)
+  let sketchybar = ($env.SKETCHYBAR? | default "/opt/homebrew/bin/sketchybar")
+  let sender = ($env.SENDER? | default "")
+  let volume = if $sender == "volume_change" {
+    $env.INFO? | default 0 | into int
+  } else {
+    try { ^/usr/bin/osascript -e 'output volume of (get volume settings)' | str trim | into int } catch { return }
+  }
   let icon = (volume-icon $volume)
-  ^sketchybar --set $name $"icon=($icon)" $"label= ($volume)%"
+  ^$sketchybar --set $name $"icon=($icon)" $"label= ($volume)%"
 }
