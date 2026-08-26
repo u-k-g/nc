@@ -45,9 +45,7 @@
     "chaotic": {
       "inputs": {
         "flake-schemas": "flake-schemas",
-        "home-manager": [
-          "home-manager"
-        ],
+        "home-manager": [],
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -116,23 +114,24 @@
         "url": "https://flakehub.com/f/DeterminateSystems/flake-schemas/%3D0.5.0.tar.gz"
       }
     },
-    "home-manager": {
+    "hjem": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1784129366,
-        "narHash": "sha256-N5JiyICSeQF14x+OQebNyPpYowOT9Rs1iKyeCylSzOA=",
-        "owner": "nix-community",
-        "repo": "home-manager",
-        "rev": "165228b0efefc3e635e5174020c40ea64271dc25",
+        "lastModified": 1784298522,
+        "narHash": "sha256-H8jK/B3q+d2tKN5BCs3CfCsBPDSHdFIu91MWZdu2iOU=",
+        "owner": "feel-co",
+        "repo": "hjem",
+        "rev": "5d5d73c8b49f7b29549922484d3e024ecf91b64d",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
-        "repo": "home-manager",
+        "owner": "feel-co",
+        "ref": "pull/167/merge",
+        "repo": "hjem",
         "type": "github"
       }
     },
@@ -350,7 +349,7 @@
         "agenix": "agenix",
         "chaotic": "chaotic",
         "flake-parts": "flake-parts",
-        "home-manager": "home-manager",
+        "hjem": "hjem",
         "homebrew": "homebrew",
         "homebrew-apple": "homebrew-apple",
         "homebrew-cask": "homebrew-cask",

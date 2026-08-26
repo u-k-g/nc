@@ -80,16 +80,16 @@ let
   '';
 in
 {
-  home-manager.users.${user.name} = mkIf pkgs.stdenv.isLinux {
-    home.packages = lib.lists.singleton theme.icons.package;
+  home.users.${user.name} = mkIf pkgs.stdenv.isLinux {
+    packages = lib.lists.singleton theme.icons.package;
 
-    home.sessionVariables = {
+    environment.sessionVariables = {
       GTK_THEME = gtkThemeName;
       GTK2_RC_FILES = "${user.homeDirectory}/.gtkrc-2.0";
     };
 
-    home.file.".gtkrc-2.0" = {
-      force = true;
+    files.".gtkrc-2.0" = {
+      type = "copy";
       text = ''
         gtk-theme-name="${gtkThemeName}"
         gtk-icon-theme-name="${theme.icons.name}"
@@ -98,26 +98,26 @@ in
       '';
     };
 
-    xdg.configFile = {
+    xdg.config.files = {
       "gtk-3.0/settings.ini" = {
-        force = true;
+        type = "copy";
         text = gtkSettings;
       };
       "gtk-4.0/settings.ini" = {
-        force = true;
+        type = "copy";
         text = gtkSettings;
       };
       "gtk-3.0/gtk.css" = {
-        force = true;
+        type = "copy";
         text = theme.adwaitaGtkCss;
       };
       "gtk-4.0/gtk.css" = {
-        force = true;
+        type = "copy";
         text = theme.adwaitaGtkCss;
       };
 
       "kdeglobals" = {
-        force = true;
+        type = "copy";
         text = ''
           [General]
           ColorScheme=${kdeColorSchemeName}
@@ -147,8 +147,8 @@ in
       };
     };
 
-    xdg.dataFile."color-schemes/${kdeColorSchemeName}.colors" = {
-      force = true;
+    xdg.data.files."color-schemes/${kdeColorSchemeName}.colors" = {
+      type = "copy";
       text = ''
         [ColorEffects:Disabled]
         Color=${rgb.bg3}

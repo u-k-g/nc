@@ -350,9 +350,9 @@ in
     dsearch.serviceConfig.Environment = qtEnvironment;
   };
 
-  home-manager.users.${user.name}.xdg.configFile = {
+  home.users.${user.name}.xdg.config.files = {
     "niri/config.kdl" = {
-      force = true;
+      type = "copy";
       text = ''
         input {
             keyboard {
@@ -487,11 +487,11 @@ in
     };
 
     "DankMaterialShell/themes/nc-${theme.slug}.json" = {
-      force = true;
+      type = "copy";
       text = toJSON { } dmsTheme;
     };
     "DankMaterialShell/settings.json" = {
-      force = true;
+      type = "copy";
       text = toJSON { } dmsSettings;
     };
   };

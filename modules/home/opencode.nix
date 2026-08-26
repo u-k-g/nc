@@ -87,7 +87,6 @@ let
     };
   };
 
-  homeManager = config.home-manager.users.${user.name};
   opencodeInstallDir = "${user.homeDirectory}/.opencode/bin";
   opencodeCliState = "${user.homeDirectory}/.local/state/opencode/cli.source";
   opencodeDesktopDataDir = "${user.homeDirectory}/.local/share/opencode";
@@ -96,141 +95,132 @@ let
 in
 
 {
-  home-manager.users.${user.name} = {
-    programs.opencode = {
-      enable = true;
-      package = null;
+  home.users.${user.name} = {
+    xdg.config.files."opencode/opencode.json".text = toJSON { } {
+      autoupdate = true;
+      plugin = [ "opencode-handoff" ];
 
-      settings = {
-        autoupdate = true;
-        plugin = [ "opencode-handoff" ];
-
-        compaction = {
-          auto = true;
-          prune = true;
-        };
-
-        permission = {
-          edit = {
-            "*" = "allow";
-            ".git" = "deny";
-            ".git/*" = "deny";
-            "*/.git" = "deny";
-            "*/.git/*" = "deny";
-          };
-
-          read = {
-            "*" = "allow";
-            "*.env" = "deny";
-            "*.env.*" = "deny";
-            "*.env.example" = "allow";
-          };
-
-          bash = {
-            "git *" = "deny";
-            "git blame" = "allow";
-            "git blame *" = "allow";
-            "git branch" = "allow";
-            "git branch --list *" = "allow";
-            "git branch -a" = "allow";
-            "git branch -r" = "allow";
-            "git cat-file *" = "allow";
-            "git checkout" = "allow";
-            "git checkout *" = "allow";
-            "git checkout --orphan*" = "deny";
-            "git checkout --track*" = "deny";
-            "git checkout -B *" = "deny";
-            "git checkout -B*" = "deny";
-            "git checkout -b *" = "deny";
-            "git checkout -b*" = "deny";
-            "git checkout -t *" = "deny";
-            "git checkout -t*" = "deny";
-            "git clone *" = "allow";
-            "git config --get *" = "allow";
-            "git config --get-regexp *" = "allow";
-            "git config --list" = "allow";
-            "git describe" = "allow";
-            "git describe *" = "allow";
-            "git diff" = "allow";
-            "git diff *" = "allow";
-            "git diff-tree *" = "allow";
-            "git fetch" = "allow";
-            "git fetch *" = "allow";
-            "git for-each-ref" = "allow";
-            "git for-each-ref *" = "allow";
-            "git gc" = "allow";
-            "git gc *" = "allow";
-            "git grep *" = "allow";
-            "git log" = "allow";
-            "git log *" = "allow";
-            "git ls-remote" = "allow";
-            "git ls-remote *" = "allow";
-            "git ls-tree *" = "allow";
-            "git maintenance" = "allow";
-            "git maintenance *" = "allow";
-            "git ls-files" = "allow";
-            "git ls-files *" = "allow";
-            "git merge-base *" = "allow";
-            "git name-rev *" = "allow";
-            "git prune" = "allow";
-            "git prune *" = "allow";
-            "git pull" = "allow";
-            "git pull *" = "allow";
-            "git reflog" = "allow";
-            "git reflog show *" = "allow";
-            "git remote" = "allow";
-            "git remote -v" = "allow";
-            "git remote get-url *" = "allow";
-            "git remote show *" = "allow";
-            "git rev-list *" = "allow";
-            "git rev-parse" = "allow";
-            "git rev-parse *" = "allow";
-            "git repack" = "allow";
-            "git repack *" = "allow";
-            "git restore" = "deny";
-            "git restore *" = "deny";
-            "git show" = "allow";
-            "git show *" = "allow";
-            "git shortlog" = "allow";
-            "git shortlog *" = "allow";
-            "git stash list" = "allow";
-            "git stash show *" = "allow";
-            "git status" = "allow";
-            "git status *" = "allow";
-            "git submodule" = "allow";
-            "git submodule *" = "allow";
-            "git switch *" = "allow";
-            "git switch --create*" = "deny";
-            "git switch --force-create*" = "deny";
-            "git switch --orphan*" = "deny";
-            "git switch --track*" = "deny";
-            "git switch -C *" = "deny";
-            "git switch -C*" = "deny";
-            "git switch -c *" = "deny";
-            "git switch -c*" = "deny";
-            "git switch -t *" = "deny";
-            "git switch -t*" = "deny";
-            "git tag" = "allow";
-            "git tag --list *" = "allow";
-            "git whatchanged" = "allow";
-            "git whatchanged *" = "allow";
-          };
-        };
+      compaction = {
+        auto = true;
+        prune = true;
       };
 
-      tui = {
-        theme = themeName;
-        scroll_speed = 4;
+      permission = {
+        edit = {
+          "*" = "allow";
+          ".git" = "deny";
+          ".git/*" = "deny";
+          "*/.git" = "deny";
+          "*/.git/*" = "deny";
+        };
+
+        read = {
+          "*" = "allow";
+          "*.env" = "deny";
+          "*.env.*" = "deny";
+          "*.env.example" = "allow";
+        };
+
+        bash = {
+          "git *" = "deny";
+          "git blame" = "allow";
+          "git blame *" = "allow";
+          "git branch" = "allow";
+          "git branch --list *" = "allow";
+          "git branch -a" = "allow";
+          "git branch -r" = "allow";
+          "git cat-file *" = "allow";
+          "git checkout" = "allow";
+          "git checkout *" = "allow";
+          "git checkout --orphan*" = "deny";
+          "git checkout --track*" = "deny";
+          "git checkout -B *" = "deny";
+          "git checkout -B*" = "deny";
+          "git checkout -b *" = "deny";
+          "git checkout -b*" = "deny";
+          "git checkout -t *" = "deny";
+          "git checkout -t*" = "deny";
+          "git clone *" = "allow";
+          "git config --get *" = "allow";
+          "git config --get-regexp *" = "allow";
+          "git config --list" = "allow";
+          "git describe" = "allow";
+          "git describe *" = "allow";
+          "git diff" = "allow";
+          "git diff *" = "allow";
+          "git diff-tree *" = "allow";
+          "git fetch" = "allow";
+          "git fetch *" = "allow";
+          "git for-each-ref" = "allow";
+          "git for-each-ref *" = "allow";
+          "git gc" = "allow";
+          "git gc *" = "allow";
+          "git grep *" = "allow";
+          "git log" = "allow";
+          "git log *" = "allow";
+          "git ls-remote" = "allow";
+          "git ls-remote *" = "allow";
+          "git ls-tree *" = "allow";
+          "git maintenance" = "allow";
+          "git maintenance *" = "allow";
+          "git ls-files" = "allow";
+          "git ls-files *" = "allow";
+          "git merge-base *" = "allow";
+          "git name-rev *" = "allow";
+          "git prune" = "allow";
+          "git prune *" = "allow";
+          "git pull" = "allow";
+          "git pull *" = "allow";
+          "git reflog" = "allow";
+          "git reflog show *" = "allow";
+          "git remote" = "allow";
+          "git remote -v" = "allow";
+          "git remote get-url *" = "allow";
+          "git remote show *" = "allow";
+          "git rev-list *" = "allow";
+          "git rev-parse" = "allow";
+          "git rev-parse *" = "allow";
+          "git repack" = "allow";
+          "git repack *" = "allow";
+          "git restore" = "deny";
+          "git restore *" = "deny";
+          "git show" = "allow";
+          "git show *" = "allow";
+          "git shortlog" = "allow";
+          "git shortlog *" = "allow";
+          "git stash list" = "allow";
+          "git stash show *" = "allow";
+          "git status" = "allow";
+          "git status *" = "allow";
+          "git submodule" = "allow";
+          "git submodule *" = "allow";
+          "git switch *" = "allow";
+          "git switch --create*" = "deny";
+          "git switch --force-create*" = "deny";
+          "git switch --orphan*" = "deny";
+          "git switch --track*" = "deny";
+          "git switch -C *" = "deny";
+          "git switch -C*" = "deny";
+          "git switch -c *" = "deny";
+          "git switch -c*" = "deny";
+          "git switch -t *" = "deny";
+          "git switch -t*" = "deny";
+          "git tag" = "allow";
+          "git tag --list *" = "allow";
+          "git whatchanged" = "allow";
+          "git whatchanged *" = "allow";
+        };
       };
     };
 
-    xdg.configFile."opencode/themes/${themeName}.json".text = toJSON { } opencodeTheme;
-
-    home.file."Applications/OpenCode.app" = mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      source = homeManager.lib.file.mkOutOfStoreSymlink opencodeDesktopApp;
+    xdg.config.files."opencode/tui.json".text = toJSON { } {
+      theme = themeName;
+      scroll_speed = 4;
     };
 
-    home.activation.opencode-latest = homeManager.lib.dag.entryAfter [ "writeBoundary" ] ''
+    xdg.config.files."opencode/themes/${themeName}.json".text = toJSON { } opencodeTheme;
+
+    activationScripts.opencode-latest = ''
       (
         set -euo pipefail
 
@@ -334,9 +324,9 @@ in
       )
     '';
 
-    home.activation.opencode-desktop-latest =
+    activationScripts.opencode-desktop-latest =
       mkIf pkgs.stdenv.hostPlatform.isDarwin
-      <| homeManager.lib.dag.entryAfter [ "writeBoundary" ] ''
+      <| ''
         (
           set -euo pipefail
 
@@ -349,6 +339,9 @@ in
           state_file=${lib.escapeShellArg opencodeDesktopState}
           new_app="$desktop_data_dir/.OpenCode.app.new"
           old_app="$desktop_data_dir/.OpenCode.app.old"
+
+          ${pkgs.coreutils}/bin/mkdir --parents ${lib.escapeShellArg "${user.homeDirectory}/Applications"}
+          ${pkgs.coreutils}/bin/ln --symbolic --force --no-dereference "$desktop_app" ${lib.escapeShellArg "${user.homeDirectory}/Applications/OpenCode.app"}
 
           ${pkgs.coreutils}/bin/mkdir --parents "$desktop_data_dir"
           if [ ! -e "$desktop_app" ] && [ -e "$old_app" ]; then

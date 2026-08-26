@@ -35,15 +35,14 @@ in
 
     environment.variables.RAD_HOME = mkIf config.nc.radicle.enable "${user.homeDirectory}/.radicle";
 
-    home-manager.users.${user.name} =
+    home.users.${user.name} =
       { config, osConfig, ... }:
       {
-        home.packages = mkIf osConfig.nc.radicle.enable <| singleton pkgs.radicle-node;
+        packages = mkIf osConfig.nc.radicle.enable <| singleton pkgs.radicle-node;
 
-        home.sessionVariables.RAD_HOME = mkIf osConfig.nc.radicle.enable "${config.home.homeDirectory}/.radicle";
+        environment.sessionVariables.RAD_HOME = mkIf osConfig.nc.radicle.enable "${config.directory}/.radicle";
 
-        home.file.".radicle/config.json" = mkIf osConfig.nc.radicle.enable {
-          force = true;
+        files.".radicle/config.json" = mkIf osConfig.nc.radicle.enable {
           text = toJSON { } {
             publicExplorer = "https://radicle.network/nodes/$host/$rid$path";
             preferredSeeds = [
@@ -55,16 +54,18 @@ in
           };
         };
 
-        home.file.".radicle/keys/radicle" = mkIf osConfig.nc.radicle.enable {
-          force = true;
-          source = config.lib.file.mkOutOfStoreSymlink osConfig.secrets.radicle.path;
-        };
-        home.file.".radicle/keys/radicle.pub" = mkIf osConfig.nc.radicle.enable {
-          force = true;
+        files.".radicle/keys/radicle.pub" = mkIf osConfig.nc.radicle.enable {
           text = ''
             ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINzDlJy403zDuRlof2dJcMGxHz9XZwSMIJkb4a64Hs5Z
           '';
         };
+
+        activationScripts.radicle-key = mkIf osConfig.nc.radicle.enable ''
+          ${pkgs.coreutils}/bin/mkdir --parents ${lib.escapeShellArg "${config.directory}/.radicle/keys"}
+          ${pkgs.coreutils}/bin/ln --symbolic --force --no-dereference \
+            ${lib.escapeShellArg osConfig.secrets.radicle.path} \
+            ${lib.escapeShellArg "${config.directory}/.radicle/keys/radicle"}
+        '';
       };
   };
 }

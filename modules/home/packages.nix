@@ -144,8 +144,7 @@ let
     nbtscan
     usbutils
 
-    screenfetch
-    fastfetch
+    microfetch
     vivid
   ];
 
@@ -162,20 +161,18 @@ let
   ];
 in
 {
-  home-manager.users.${user.name} = {
-    home.packages =
+  home.users.${user.name} = {
+    packages =
       commonPackages
       ++ optionals pkgs.stdenv.isLinux linuxPackages
       ++ optionals pkgs.stdenv.isDarwin darwinPackages;
 
-    home.activation.bun-global-packages =
-      config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-        ''
-          export HOME=${lib.escapeShellArg user.homeDirectory}
-          export BUN_INSTALL="$HOME/.bun"
-
-          ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages} \
-            || printf 'warning: failed to install Bun global packages\n' >&2
-        '';
   };
+
+  nc.userActivationScripts.bun-global-packages = ''
+    export BUN_INSTALL="$HOME/.bun"
+
+    ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages} \
+      || printf 'warning: failed to install Bun global packages\n' >&2
+  '';
 }

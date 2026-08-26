@@ -72,8 +72,8 @@ in
     AppleInterfaceStyleSwitchesAutomatically = false;
   };
 
-  home-manager.users.${user.name} = {
-    xdg.configFile = {
+  home.users.${user.name} = {
+    xdg.config.files = {
       "sketchybar".source = sketchybarConfig;
     };
   };

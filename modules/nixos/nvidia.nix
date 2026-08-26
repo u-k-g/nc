@@ -5,7 +5,8 @@
 }:
 
 let
-  inherit (lib) mkEnableOption mkIf;
+  inherit (lib.modules) mkIf;
+  inherit (lib.options) mkEnableOption;
 in
 {
   options.nc.nixos.nvidia.enable = mkEnableOption "NVIDIA desktop graphics";

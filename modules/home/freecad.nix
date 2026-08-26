@@ -7,25 +7,21 @@
 
 let
   inherit (lib.lists) singleton;
-  inherit (lib.meta) getExe';
   inherit (lib.modules) mkIf;
   user = config.nc.user;
   freecadConfigSource = ../../dotfiles/config/FreeCAD/v1-1;
-  freecadConfigTarget = "${config.home-manager.users.${user.name}.xdg.configHome}/FreeCAD/v1-1";
-  install = getExe' pkgs.coreutils "install";
-  mkdir = getExe' pkgs.coreutils "mkdir";
 in
 {
-  home-manager.users.${user.name} = {
-    home.packages = mkIf pkgs.stdenv.isLinux <| singleton pkgs.freecad;
+  home.users.${user.name} = {
+    packages = mkIf pkgs.stdenv.isLinux <| singleton pkgs.freecad;
 
-    home.activation.freecad-config =
-      config.home-manager.users.${user.name}.lib.dag.entryAfter [ "linkGeneration" ]
-        ''
-          target=${lib.escapeShellArg freecadConfigTarget}
-          ${mkdir} -p "$target"
-          ${install} -m 0644 ${freecadConfigSource}/system.cfg "$target/system.cfg"
-          ${install} -m 0644 ${freecadConfigSource}/user.cfg "$target/user.cfg"
-        '';
+    xdg.config.files."FreeCAD/v1-1/system.cfg" = {
+      source = freecadConfigSource + /system.cfg;
+      type = "copy";
+    };
+    xdg.config.files."FreeCAD/v1-1/user.cfg" = {
+      source = freecadConfigSource + /user.cfg;
+      type = "copy";
+    };
   };
 }

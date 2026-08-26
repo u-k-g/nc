@@ -12,10 +12,10 @@ let
   color_theme = "base16";
 in
 {
-  home-manager.users.${user.name} = {
-    home.packages = singleton pkgs.btop;
+  home.users.${user.name} = {
+    packages = singleton pkgs.btop;
 
-    xdg.configFile = {
+    xdg.config.files = {
       "btop/themes/${color_theme}.theme".text = config.nc.theme.btopTheme;
       "btop/btop.conf".text = lib.generators.toKeyValue { } {
         inherit color_theme;

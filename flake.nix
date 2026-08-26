@@ -36,7 +36,7 @@
 
     chaotic = {
       url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
-      inputs.home-manager.follows = "home-manager";
+      inputs.home-manager.follows = "";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -50,8 +50,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    home-manager = {
-      url = "github:nix-community/home-manager";
+    hjem = {
+      url = "github:feel-co/hjem?ref=pull/167/merge";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -111,40 +111,39 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
-      { lib, ... }:
-      let
-        inherit (lib.filesystem) listFilesRecursive;
-        inherit (lib.lists) filter;
-        inherit (lib.strings) hasSuffix;
-      in
-      {
-        systems = [
-          "aarch64-darwin"
-          "aarch64-linux"
-          "x86_64-linux"
-        ];
+    let
+      inherit (inputs.nixpkgs.lib.attrsets) filterAttrs mapAttrs' nameValuePair;
+      inherit (inputs.nixpkgs.lib.filesystem) readDir;
+      inherit (inputs.nixpkgs.lib.strings) hasSuffix removeSuffix;
 
-        imports = filter (hasSuffix ".mod.nix") (listFilesRecursive ./.);
+      readCoal =
+        directory:
+        readDir directory
+        |> filterAttrs (name: _: hasSuffix ".nix" name)
+        |> mapAttrs' (name: _: nameValuePair (removeSuffix ".nix" name) "${directory}/${name}");
+    in
+    (import "${inputs.flake-parts}/lib.nix" {
+      lib = import ./lib inputs.nixpkgs.lib;
 
-        perSystem =
-          { pkgs, ... }:
-          {
-            formatter = pkgs.writeShellApplication {
-              name = "nc-fmt";
-              runtimeInputs = [
-                pkgs.git
-                pkgs.nixfmt
-              ];
-              text = ''
-                if [ "$#" -eq 0 ]; then
-                  git ls-files '*.nix' | xargs nixfmt
-                else
-                  nixfmt "$@"
-                fi
-              '';
-            };
-          };
-      }
-    );
+      builtinModules = readCoal "${inputs.flake-parts}/modules";
+      extraModules = readCoal "${inputs.flake-parts}/extras";
+    }).mkFlake
+      { inherit inputs; }
+      (
+        { lib, ... }:
+        let
+          inherit (lib.filesystem) listFilesRecursive;
+          inherit (lib.lists) filter;
+          inherit (lib.strings) hasSuffix;
+        in
+        {
+          systems = [
+            "aarch64-darwin"
+            "aarch64-linux"
+            "x86_64-linux"
+          ];
+
+          imports = filter (hasSuffix ".mod.nix") (listFilesRecursive ./.);
+        }
+      );
 }

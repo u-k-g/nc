@@ -7,7 +7,6 @@
 
 let
   inherit (lib.attrsets) recursiveUpdate;
-  inherit (lib.meta) getExe';
   inherit (lib.trivial) importJSON;
   user = config.nc.user;
   theme = config.nc.theme;
@@ -15,7 +14,6 @@ let
   json = pkgs.formats.json { };
   clipboardProvider = if pkgs.stdenv.isLinux then "wayland" else "pasteboard";
   zedKeymapSource = dotfiles + /config/zed/keymap.json;
-  zedKeymapTarget = "${config.home-manager.users.${user.name}.xdg.configHome}/zed/keymap.json";
   zedSettingsSource = dotfiles + /config/zed/settings.json;
   zedSettingsFile =
     json.generate "zed-settings-${theme.slug}.json"
@@ -186,19 +184,14 @@ let
       };
     };
   };
-  zedSettingsTarget = "${config.home-manager.users.${user.name}.xdg.configHome}/zed/settings.json";
-  helixThemesTarget = "${config.home-manager.users.${user.name}.xdg.configHome}/helix/themes";
-  rm = getExe' pkgs.coreutils "rm";
 in
 {
-  home-manager.users.${user.name} = {
-    home.packages = lib.optionals pkgs.stdenv.isLinux [ pkgs.wl-clipboard ];
+  home.users.${user.name} = {
+    packages = lib.optionals pkgs.stdenv.isLinux [ pkgs.wl-clipboard ];
 
-    programs.helix = {
-      enable = true;
-      defaultEditor = true;
-
-      settings = {
+    xdg.config.files."helix/config.toml" = {
+      generator = (pkgs.formats.toml { }).generate "helix-config.toml";
+      value = {
         theme = "nc";
 
         editor = {
@@ -245,7 +238,8 @@ in
       };
     };
 
-    xdg.configFile = {
+    xdg.config.files = {
+      "helix/themes".type = "directory";
       "helix/languages.toml".source = dotfiles + /config/helix/languages.toml;
       "helix/themes/nc.toml".text = ''
         "ui.background" = { bg = "base00" }
@@ -317,33 +311,16 @@ in
         base0F = "#${theme.base0F}"
       '';
       "zed/themes/nc-${theme.slug}.json".source = zedThemeFile;
+      "zed/keymap.json" = {
+        source = zedKeymapSource;
+        type = "copy";
+      };
+      "zed/settings.json" = {
+        source = zedSettingsFile;
+        type = "copy";
+      };
     };
 
-    home.activation.helix-theme-directory-migration =
-      config.home-manager.users.${user.name}.lib.dag.entryBefore [ "linkGeneration" ]
-        ''
-          target=${lib.escapeShellArg helixThemesTarget}
-          if [ -L "$target" ]; then
-            ${rm} -f "$target"
-          fi
-        '';
-
-    home.activation.zed-keymap =
-      config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-        ''
-          target=${lib.escapeShellArg zedKeymapTarget}
-          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-          ${pkgs.coreutils}/bin/rm -f "$target"
-          ${pkgs.coreutils}/bin/install -m 0666 ${zedKeymapSource} "$target"
-        '';
-
-    home.activation.zed-settings =
-      config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-        ''
-          target=${lib.escapeShellArg zedSettingsTarget}
-          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-          ${pkgs.coreutils}/bin/rm -f "$target"
-          ${pkgs.coreutils}/bin/install -m 0666 ${zedSettingsFile} "$target"
-        '';
   };
+
 }

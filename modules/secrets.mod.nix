@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  flake.commonModules.secrets =
+  commonModules.secrets =
     { lib, ... }:
     let
       inherit (lib.lists) singleton;
@@ -69,6 +69,6 @@
       inherit (lib.lists) singleton;
     in
     {
-      home.packages = singleton pkgs.ragenix;
+      packages = singleton pkgs.ragenix;
     };
 }

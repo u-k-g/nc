@@ -86,25 +86,15 @@ in
 {
   environment.variables = sessionVariables;
 
-  home-manager.users.${user.name} = { lib, ... }: {
-    home.packages = [
+  home.users.${user.name} = {
+    packages = [
       pkgs.bat
       pkgs.less
     ];
 
-    home.sessionVariables = sessionVariables;
+    environment.sessionVariables = sessionVariables;
 
-    home.activation.bat-cache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      run mkdir -p ${user.homeDirectory}/.local/state/less
-      run ${getExe pkgs.bat} cache --build
-    '';
-
-    programs.nushell.shellAliases = {
-      less = "^$env.PAGER";
-      cat = getExe cat;
-    };
-
-    xdg.configFile = {
+    xdg.config.files = {
       "lesskey".text = toLesskey {
         env.LESS = lessOptions;
       };
@@ -113,6 +103,16 @@ in
         theme = "base16";
       };
       "bat/themes/base16.tmTheme".text = config.nc.theme.tmTheme;
+      "nushell/config.nu".text = lib.mkAfter ''
+        alias less = ^$env.PAGER
+        alias cat = ^${getExe cat}
+      '';
     };
   };
+
+  nc.userActivationScripts.bat-cache = ''
+    run mkdir -p ${user.homeDirectory}/.local/state/less
+    run ${getExe pkgs.bat} cache --build
+  '';
+
 }

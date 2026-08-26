@@ -7,10 +7,11 @@
 
 let
   inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.generators) toGitINI;
   inherit (lib.meta) getExe;
 
   user = config.nc.user;
-  home = config.home-manager.users.${user.name}.home.homeDirectory;
+  home = user.homeDirectory;
   signingKey = "${home}/.ssh/id_ed25519.pub";
 
   gh = getExe pkgs.gh;
@@ -71,12 +72,10 @@ let
   '';
 in
 {
-  home-manager.users.${user.name} = {
-    programs.git = {
-      enable = true;
-      lfs.enable = true;
-
-      settings = {
+  home.users.${user.name} = {
+    xdg.config.files."git/config" = {
+      generator = toGitINI;
+      value = {
         user = {
           name = user.fullName;
           email = user.email;
@@ -117,17 +116,24 @@ in
         tag.gpgSign = pkgs.stdenv.isDarwin;
 
         feature.manyFiles = true;
+
+        filter.lfs = {
+          clean = "git-lfs clean -- %f";
+          smudge = "git-lfs smudge -- %f";
+          process = "git-lfs filter-process";
+          required = true;
+        };
       }
       // optionalAttrs pkgs.stdenv.isDarwin {
         gpg.format = "ssh";
       };
     };
 
-    home.file = {
+    files = {
       ".gitignore_global".source = ../../dotfiles/home/.gitignore_global;
     };
 
-    xdg.configFile = {
+    xdg.config.files = {
       "jj/config.toml".text = ''
         #:schema https://jj-vcs.github.io/jj/latest/config-schema.json
 

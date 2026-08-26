@@ -25,10 +25,10 @@ in
     description = "Theme-aware Difftastic wrapper shared by Git and Jujutsu.";
   };
 
-  config.home-manager.users.${user.name} = {
-    home.packages = singleton config.nc.difftastic.package;
+  config.home.users.${user.name} = {
+    packages = singleton config.nc.difftastic.package;
 
-    programs.git.settings = {
+    xdg.config.files."git/config".value = {
       diff.external = getExe config.nc.difftastic.package;
       diff.tool = "difftastic";
       difftool.difftastic.cmd = ''${getExe config.nc.difftastic.package} "$LOCAL" "$REMOTE"'';

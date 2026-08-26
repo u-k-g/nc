@@ -1,27 +1,7 @@
-{
-  inputs,
-  lib,
-  self,
-  ...
-}:
-
+{ lib, ... }:
 let
-  inherit (lib.attrsets) attrValues;
+  inherit (lib.lists) singleton;
 in
 {
-  flake.nixosConfigurations.desktop = inputs.nixpkgs.lib.nixosSystem {
-    specialArgs = {
-      inherit inputs self;
-    };
-
-    modules = [
-      inputs.chaotic.nixosModules.default
-      inputs.home-manager.nixosModules.home-manager
-    ]
-    ++ attrValues self.commonModules
-    ++ attrValues self.nixosModules
-    ++ [
-      ./desktop/default.nix
-    ];
-  };
+  imports = singleton <| lib.systems.nixosSystem "desktop" ./desktop/default.nix;
 }

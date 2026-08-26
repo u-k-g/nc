@@ -1,5 +1,5 @@
 { ... }:
 
 {
-  flake.commonModules.shell = ./nushell.nix;
+  commonModules.shell = ./nushell.nix;
 }

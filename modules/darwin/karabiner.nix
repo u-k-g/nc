@@ -16,7 +16,7 @@ in
     rm -rf /Applications/.Nix-Karabiner
   '';
 
-  home-manager.users.${user.name} = {
-    xdg.configFile."karabiner/karabiner.json".source = dotfiles + /config/karabiner/karabiner.json;
+  home.users.${user.name} = {
+    xdg.config.files."karabiner/karabiner.json".source = dotfiles + /config/karabiner/karabiner.json;
   };
 }

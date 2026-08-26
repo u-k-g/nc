@@ -12,14 +12,8 @@ let
   user = config.nc.user;
 in
 {
-  home-manager.users.${user.name} = {
-    xdg.configFile."mimeapps.list" = mkIf pkgs.stdenv.isLinux {
-      force = true;
-    };
-
-    xdg.mimeApps.enable = mkIf pkgs.stdenv.isLinux true;
-
-    xdg.mimeApps.defaultApplications =
+  home.users.${user.name} = {
+    xdg.mime-apps.default-applications =
       mkIf pkgs.stdenv.isLinux
       <|
         flip genAttrs (const "org.kde.dolphin.desktop") [
@@ -86,7 +80,7 @@ in
           "application/x-stuffit"
         ];
 
-    home.packages = mkIf pkgs.stdenv.isLinux [
+    packages = mkIf pkgs.stdenv.isLinux [
       pkgs.kdePackages.dolphin
       pkgs.kdePackages.ark
     ];

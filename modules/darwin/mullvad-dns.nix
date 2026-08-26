@@ -7,7 +7,7 @@
 }:
 
 let
-  inherit (lib) mkForce;
+  inherit (lib.modules) mkForce;
   inherit (lib.lists) singleton;
 in
 {

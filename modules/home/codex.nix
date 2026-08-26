@@ -691,10 +691,10 @@ in
     '';
   };
 
-  home-manager.users.${config.nc.user.name} = {
-    home.packages = optionals pkgs.stdenv.isLinux <| singleton pkgs.codex;
+  home.users.${config.nc.user.name} = {
+    packages = optionals pkgs.stdenv.isLinux <| singleton pkgs.codex;
 
-    home.file = {
+    files = {
       ".codex/rules/git.rules".text = ''
         # Codex rules are prefix-based. Do not add a broad forbidden ["git"]
         # rule here: forbidden rules override more specific operation allows.

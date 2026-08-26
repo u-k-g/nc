@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib) optionalString;
+  inherit (lib.strings) optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
   dotfiles = ../../dotfiles;
@@ -33,9 +33,9 @@ let
   '';
 in
 {
-  home-manager.users.${user.name} = {
-    xdg.configFile."ghostty".source = ghosttyConfig;
-    xdg.configFile."xdg-terminals.list" = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
+  home.users.${user.name} = {
+    xdg.config.files."ghostty".source = ghosttyConfig;
+    xdg.config.files."xdg-terminals.list" = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       text = "com.mitchellh.ghostty.desktop\n";
     };
   };

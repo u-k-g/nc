@@ -10,20 +10,15 @@ let
   inherit (lib.modules) mkIf;
   user = config.nc.user;
 
-  homeManager = config.home-manager.users.${user.name};
   t3CodeDataDir = "${user.homeDirectory}/.local/share/t3-code";
   t3CodeApp = "${t3CodeDataDir}/T3 Code.app";
   t3CodeState = "${user.homeDirectory}/.local/state/t3-code/source";
 in
 {
-  home-manager.users.${user.name} = {
-    home.file."Applications/T3 Code.app" = mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      source = homeManager.lib.file.mkOutOfStoreSymlink t3CodeApp;
-    };
-
-    home.activation.t3-code-latest =
+  home.users.${user.name} = {
+    activationScripts.t3-code-latest =
       mkIf pkgs.stdenv.hostPlatform.isDarwin
-      <| homeManager.lib.dag.entryAfter [ "writeBoundary" ] ''
+      <| ''
         (
           set -euo pipefail
 
@@ -35,6 +30,9 @@ in
           state_file=${lib.escapeShellArg t3CodeState}
           new_app="$t3_code_data_dir/.T3 Code.app.new"
           old_app="$t3_code_data_dir/.T3 Code.app.old"
+
+          ${pkgs.coreutils}/bin/mkdir --parents ${lib.escapeShellArg "${user.homeDirectory}/Applications"}
+          ${pkgs.coreutils}/bin/ln --symbolic --force --no-dereference "$t3_code_app" ${lib.escapeShellArg "${user.homeDirectory}/Applications/T3 Code.app"}
 
           app_is_valid() {
             local app=$1

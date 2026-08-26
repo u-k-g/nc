@@ -1,27 +1,7 @@
-{
-  inputs,
-  lib,
-  self,
-  ...
-}:
-
+{ lib, ... }:
 let
-  inherit (lib.attrsets) attrValues;
+  inherit (lib.lists) singleton;
 in
 {
-  flake.darwinConfigurations.darwinbook = inputs.nix-darwin.lib.darwinSystem {
-    specialArgs = {
-      inherit inputs self;
-    };
-
-    modules = [
-      inputs.home-manager.darwinModules.home-manager
-      inputs.homebrew.darwinModules.nix-homebrew
-    ]
-    ++ attrValues self.commonModules
-    ++ attrValues self.darwinModules
-    ++ [
-      ./darwinbook/default.nix
-    ];
-  };
+  imports = singleton <| lib.systems.darwinSystem "darwinbook" ./darwinbook/default.nix;
 }

@@ -10,5 +10,5 @@ let
   user = config.nc.user;
 in
 {
-  home-manager.users.${user.name}.home.packages = singleton pkgs.watchman;
+  home.users.${user.name}.packages = singleton pkgs.watchman;
 }

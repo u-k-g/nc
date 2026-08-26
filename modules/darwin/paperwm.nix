@@ -24,17 +24,16 @@ in
   system.defaults.CustomSystemPreferences."org.hammerspoon.Hammerspoon".MJConfigFile =
     "~/.config/hammerspoon/init.lua";
 
-  home-manager.users.${user.name} = {
-    home.file.".hammerspoon/init.lua".text = ''
+  home.users.${user.name} = {
+    files.".hammerspoon/init.lua".text = ''
       dofile(os.getenv("HOME") .. "/.config/hammerspoon/init.lua")
     '';
 
-    home.file.".hammerspoon/Spoons/PaperWM.spoon" = {
-      recursive = true;
+    files.".hammerspoon/Spoons/PaperWM.spoon" = {
       source = paperwmSpoon;
     };
 
-    xdg.configFile."hammerspoon".source = hammerspoonConfig;
-    xdg.configFile."paperwm".source = paperwmConfig;
+    xdg.config.files."hammerspoon".source = hammerspoonConfig;
+    xdg.config.files."paperwm".source = paperwmConfig;
   };
 }

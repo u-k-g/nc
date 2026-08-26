@@ -1,19 +1,22 @@
 { config, lib, ... }:
 
 let
-  inherit (lib.modules) mkDefault;
+  inherit (lib.options) mkOption;
+  inherit (lib.types) attrsOf lines;
 in
 {
-  xdg.enable = true;
-
-  home.sessionVariables = {
-    XDG_CACHE_HOME = mkDefault "${config.home.homeDirectory}/.cache";
-    XDG_CONFIG_HOME = mkDefault "${config.home.homeDirectory}/.config";
-    XDG_DATA_HOME = mkDefault "${config.home.homeDirectory}/.local/share";
-    XDG_STATE_HOME = mkDefault "${config.home.homeDirectory}/.local/state";
-    OPENCODE_DB = mkDefault "opencode-stable.db";
-    ZDOTDIR = mkDefault "${config.home.homeDirectory}/.config/zsh";
+  options.activationScripts = mkOption {
+    type = attrsOf lines;
+    default = { };
+    description = "Scripts run as this user after system activation.";
   };
 
-  programs.home-manager.enable = true;
+  config.environment.sessionVariables = {
+    XDG_CACHE_HOME = "${config.directory}/.cache";
+    XDG_CONFIG_HOME = "${config.directory}/.config";
+    XDG_DATA_HOME = "${config.directory}/.local/share";
+    XDG_STATE_HOME = "${config.directory}/.local/state";
+    OPENCODE_DB = "opencode-stable.db";
+    ZDOTDIR = "${config.directory}/.config/zsh";
+  };
 }

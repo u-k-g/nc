@@ -1,9 +1,8 @@
 { ... }:
 
 {
-  flake.commonModules = {
+  commonModules = {
     fonts = ./common/fonts.nix;
-    home-manager = ./common/home-manager.nix;
     inputs-gcroot = ./common/inputs-gcroot.nix;
     nix = ./common/nix.nix;
     theme = ./theme/default.nix;
@@ -15,7 +14,6 @@
     codex = ./home/codex.nix;
     communication = ./home/communication.nix;
     desktop-theme = ./home/desktop-theme.nix;
-    mutable-desktop-settings = ./home/mutable-desktop-settings.nix;
     difftastic = ./home/difftastic.nix;
     editor = ./home/editor.nix;
     freecad = ./home/freecad.nix;
@@ -33,7 +31,6 @@
   };
 
   flake.darwinModules = {
-    amp = ./darwin/amp.nix;
     desktop = ./darwin/desktop.nix;
     dock = ./darwin/dock.nix;
     darwin-essentials = ./darwin/essentials.nix;

@@ -27,20 +27,19 @@ let
       });
 in
 {
-  home-manager.users.${user.name} = {
-    xdg.mimeApps.defaultApplications =
+  home.users.${user.name} = {
+    xdg.mime-apps.default-applications =
       mkIf pkgs.stdenv.isLinux
       <| flip genAttrs (const "discord.desktop") [
         "x-scheme-handler/discord"
       ];
 
-    home.packages = optionals pkgs.stdenv.isLinux [
+    packages = optionals pkgs.stdenv.isLinux [
       pkgs.cinny-desktop
       discord
     ];
 
-    xdg.configFile."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.isLinux {
-      force = true;
+    xdg.config.files."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.isLinux {
       text = config.nc.theme.discordCss;
     };
   };

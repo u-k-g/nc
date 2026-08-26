@@ -6,7 +6,9 @@
 }:
 
 let
+  inherit (lib.attrsets) mapAttrsToList;
   inherit (lib.meta) getExe;
+  inherit (lib.strings) concatStringsSep;
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
@@ -39,160 +41,168 @@ let
   '';
 in
 {
-  home-manager.users.${user.name} = {
-    programs.kitty = {
-      enable = true;
-
-      font = {
-        name = "Iosevka Nerd Font Mono";
-        package = pkgs.nerd-fonts.iosevka;
-        size = theme.font.size.normal;
-      };
-
-      settings = {
-        allow_remote_control = true;
-        confirm_os_window_close = 0;
-        focus_follows_mouse = true;
-        mouse_hide_wait = 0;
-        copy_on_select = "clipboard";
-        window_padding_width = theme.padding;
-        hide_window_decorations = "titlebar-only";
-        macos_titlebar_color = hex theme.base00;
-        macos_option_as_alt = "both";
-
-        scrollback_lines = 100000;
-        scrollback_pager = "${scrollbackPager}/bin/kitty-scrollback-pager +INPUT_LINE_NUMBER";
-
-        cursor = hex theme.base05;
-        cursor_text_color = hex theme.base00;
-        cursor_shape = "beam";
-        cursor_trail = 3;
-        cursor_trail_decay = "0.1 0.4";
-
-        url_color = hex theme.base0D;
-        detect_urls = true;
-        open_url_modifiers = "cmd";
-        "mouse_map cmd+left press grabbed" = "discard_event";
-        "mouse_map cmd+left release grabbed,ungrabbed" = "mouse_handle_click link";
-        "mouse_map super+left press grabbed" = "discard_event";
-        "mouse_map super+left release grabbed,ungrabbed" = "mouse_handle_click link";
-
-        strip_trailing_spaces = "always";
-        enable_audio_bell = false;
-        shell_integration = "no-cursor no-title";
-
-        active_border_color = hex theme.base0A;
-        inactive_border_color = hex theme.base01;
-        window_border_width = "0pt";
-        enabled_layouts = "splits";
-
-        background = hex theme.base00;
-        foreground = hex theme.base05;
-
-        selection_background = hex theme.base02;
-        selection_foreground = hex theme.base00;
-
-        tab_bar_edge = "top";
-        tab_bar_margin_width = 0;
-        tab_bar_margin_height = "2 0";
-        tab_bar_style = "custom";
-        tab_powerline_style = "angled";
-        tab_separator = ''"   "'';
-        tab_title_template = "{custom}";
-        active_tab_title_template = "{fmt.noitalic}{fmt.bold}{custom}{fmt.nobold}";
-
-        active_tab_background = hex theme.base00;
-        active_tab_foreground = hex theme.base05;
-
-        inactive_tab_background = hex theme.base00;
-        inactive_tab_foreground = hex theme.base03;
-
-        color0 = hex theme.base00;
-        color1 = hex theme.base08;
-        color2 = hex theme.base0B;
-        color3 = hex theme.base0A;
-        color4 = hex theme.base0D;
-        color5 = hex theme.base0E;
-        color6 = hex theme.base0C;
-        color7 = hex theme.base05;
-        color8 = hex theme.base03;
-        color9 = hex theme.base08;
-        color10 = hex theme.base0B;
-        color11 = hex theme.base0A;
-        color12 = hex theme.base0D;
-        color13 = hex theme.base0E;
-        color14 = hex theme.base0C;
-        color15 = hex theme.base07;
-        color16 = hex theme.base09;
-        color17 = hex theme.base0F;
-        color18 = hex theme.base01;
-        color19 = hex theme.base02;
-        color20 = hex theme.base04;
-        color21 = hex theme.base06;
-      };
-
-      keybindings =
-        (
-          if pkgs.stdenv.isLinux then
-            {
-              "ctrl+1" = "goto_tab 1";
-              "ctrl+2" = "goto_tab 2";
-              "ctrl+3" = "goto_tab 3";
-              "ctrl+4" = "goto_tab 4";
-              "ctrl+5" = "goto_tab 5";
-              "ctrl+6" = "goto_tab 6";
-              "ctrl+7" = "goto_tab 7";
-              "ctrl+8" = "goto_tab 8";
-              "ctrl+9" = "goto_tab 9";
-              "ctrl+0" = "goto_tab 10";
-              "ctrl+shift+k" = "send_text all \\x0c";
-              "ctrl+shift+t" = "new_tab";
-              "ctrl+shift+w" = "close_tab";
-            }
+  home.users.${user.name} = {
+    xdg.config.files."kitty/kitty.conf".text =
+      let
+        render =
+          value:
+          if value == true then
+            "yes"
+          else if value == false then
+            "no"
           else
-            { }
-        )
-        // {
-          "super+c" = "copy_to_clipboard";
-          "super+k" = "combine : clear_terminal to_cursor_scroll active : send_text all \\x0c";
-          "super+v" = "paste_from_clipboard";
-          "super+t" = "new_tab";
-          "super+w" = "close_tab";
-          "super+1" = "goto_tab 1";
-          "super+2" = "goto_tab 2";
-          "super+3" = "goto_tab 3";
-          "super+4" = "goto_tab 4";
-          "super+5" = "goto_tab 5";
-          "super+6" = "goto_tab 6";
-          "super+7" = "goto_tab 7";
-          "super+8" = "goto_tab 8";
-          "super+9" = "goto_tab 9";
-          "super+0" = "goto_tab 10";
-          "super+enter" = "launch --location=vsplit";
-          "alt+backspace" = "send_text all \\x17";
-          "ctrl+shift+x" =
-            "launch --stdin-source=@screen_scrollback --type=overlay ${scrollbackHx}/bin/kitty-scrollback-hx";
+            toString value;
+        settings = {
+          font_family = "Iosevka Nerd Font Mono";
+          font_size = theme.font.size.normal;
+          allow_remote_control = true;
+          confirm_os_window_close = 0;
+          focus_follows_mouse = true;
+          mouse_hide_wait = 0;
+          copy_on_select = "clipboard";
+          window_padding_width = theme.padding;
+          hide_window_decorations = "titlebar-only";
+          macos_titlebar_color = hex theme.base00;
+          macos_option_as_alt = "both";
+
+          scrollback_lines = 100000;
+          scrollback_pager = "${scrollbackPager}/bin/kitty-scrollback-pager +INPUT_LINE_NUMBER";
+
+          cursor = hex theme.base05;
+          cursor_text_color = hex theme.base00;
+          cursor_shape = "beam";
+          cursor_trail = 3;
+          cursor_trail_decay = "0.1 0.4";
+
+          url_color = hex theme.base0D;
+          detect_urls = true;
+          open_url_modifiers = "cmd";
+          "mouse_map cmd+left press grabbed" = "discard_event";
+          "mouse_map cmd+left release grabbed,ungrabbed" = "mouse_handle_click link";
+          "mouse_map super+left press grabbed" = "discard_event";
+          "mouse_map super+left release grabbed,ungrabbed" = "mouse_handle_click link";
+
+          strip_trailing_spaces = "always";
+          enable_audio_bell = false;
+          shell_integration = "no-cursor no-title";
+
+          active_border_color = hex theme.base0A;
+          inactive_border_color = hex theme.base01;
+          window_border_width = "0pt";
+          enabled_layouts = "splits";
+
+          background = hex theme.base00;
+          foreground = hex theme.base05;
+
+          selection_background = hex theme.base02;
+          selection_foreground = hex theme.base00;
+
+          tab_bar_edge = "top";
+          tab_bar_margin_width = 0;
+          tab_bar_margin_height = "2 0";
+          tab_bar_style = "custom";
+          tab_powerline_style = "angled";
+          tab_separator = ''"   "'';
+          tab_title_template = "{custom}";
+          active_tab_title_template = "{fmt.noitalic}{fmt.bold}{custom}{fmt.nobold}";
+
+          active_tab_background = hex theme.base00;
+          active_tab_foreground = hex theme.base05;
+
+          inactive_tab_background = hex theme.base00;
+          inactive_tab_foreground = hex theme.base03;
+
+          color0 = hex theme.base00;
+          color1 = hex theme.base08;
+          color2 = hex theme.base0B;
+          color3 = hex theme.base0A;
+          color4 = hex theme.base0D;
+          color5 = hex theme.base0E;
+          color6 = hex theme.base0C;
+          color7 = hex theme.base05;
+          color8 = hex theme.base03;
+          color9 = hex theme.base08;
+          color10 = hex theme.base0B;
+          color11 = hex theme.base0A;
+          color12 = hex theme.base0D;
+          color13 = hex theme.base0E;
+          color14 = hex theme.base0C;
+          color15 = hex theme.base07;
+          color16 = hex theme.base09;
+          color17 = hex theme.base0F;
+          color18 = hex theme.base01;
+          color19 = hex theme.base02;
+          color20 = hex theme.base04;
+          color21 = hex theme.base06;
         };
 
-      extraConfig = ''
-        symbol_map U+2190-U+21FF Iosevka Nerd Font Mono
-        symbol_map U+2200-U+22FF Iosevka Nerd Font Mono
-        symbol_map U+2300-U+23FF Iosevka Nerd Font Mono
-        symbol_map U+2460-U+24FF Iosevka Nerd Font Mono
-        symbol_map U+2500-U+259F Iosevka Nerd Font Mono
-        symbol_map U+25A0-U+25FF Iosevka Nerd Font Mono
-        symbol_map U+2600-U+27BF Iosevka Nerd Font Mono
-        symbol_map U+27C0-U+27FF Iosevka Nerd Font Mono
-        symbol_map U+2800-U+28FF Iosevka Nerd Font Mono
-        symbol_map U+2900-U+297F Iosevka Nerd Font Mono
-        symbol_map U+2A00-U+2AFF Iosevka Nerd Font Mono
-        symbol_map U+E000-U+F8FF Iosevka Nerd Font Mono
-        symbol_map U+F0000-U+FFFFD Iosevka Nerd Font Mono
-        symbol_map U+100000-U+10FFFD Iosevka Nerd Font Mono
-      '';
-    };
+        keybindings =
+          (
+            if pkgs.stdenv.isLinux then
+              {
+                "ctrl+1" = "goto_tab 1";
+                "ctrl+2" = "goto_tab 2";
+                "ctrl+3" = "goto_tab 3";
+                "ctrl+4" = "goto_tab 4";
+                "ctrl+5" = "goto_tab 5";
+                "ctrl+6" = "goto_tab 6";
+                "ctrl+7" = "goto_tab 7";
+                "ctrl+8" = "goto_tab 8";
+                "ctrl+9" = "goto_tab 9";
+                "ctrl+0" = "goto_tab 10";
+                "ctrl+shift+k" = "send_text all \\x0c";
+                "ctrl+shift+t" = "new_tab";
+                "ctrl+shift+w" = "close_tab";
+              }
+            else
+              { }
+          )
+          // {
+            "super+c" = "copy_to_clipboard";
+            "super+k" = "combine : clear_terminal to_cursor_scroll active : send_text all \\x0c";
+            "super+v" = "paste_from_clipboard";
+            "super+t" = "new_tab";
+            "super+w" = "close_tab";
+            "super+1" = "goto_tab 1";
+            "super+2" = "goto_tab 2";
+            "super+3" = "goto_tab 3";
+            "super+4" = "goto_tab 4";
+            "super+5" = "goto_tab 5";
+            "super+6" = "goto_tab 6";
+            "super+7" = "goto_tab 7";
+            "super+8" = "goto_tab 8";
+            "super+9" = "goto_tab 9";
+            "super+0" = "goto_tab 10";
+            "super+enter" = "launch --location=vsplit";
+            "alt+backspace" = "send_text all \\x17";
+            "ctrl+shift+x" =
+              "launch --stdin-source=@screen_scrollback --type=overlay ${scrollbackHx}/bin/kitty-scrollback-hx";
+          };
 
-    xdg.configFile."kitty/tab_bar.py".text = ''
+        extraConfig = ''
+          symbol_map U+2190-U+21FF Iosevka Nerd Font Mono
+          symbol_map U+2200-U+22FF Iosevka Nerd Font Mono
+          symbol_map U+2300-U+23FF Iosevka Nerd Font Mono
+          symbol_map U+2460-U+24FF Iosevka Nerd Font Mono
+          symbol_map U+2500-U+259F Iosevka Nerd Font Mono
+          symbol_map U+25A0-U+25FF Iosevka Nerd Font Mono
+          symbol_map U+2600-U+27BF Iosevka Nerd Font Mono
+          symbol_map U+27C0-U+27FF Iosevka Nerd Font Mono
+          symbol_map U+2800-U+28FF Iosevka Nerd Font Mono
+          symbol_map U+2900-U+297F Iosevka Nerd Font Mono
+          symbol_map U+2A00-U+2AFF Iosevka Nerd Font Mono
+          symbol_map U+E000-U+F8FF Iosevka Nerd Font Mono
+          symbol_map U+F0000-U+FFFFD Iosevka Nerd Font Mono
+          symbol_map U+100000-U+10FFFD Iosevka Nerd Font Mono
+        '';
+      in
+      ''
+        ${concatStringsSep "\n" <| mapAttrsToList (name: value: "${name} ${render value}") settings}
+        ${concatStringsSep "\n" <| mapAttrsToList (key: action: "map ${key} ${action}") keybindings}
+        ${extraConfig}
+      '';
+
+    xdg.config.files."kitty/tab_bar.py".text = ''
       import os
       import socket
       from os.path import basename

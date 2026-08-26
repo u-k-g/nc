@@ -6,12 +6,11 @@
 }:
 
 let
-  inherit (lib)
-    getExe
-    hiPrio
-    mkIf
-    mkMerge
-    ;
+  inherit (lib) fromJSON;
+  inherit (lib.generators) toJSON;
+  inherit (lib.meta) getExe hiPrio;
+  inherit (lib.modules) mkIf mkMerge;
+  inherit (lib.trivial) floor;
   user = config.nc.user;
   theme = config.nc.theme;
   json = pkgs.formats.json { };
@@ -53,16 +52,16 @@ let
   godSensMinecraft = 0.02291165;
   godSensWaywallNormal = 12.8000006;
   godSensWaywallTall = 1.1512141;
-  thinBtWidth = builtins.floor ((monitorHeight * 1000.0) / 3571.0);
+  thinBtWidth = floor ((monitorHeight * 1000.0) / 3571.0);
   thinBtHeight = monitorHeight;
   planarAbuseWidth = monitorWidth;
-  planarAbuseHeight = builtins.floor (monitorWidth / 6.4);
+  planarAbuseHeight = floor (monitorWidth / 6.4);
   eyeMeasuringWidth = 384;
   eyeMeasuringHeight = 16384;
   eyeSeeSourceWidth = 60;
   eyeSeeSourceHeight = 580;
-  eyeSeeProjectorWidth = builtins.floor ((monitorWidth - eyeMeasuringWidth) / 2.0);
-  eyeSeeProjectorHeight = builtins.floor ((monitorHeight * eyeSeeProjectorWidth) / monitorWidth);
+  eyeSeeProjectorWidth = floor ((monitorWidth - eyeMeasuringWidth) / 2.0);
+  eyeSeeProjectorHeight = floor ((monitorHeight * eyeSeeProjectorWidth) / monitorWidth);
   eyeSeeOverlay = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/DuncanRuns/Jingle-EyeSee-Plugin/main/src/main/resources/overlay.png";
     hash = "sha256:1l1q0hkjwzip725zlyf5rfax671jrp3hhf6qsckn3m452dvqhzpb";
@@ -95,11 +94,11 @@ let
     "-XX:MaxInlineLevel=40"
     "-XX:TypeProfileMajorReceiverPercent=30"
   ];
-  mcsrEnv = builtins.toJSON {
+  mcsrEnv = toJSON { } {
     __GL_THREADED_OPTIMIZATIONS = "0";
     LD_PRELOAD = "${pkgs.jemalloc}/lib/libjemalloc.so";
   };
-  mcsrStandardSettings = builtins.fromJSON ''
+  mcsrStandardSettings = fromJSON ''
     {
       ".apiVersion": "2.2+1.16-1.16.1",
       ".modVersion": "2.3+1.16-1.16.1",
@@ -262,9 +261,9 @@ let
   '';
 in
 {
-  home-manager.users.${user.name} = mkMerge [
+  home.users.${user.name} = mkMerge [
     {
-      home.packages = [
+      packages = [
         (if pkgs.stdenv.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
       ]
       ++ lib.optionals pkgs.stdenv.isLinux [
@@ -274,7 +273,7 @@ in
     }
 
     (mkIf pkgs.stdenv.isLinux {
-      xdg.configFile."waywall/init.lua".text = ''
+      xdg.config.files."waywall/init.lua".text = ''
         local waywall = require("waywall")
         local helpers = require("waywall.helpers")
 
@@ -331,15 +330,15 @@ in
 
             local dst = {
                 x = 0,
-                y = ${toString (builtins.floor ((monitorHeight - eyeSeeProjectorHeight) / 2.0))},
+                y = ${toString (floor ((monitorHeight - eyeSeeProjectorHeight) / 2.0))},
                 w = ${toString eyeSeeProjectorWidth},
                 h = ${toString eyeSeeProjectorHeight},
             }
 
             eye_mirror = waywall.mirror({
                 src = {
-                    x = ${toString (builtins.floor ((eyeMeasuringWidth - eyeSeeSourceWidth) / 2.0))},
-                    y = ${toString (builtins.floor ((eyeMeasuringHeight - eyeSeeSourceHeight) / 2.0))},
+                    x = ${toString (floor ((eyeMeasuringWidth - eyeSeeSourceWidth) / 2.0))},
+                    y = ${toString (floor ((eyeMeasuringHeight - eyeSeeSourceHeight) / 2.0))},
                     w = ${toString eyeSeeSourceWidth},
                     h = ${toString eyeSeeSourceHeight},
                 },
@@ -533,7 +532,7 @@ in
         })
 
         helpers.res_mirror({
-            src = { x = ${toString (builtins.floor ((eyeMeasuringWidth - 220) / 2.0))}, y = ${
+            src = { x = ${toString (floor ((eyeMeasuringWidth - 220) / 2.0))}, y = ${
               toString (eyeMeasuringHeight - 40)
             }, w = 220, h = 40 },
             dst = { x = 630, y = 960, w = 660, h = 120 },
@@ -586,8 +585,7 @@ in
         return config
       '';
 
-      xdg.dataFile."applications/org.prismlauncher.PrismLauncher.desktop" = {
-        force = true;
+      xdg.data.files."applications/org.prismlauncher.PrismLauncher.desktop" = {
         text = ''
           [Desktop Entry]
           Type=Application
@@ -601,8 +599,7 @@ in
         '';
       };
 
-      xdg.dataFile."applications/org.kde.dolphin.desktop" = {
-        force = true;
+      xdg.data.files."applications/org.kde.dolphin.desktop" = {
         text = ''
           [Desktop Entry]
           Type=Application
@@ -628,49 +625,43 @@ in
         '';
       };
 
-      home.activation.mcsr-standardsettings =
-        config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-          ''
-            target=${lib.escapeShellArg mcsrStandardSettingsTarget}
-            ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-            ${pkgs.coreutils}/bin/rm -f "$target"
-            ${pkgs.coreutils}/bin/install -m 0666 ${mcsrStandardSettingsFile} "$target"
-          '';
+      activationScripts.mcsr-standardsettings = ''
+        target=${lib.escapeShellArg mcsrStandardSettingsTarget}
+        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
+        ${pkgs.coreutils}/bin/rm -f "$target"
+        ${pkgs.coreutils}/bin/install -m 0666 ${mcsrStandardSettingsFile} "$target"
+      '';
 
-      home.activation.ninjabrain-prefs =
-        config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-          ''
-            target=${lib.escapeShellArg ninjabrainPrefsTarget}
-            ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-            ${pkgs.coreutils}/bin/rm -f "$target"
-            ${pkgs.coreutils}/bin/install -m 0644 ${ninjabrainPrefs} "$target"
-          '';
+      activationScripts.ninjabrain-prefs = ''
+        target=${lib.escapeShellArg ninjabrainPrefsTarget}
+        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
+        ${pkgs.coreutils}/bin/rm -f "$target"
+        ${pkgs.coreutils}/bin/install -m 0644 ${ninjabrainPrefs} "$target"
+      '';
 
-      home.activation.mcsr-waywall =
-        config.home-manager.users.${user.name}.lib.dag.entryAfter [ "writeBoundary" ]
-          ''
-            target=${lib.escapeShellArg mcsrInstanceCfgTarget}
-            if [ -e "$target" ]; then
-              MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
-                s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
-                s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
-                s@^JavaPath=.*@JavaPath=${pkgs.jdk21}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk21}/bin/java\n";
-                s@^IgnoreJavaCompatibility=.*@IgnoreJavaCompatibility=true@m or $_ .= "IgnoreJavaCompatibility=true\n";
-                s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
-                s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
-                s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
-                s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
-                s@^Env=.*\n@@mg;
-                $_ .= "Env=".$ENV{MCSR_ENV}."\n";
-                s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
-                s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
-                s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
-                s@^OverrideNativeWorkarounds=.*@OverrideNativeWorkarounds=true@m or $_ .= "OverrideNativeWorkarounds=true\n";
-                s@^UseNativeGLFW=.*@UseNativeGLFW=true@m or $_ .= "UseNativeGLFW=true\n";
-                s@^CustomGLFWPath=.*@CustomGLFWPath=@m or $_ .= "CustomGLFWPath=\n";
-              ' "$target"
-            fi
-          '';
+      activationScripts.mcsr-waywall = ''
+        target=${lib.escapeShellArg mcsrInstanceCfgTarget}
+        if [ -e "$target" ]; then
+          MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
+            s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
+            s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
+            s@^JavaPath=.*@JavaPath=${pkgs.jdk21}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk21}/bin/java\n";
+            s@^IgnoreJavaCompatibility=.*@IgnoreJavaCompatibility=true@m or $_ .= "IgnoreJavaCompatibility=true\n";
+            s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
+            s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
+            s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
+            s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
+            s@^Env=.*\n@@mg;
+            $_ .= "Env=".$ENV{MCSR_ENV}."\n";
+            s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
+            s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
+            s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
+            s@^OverrideNativeWorkarounds=.*@OverrideNativeWorkarounds=true@m or $_ .= "OverrideNativeWorkarounds=true\n";
+            s@^UseNativeGLFW=.*@UseNativeGLFW=true@m or $_ .= "UseNativeGLFW=true\n";
+            s@^CustomGLFWPath=.*@CustomGLFWPath=@m or $_ .= "CustomGLFWPath=\n";
+          ' "$target"
+        fi
+      '';
     })
   ];
 }

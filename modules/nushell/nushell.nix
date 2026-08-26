@@ -8,11 +8,14 @@
 
 let
   inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
   inherit (lib.strings)
     concatMapStringsSep
+    fileContents
     makeLibraryPath
     optionalString
+    replaceStrings
     substring
     ;
   inherit (inputs.themes.lib.strings) fromHexString;
@@ -115,7 +118,7 @@ let
     #!${getExe pkgs.nushell}
     use std null_device
 
-    let shadow_path = ${builtins.toJSON shadowPath}
+    let shadow_path = ${toJSON { } shadowPath}
     let original_size = ls /usr/bin/SplitForks | get 0.size
 
     let shadoweds = ls /usr/bin
@@ -139,16 +142,14 @@ let
   '';
 
   terminfoAutogen = pkgs.writeTextDir "terminfo-autogen.nu" (
-    builtins.replaceStrings [ "@tic@" ] [ (lib.getExe' pkgs.ncurses "tic") ] (
-      builtins.readFile ./terminfo-autogen.nu
-    )
+    replaceStrings [ "@tic@" ] [ (lib.getExe' pkgs.ncurses "tic") ] (fileContents ./terminfo-autogen.nu)
   );
 
   nuVariables =
     sessionVariables
     |> lib.mapAttrsToList (
       name: value: ''
-        $env.${name} = ${builtins.toJSON value}
+        $env.${name} = ${toJSON { } value}
       ''
     )
     |> lib.concatStrings;
@@ -160,7 +161,7 @@ let
     } else {
       $inherited_path
     }
-    $env.PATH = (${builtins.toJSON sessionPath} | append $inherited_path | uniq)
+    $env.PATH = (${toJSON { } sessionPath} | append $inherited_path | uniq)
     $env.MANPATH = ($env.MANPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/man" | uniq | str join (char esep))
     $env.INFOPATH = ($env.INFOPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/info" | uniq | str join (char esep))
     $env.XDG_DATA_DIRS = ([
@@ -174,7 +175,7 @@ let
     do --env {
       let usr_bin_index = ($env.PATH | enumerate | where item == /usr/bin | get --optional 0.index)
       if $usr_bin_index != null {
-        $env.PATH = ($env.PATH | insert $usr_bin_index ${builtins.toJSON shadowPath})
+        $env.PATH = ($env.PATH | insert $usr_bin_index ${toJSON { } shadowPath})
       }
     }
   '';
@@ -190,6 +191,25 @@ let
   justCompletions = pkgs.runCommand "just-completions.nu" { } ''
     ${getExe pkgs.just} --completions nushell > $out
     substituteInPlace $out --replace-quiet '(^just ' '(^${getExe pkgs.just} '
+  '';
+
+  atuinInit = pkgs.runCommand "atuin.nu" { } ''
+    export HOME="$TMPDIR/home"
+    export XDG_CONFIG_HOME="$TMPDIR/config"
+    mkdir -p "$HOME" "$XDG_CONFIG_HOME"
+    ${getExe pkgs.atuin} init nu --disable-up-arrow > $out
+  '';
+
+  zoxideInit = pkgs.runCommand "zoxide.nu" { } ''
+    ${getExe pkgs.zoxide} init nushell --cmd cd > $out
+  '';
+
+  direnvHook = pkgs.writeText "direnv-hook.nu" ''
+    $env.config.hooks.env_change.PWD = [
+      { ||
+        ^${getExe pkgs.direnv} export json | from json | default {} | load-env
+      }
+    ]
   '';
 
   clipboardCopy =
@@ -212,7 +232,7 @@ let
         }
       }
 
-      let skill = open --raw ${builtins.toJSON "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
+      let skill = open --raw ${toJSON { } "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
       let prompt = $skill + "\n\n" + $diff.stdout
       let run = (^${getExe pkgs.opencode} run --model opencode-go/minimax-m3 -- $prompt | complete)
 
@@ -257,15 +277,18 @@ let
     nuVariables
     nuPath
     shadowXcodePath
-    (builtins.readFile ./nushell.config.nu)
+    (fileContents ./nushell.config.nu)
     "use ${terminfoAutogen}/terminfo-autogen.nu"
-    (builtins.readFile (dotfiles + /config/nushell/misc.nu))
+    (fileContents (dotfiles + /config/nushell/misc.nu))
     (optionalString pkgs.stdenv.hostPlatform.isDarwin (
-      builtins.readFile (dotfiles + /config/nushell/misc-darwin.nu)
+      fileContents (dotfiles + /config/nushell/misc-darwin.nu)
     ))
-    (builtins.readFile (dotfiles + /config/nushell/prompts.nu))
+    (fileContents (dotfiles + /config/nushell/prompts.nu))
     "source ${carapaceConfig}"
     "source ${justCompletions}"
+    "source ${direnvHook}"
+    "source ${atuinInit}"
+    "source ${zoxideInit}"
     wrtcmtmsgConfig
   ];
 in
@@ -277,17 +300,12 @@ in
     pkgs.zsh
   ];
 
-  home-manager.users.${user.name} =
+  home.users.${user.name} =
     { lib, ... }:
     {
-      programs.atuin = {
-        enable = true;
-        enableBashIntegration = false;
-        enableFishIntegration = false;
-        enableNushellIntegration = true;
-        enableZshIntegration = false;
-
-        settings = {
+      xdg.config.files."atuin/config.toml" = {
+        generator = (pkgs.formats.toml { }).generate "atuin-config.toml";
+        value = {
           auto_sync = false;
           update_check = false;
 
@@ -324,7 +342,11 @@ in
           };
         };
 
-        themes.nc = {
+      };
+
+      xdg.config.files."atuin/themes/nc.toml" = {
+        generator = (pkgs.formats.toml { }).generate "atuin-theme-nc.toml";
+        value = {
           theme.name = theme.name;
           colors = {
             Base = hex theme.base05;
@@ -340,61 +362,26 @@ in
         };
       };
 
-      programs.zoxide = {
-        enable = true;
-        options = [
-          "--cmd"
-          "cd"
-        ];
-        enableBashIntegration = false;
-        enableFishIntegration = false;
-        enableNushellIntegration = true;
-        enableZshIntegration = false;
-      };
-
-      programs.carapace = {
-        enable = true;
-        enableBashIntegration = false;
-        enableFishIntegration = false;
-        enableNushellIntegration = false;
-        enableZshIntegration = false;
-      };
-
-      programs.direnv = {
-        enable = true;
-        nix-direnv.enable = true;
-        enableNushellIntegration = true;
-      };
-
-      programs.fzf = {
-        enable = true;
-        enableBashIntegration = false;
-        enableFishIntegration = false;
-        enableNushellIntegration = false;
-        enableZshIntegration = false;
-      };
-
-      programs.nushell = {
-        enable = true;
-        extraConfig = nuConfig;
-      };
-
-      home.sessionVariables = sessionVariables;
-      home.sessionPath = sessionPath;
-      home.packages = [
+      environment.sessionVariables = sessionVariables;
+      packages = [
+        pkgs.atuin
+        pkgs.carapace
+        pkgs.direnv
+        pkgs.fzf
+        pkgs.nix-direnv
+        pkgs.nushell
         pkgs.vivid
+        pkgs.zoxide
         lsColors
       ];
 
-      home.activation.shadow-xcode = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
-        lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-          ${getExe pkgs.nushell} ${shadowXcode}
-        ''
-      );
+      activationScripts.shadow-xcode = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin ''
+        ${getExe pkgs.nushell} ${shadowXcode}
+      '';
 
-      xdg.configFile = {
+      xdg.config.files = {
         "zsh/.zshrc" = {
-          force = true;
+          type = "copy";
           text = ''
             export HOME='${home}'
             export USER='${user.name}'
@@ -413,12 +400,16 @@ in
           source = dotfiles + /config/nushell/fcdiff.nu;
           executable = true;
         };
+        "nushell/config.nu" = {
+          type = "copy";
+          text = nuConfig;
+        };
+        "direnv/lib/nix-direnv.sh".source = "${pkgs.nix-direnv}/share/nix-direnv/direnvrc";
       };
 
-      home.file = {
-        "${home}/.config/nushell/config.nu".force = true;
+      files = {
         ".zshrc" = {
-          force = true;
+          type = "copy";
           text = ''
             export XDG_CONFIG_HOME="''${XDG_CONFIG_HOME:-${home}/.config}"
             export ZDOTDIR="''${ZDOTDIR:-$XDG_CONFIG_HOME/zsh}"

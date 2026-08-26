@@ -11,7 +11,7 @@ let
   registry = {
     default = inputs.nixpkgs;
     nixpkgs = inputs.nixpkgs;
-    home-manager = inputs.home-manager;
+    hjem = inputs.hjem;
     nix-darwin = inputs.nix-darwin;
     agenix = inputs.agenix;
     themes = inputs.themes;
@@ -41,9 +41,9 @@ in
 {
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = [
-    pkgs.nh
     pkgs.nix-index
     pkgs.nix-output-monitor
+    self.packages.${pkgs.stdenv.hostPlatform.system}.rebuild
   ];
 
   nix = {
@@ -100,6 +100,6 @@ in
     optimise.automatic = true;
   };
 
-  home-manager.users.${config.nc.user.name}.programs.nushell.extraConfig =
+  home.users.${config.nc.user.name}.xdg.config.files."nushell/config.nu".text =
     lib.modules.mkAfter "source ${nixRunShortcuts}\n";
 }
