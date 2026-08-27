@@ -1,4 +1,4 @@
-{ self, ... }:
+{ ... }:
 {
   perSystem =
     { config, pkgs, ... }:
@@ -12,8 +12,6 @@
           inherit (lib.strings) fileContents removePrefix;
         in
         writers.writeNuBin "rebuild" /* nu */ ''
-          $env.NC_FLAKE = "${self}"
-
           ${removePrefix "#!/usr/bin/env nu\n" <| fileContents ../rebuild.nu}
         ''
       ) { };
