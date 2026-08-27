@@ -38,12 +38,14 @@ in
 {
   launchd.user.agents."sketchybar.paneru-windows".serviceConfig = {
     ProgramArguments = [
+      (getExe pkgs.nushell)
+      "--no-config-file"
       "${sketchybarConfig}/plugins/paneru_windows.nu"
     ];
     EnvironmentVariables = {
       CONFIG_DIR = "${sketchybarConfig}";
       HOME = user.homeDirectory;
-      PANERU = "/etc/profiles/per-user/${user.name}/bin/paneru";
+      PANERU = getExe config.services.paneru.finalPackage;
       SKETCHYBAR = "/opt/homebrew/bin/sketchybar";
     };
     KeepAlive = true;
@@ -53,6 +55,8 @@ in
 
   launchd.user.agents."sketchybar.status".serviceConfig = {
     ProgramArguments = [
+      (getExe pkgs.nushell)
+      "--no-config-file"
       "${sketchybarConfig}/plugins/clock.nu"
     ];
     EnvironmentVariables = {

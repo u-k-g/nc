@@ -1,4 +1,4 @@
-#!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
+#!/usr/bin/env -S nu --no-config-file
 
 use battery.nu [battery-properties]
 use dns.nu [dns-label]

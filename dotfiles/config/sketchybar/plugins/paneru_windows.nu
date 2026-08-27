@@ -1,4 +1,4 @@
-#!/usr/bin/env -S /etc/profiles/per-user/uzair/bin/nu --no-config-file
+#!/usr/bin/env -S nu --no-config-file
 
 const max_items = 12
 const focused_color = "0xff@base05@"
@@ -63,7 +63,7 @@ def app-label [name: string] {
 }
 
 def paneru-state [] {
-  let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
+  let paneru = (env-default PANERU "/run/current-system/sw/bin/paneru")
   let result = (^$paneru query state --json | complete)
   if ($result.exit_code != 0) or ($result.stdout | str trim | is-empty) {
     return null
@@ -196,49 +196,47 @@ def update-focus [windows: list, previous_focused_window_id: any, focused_window
 }
 
 def subscribe-loop [] {
-  let paneru = (env-default PANERU "/etc/profiles/per-user/uzair/bin/paneru")
+  let paneru = (env-default PANERU "/run/current-system/sw/bin/paneru")
   let icon_map = (load-icon-map)
   mut windows = []
-  mut focused_window_id = null
+  mut focused_window_id: any = null
 
   loop {
-    try {
-      let initial = (update-sketchybar $windows $icon_map)
-      $windows = $initial.windows
-      $focused_window_id = $initial.focused_window_id
+    let initial = (update-sketchybar $windows $icon_map)
+    $windows = $initial.windows
+    $focused_window_id = $initial.focused_window_id
 
-      for line in (^$paneru subscribe --json | lines) {
-        let event = (try { $line | from json } catch { null })
-        if $event == null { continue }
+    for line in (^$paneru subscribe --json | lines) {
+      let event = (try { $line | from json } catch { null })
+      if $event == null { continue }
 
-        let event_name = ($event.event? | default "")
-        if $event_name in ["on_screen_changed" "window_focused"] {
-          let event_focused_window_id = if $event_name == "window_focused" {
-            $event.window_id? | default null
-          } else {
-            $event.active.focused_window_id? | default null
-          }
-
-          if ($event_focused_window_id != null) and ($event_focused_window_id != $focused_window_id) {
-            if ($windows | any {|window| $window.id == $event_focused_window_id }) {
-              update-focus $windows $focused_window_id $event_focused_window_id
-              $windows = ($windows | each {|window| $window | upsert focused ($window.id == $event_focused_window_id) })
-              $focused_window_id = $event_focused_window_id
-            } else {
-              let updated = (update-sketchybar $windows $icon_map)
-              $windows = $updated.windows
-              $focused_window_id = $updated.focused_window_id
-            }
-          }
-        } else if $event_name in [
-          "display_changed"
-          "virtual_workspace_changed"
-          "windows_changed"
-        ] {
-          let updated = (update-sketchybar $windows $icon_map)
-          $windows = $updated.windows
-          $focused_window_id = $updated.focused_window_id
+      let event_name = ($event.event? | default "")
+      if $event_name in ["on_screen_changed" "window_focused"] {
+        let event_focused_window_id = if $event_name == "window_focused" {
+          $event.window_id? | default null
+        } else {
+          $event.active.focused_window_id? | default null
         }
+
+        if ($event_focused_window_id != null) and ($event_focused_window_id != $focused_window_id) {
+          if ($windows | any {|window| $window.id == $event_focused_window_id }) {
+            update-focus $windows $focused_window_id $event_focused_window_id
+            $windows = ($windows | each {|window| $window | upsert focused ($window.id == $event_focused_window_id) })
+            $focused_window_id = $event_focused_window_id
+          } else {
+            let updated = (update-sketchybar $windows $icon_map)
+            $windows = $updated.windows
+            $focused_window_id = $updated.focused_window_id
+          }
+        }
+      } else if $event_name in [
+        "display_changed"
+        "virtual_workspace_changed"
+        "windows_changed"
+      ] {
+        let updated = (update-sketchybar $windows $icon_map)
+        $windows = $updated.windows
+        $focused_window_id = $updated.focused_window_id
       }
     }
     sleep 50ms
