@@ -305,7 +305,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b com.openai.codex"
+                    "shell_command": "/usr/bin/osascript -e 'tell application \"/Applications/ChatGPT.app\" to activate'"
                   }
                 ]
               },
