@@ -79,6 +79,8 @@ def main [] {
   ]
   ^$sketchybar ...$right_items
   ^$sketchybar --update
-  ^$paneru_windows once
+  # Paneru's embedded Lua handlers own ongoing updates. This one-shot repairs
+  # the item pool whenever SketchyBar itself starts or reloads.
+  ^$paneru_windows
   ^$status once
 }

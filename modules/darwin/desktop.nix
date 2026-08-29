@@ -36,23 +36,6 @@ let
   ) { };
 in
 {
-  launchd.user.agents."sketchybar.paneru-windows".serviceConfig = {
-    ProgramArguments = [
-      (getExe pkgs.nushell)
-      "--no-config-file"
-      "${sketchybarConfig}/plugins/paneru_windows.nu"
-    ];
-    EnvironmentVariables = {
-      CONFIG_DIR = "${sketchybarConfig}";
-      HOME = user.homeDirectory;
-      PANERU = getExe config.services.paneru.finalPackage;
-      SKETCHYBAR = "/opt/homebrew/bin/sketchybar";
-    };
-    KeepAlive = true;
-    ProcessType = "Interactive";
-    RunAtLoad = true;
-  };
-
   launchd.user.agents."sketchybar.status".serviceConfig = {
     ProgramArguments = [
       (getExe pkgs.nushell)

@@ -34,6 +34,7 @@
 !dotfiles/config/atuin/config.toml
 !dotfiles/config/ghostty/config
 !dotfiles/config/hammerspoon/init.lua
+!dotfiles/config/paneru/init.lua
 !dotfiles/config/helix/languages.toml
 !dotfiles/config/helix/themes/theme.toml
 !dotfiles/config/karabiner/karabiner.json
