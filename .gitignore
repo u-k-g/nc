@@ -29,6 +29,8 @@
 !*.nu
 !*.age
 
+!hosts/gram/facter.json
+
 !dotfiles/config/FreeCAD/v1-1/system.cfg
 !dotfiles/config/FreeCAD/v1-1/user.cfg
 !dotfiles/config/atuin/config.toml

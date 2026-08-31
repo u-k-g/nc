@@ -66,6 +66,7 @@
     niri = ./nixos/niri.nix;
     nvidia = ./nixos/nvidia.nix;
     printing = ./nixos/printing.nix;
+    server = ./nixos/server.nix;
     steam = ./nixos/steam.nix;
     workstation = ./nixos/workstation.nix;
   };

@@ -7,7 +7,14 @@
 
 let
   inherit (lib.lists) singleton;
+  inherit (lib.meta) getExe';
   inherit (lib.modules) mkForce;
+
+  install = getExe' pkgs.coreutils "install";
+  mktemp = getExe' pkgs.coreutils "mktemp";
+  remove = getExe' pkgs.coreutils "rm";
+  systemdId128 = getExe' pkgs.systemd "systemd-id128";
+  test = getExe' pkgs.coreutils "test";
 in
 {
   imports = singleton ./hardware.nix;
@@ -21,6 +28,7 @@ in
   nc.themePreset = "grove";
 
   nc.nixos.cosmic.enable = true;
+  nc.nixos.server.enable = true;
   nc.radicle.enable = false;
 
   networking.hostName = "gram";
@@ -96,6 +104,11 @@ in
     };
   };
 
+  nix.settings = {
+    cores = 4;
+    max-jobs = 2;
+  };
+
   swapDevices = mkForce [ ];
 
   zramSwap = {
@@ -153,13 +166,42 @@ in
     AllowHybridSleep = false;
   };
 
-  systemd.oomd = {
-    enable = true;
-    enableRootSlice = true;
+  environment.etc."machine-id".source = "/var/lib/systemd/machine-id";
+
+  system.activationScripts.gram-machine-id = {
+    deps = singleton "etc";
+    text = ''
+      if ! ${test} -s /var/lib/systemd/machine-id; then
+        machineIdFile="$(${mktemp})"
+        trap '${remove} --force "$machineIdFile"' EXIT
+        ${systemdId128} new > "$machineIdFile"
+        ${install} --group=root --mode=0444 --owner=root "$machineIdFile" /var/lib/systemd/machine-id
+      fi
+    '';
+  };
+
+  systemd.services.gram-battery-care = {
+    description = "Limit LG Gram battery charging to 80 percent";
+    after = singleton "systemd-modules-load.service";
+    wantedBy = singleton "multi-user.target";
+
+    script = ''
+      for threshold in /sys/class/power_supply/*/charge_control_end_threshold; do
+        if [[ -w "$threshold" ]]; then
+          printf '80\n' > "$threshold"
+        fi
+      done
+    '';
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
   };
 
   users.users.${config.nc.user.name} = {
     isNormalUser = true;
+    linger = true;
     home = config.nc.user.homeDirectory;
     shell = pkgs.nushell;
 
