@@ -80,6 +80,27 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1778267637,
+        "narHash": "sha256-fuLzGTNtgzoaeb1KQscuIZrnQmlX8ck9hMkKp35xSkg=",
+        "owner": "RGBCube",
+        "repo": "disko",
+        "rev": "cc3fb95a8f8342c340a66bbd8a06dc36a0f05c24",
+        "type": "github"
+      },
+      "original": {
+        "owner": "RGBCube",
+        "ref": "fix-bcachefs-unlock",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -348,6 +369,7 @@
       "inputs": {
         "agenix": "agenix",
         "chaotic": "chaotic",
+        "disko": "disko",
         "flake-parts": "flake-parts",
         "hjem": "hjem",
         "homebrew": "homebrew",

@@ -54,6 +54,7 @@
 
   flake.nixosModules = {
     audio = ./nixos/audio.nix;
+    cosmic = ./nixos/cosmic.nix;
     desktop = ./nixos/desktop.nix;
     flatpak = ./nixos/flatpak.nix;
     gaming = ./nixos/gaming.nix;
@@ -66,5 +67,6 @@
     nvidia = ./nixos/nvidia.nix;
     printing = ./nixos/printing.nix;
     steam = ./nixos/steam.nix;
+    workstation = ./nixos/workstation.nix;
   };
 }

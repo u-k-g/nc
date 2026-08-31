@@ -1,10 +1,12 @@
 {
+  config,
   lib,
   pkgs,
   ...
 }:
 
 let
+  inherit (lib.modules) mkIf;
   modrinthApp = pkgs.modrinth-app.overrideAttrs (_: {
     # nixpkgs' symlinkJoin package calls wrapGAppsHook manually, outside the
     # normal fixupPhase scope where this variable is usually defined.
@@ -12,45 +14,47 @@ let
   });
 in
 {
-  services = {
-    dbus.enable = true;
-    udisks2.enable = true;
-    gvfs.enable = true;
+  config = mkIf config.nc.nixos.workstation.enable {
+    services = {
+      dbus.enable = true;
+      udisks2.enable = true;
+      gvfs.enable = true;
 
-    xserver = {
+      xserver = {
+        enable = true;
+        xkb.layout = "us";
+      };
+
+      displayManager.sddm = {
+        enable = false;
+        wayland.enable = true;
+      };
+
+      desktopManager.plasma6.enable = true;
+    };
+
+    xdg.portal = {
       enable = true;
-      xkb.layout = "us";
+      extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
+      config.niri."org.freedesktop.impl.portal.Settings" = lib.mkForce "kde";
+      xdgOpenUsePortal = true;
     };
 
-    displayManager.sddm = {
-      enable = false;
-      wayland.enable = true;
+    qt = {
+      enable = true;
+      platformTheme = "kde";
+      style = "breeze";
     };
 
-    desktopManager.plasma6.enable = true;
+    programs.kdeconnect.enable = true;
+
+    environment.systemPackages = with pkgs; [
+      crossmacro
+      kdePackages.kcalc
+      kdePackages.spectacle
+      modrinthApp
+      wl-clipboard
+      xclip
+    ];
   };
-
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.kdePackages.xdg-desktop-portal-kde ];
-    config.niri."org.freedesktop.impl.portal.Settings" = lib.mkForce "kde";
-    xdgOpenUsePortal = true;
-  };
-
-  qt = {
-    enable = true;
-    platformTheme = "kde";
-    style = "breeze";
-  };
-
-  programs.kdeconnect.enable = true;
-
-  environment.systemPackages = with pkgs; [
-    crossmacro
-    kdePackages.kcalc
-    kdePackages.spectacle
-    modrinthApp
-    wl-clipboard
-    xclip
-  ];
 }

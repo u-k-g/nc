@@ -19,6 +19,8 @@
 
   networking.hostName = "desktop";
 
+  nc.nixos.workstation.enable = true;
+  nc.nixos.niri.enable = true;
   nc.nixos.nvidia.enable = true;
   nc.radicle.enable = false;
 
