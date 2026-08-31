@@ -265,7 +265,12 @@ local refresh_pending = false
 local focus_pending = nil
 
 local function refresh_windows()
-  local state = paneru.query_state()
+  local ok, state = pcall(paneru.query_state)
+  if not ok then
+    paneru.log("sketchybar state query failed: " .. tostring(state))
+    return
+  end
+
   local updated = active_windows(state)
   if render_windows(updated) then
     windows = updated
@@ -303,12 +308,7 @@ local function update_focus(window_id)
   end
 end
 
-local function drain_updates()
-  if update_running then
-    return
-  end
-
-  update_running = true
+local function run_pending_updates()
   while refresh_pending or focus_pending do
     if refresh_pending then
       refresh_pending = false
@@ -320,7 +320,20 @@ local function drain_updates()
       update_focus(window_id)
     end
   end
+end
+
+local function drain_updates()
+  if update_running then
+    return
+  end
+
+  update_running = true
+  local ok, error_message = pcall(run_pending_updates)
   update_running = false
+
+  if not ok then
+    paneru.log("sketchybar update failed: " .. tostring(error_message))
+  end
 end
 
 local function request_refresh()
