@@ -53,22 +53,45 @@ in
 
           installer-gram = pkgs.callPackage (
             {
+              coreutils,
               lib,
               nix,
               nixos-install,
+              util-linux,
               writers,
             }:
             let
               inherit (lib.meta) getExe getExe';
+              chmod = getExe' coreutils "chmod";
+              copy = getExe' coreutils "cp";
+              lsblk = getExe' util-linux "lsblk";
+              mkdir = getExe' coreutils "mkdir";
             in
             writers.writeNuBin "install-gram" /* nu */ ''
               def main [] {
                 let mountpoint = "/mnt"
+                let target = "${self.nixosConfigurations.gram.config.disko.devices.disk.main.device}"
 
-                ^${getExe' pkgs.coreutils "mkdir"} --parents $mountpoint
-                ^${getExe' pkgs.coreutils "chmod"} 755 $mountpoint
+                print "The Gram installer will permanently erase this disk:"
+                ^${lsblk} --output NAME,PATH,SIZE,MODEL,SERIAL,TYPE,MOUNTPOINTS $target
+                let confirmation = (input "Type 'ERASE gram' to continue: ")
+                if $confirmation != "ERASE gram" {
+                  print "Installation cancelled."
+                  exit 1
+                }
+
+                ^${mkdir} --parents $mountpoint
+                ^${chmod} 755 $mountpoint
 
                 DISKO_SKIP_SWAP=1 ^${self.nixosConfigurations.gram.config.system.build.diskoScript}
+
+                let connections = "/etc/NetworkManager/system-connections"
+                if ($connections | path exists) {
+                  let target = $"($mountpoint)/etc/NetworkManager/system-connections"
+                  ^${mkdir} --parents $target
+                  ^${copy} --archive $"($connections)/." $target
+                  ^${chmod} --recursive go-rwx $target
+                }
 
                 (^${getExe nix} copy
                   --no-check-sigs
