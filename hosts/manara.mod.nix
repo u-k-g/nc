@@ -8,7 +8,7 @@ let
   inherit (lib.lists) singleton;
 in
 {
-  imports = singleton <| lib.systems.nixosSystem "gram" ./gram/default.nix;
+  imports = singleton <| lib.systems.nixosSystem "manara" ./manara/default.nix;
 
   perSystem =
     { pkgs, ... }:
@@ -16,7 +16,7 @@ in
       packages =
         lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64)
         <| {
-          capture-gram-hardware = pkgs.callPackage (
+          capture-manara-hardware = pkgs.callPackage (
             {
               coreutils,
               lib,
@@ -28,14 +28,14 @@ in
               inherit (lib.meta) getExe getExe';
             in
             writeShellApplication {
-              name = "capture-gram-hardware";
+              name = "capture-manara-hardware";
               text = ''
                 if (( EUID != 0 )); then
-                  printf 'capture-gram-hardware must run as root\n' >&2
+                  printf 'capture-manara-hardware must run as root\n' >&2
                   exit 77
                 fi
 
-                output="''${1:-hosts/gram/facter.json}"
+                output="''${1:-hosts/manara/facter.json}"
                 ${getExe nixos-facter} --output "$output"
 
                 printf '\nBlock devices:\n'
@@ -51,7 +51,7 @@ in
             }
           ) { };
 
-          installer-gram = pkgs.callPackage (
+          installer-manara = pkgs.callPackage (
             {
               coreutils,
               lib,
@@ -67,15 +67,15 @@ in
               lsblk = getExe' util-linux "lsblk";
               mkdir = getExe' coreutils "mkdir";
             in
-            writers.writeNuBin "install-gram" /* nu */ ''
+            writers.writeNuBin "install-manara" /* nu */ ''
               def main [] {
                 let mountpoint = "/mnt"
-                let target = "${self.nixosConfigurations.gram.config.disko.devices.disk.main.device}"
+                let target = "${self.nixosConfigurations.manara.config.disko.devices.disk.main.device}"
 
-                print "The Gram installer will permanently erase this disk:"
+                print "The Manara installer will permanently erase this disk:"
                 ^${lsblk} --output NAME,PATH,SIZE,MODEL,SERIAL,TYPE,MOUNTPOINTS $target
-                let confirmation = (input "Type 'ERASE gram' to continue: ")
-                if $confirmation != "ERASE gram" {
+                let confirmation = (input "Type 'ERASE manara' to continue: ")
+                if $confirmation != "ERASE manara" {
                   print "Installation cancelled."
                   exit 1
                 }
@@ -83,7 +83,7 @@ in
                 ^${mkdir} --parents $mountpoint
                 ^${chmod} 755 $mountpoint
 
-                DISKO_SKIP_SWAP=1 ^${self.nixosConfigurations.gram.config.system.build.diskoScript}
+                DISKO_SKIP_SWAP=1 ^${self.nixosConfigurations.manara.config.system.build.diskoScript}
 
                 let connections = "/etc/NetworkManager/system-connections"
                 if ($connections | path exists) {
@@ -96,12 +96,12 @@ in
                 (^${getExe nix} copy
                   --no-check-sigs
                   --to $"local?root=($mountpoint)"
-                  ${self.nixosConfigurations.gram.config.system.build.toplevel})
+                  ${self.nixosConfigurations.manara.config.system.build.toplevel})
 
                 (exec ${getExe nixos-install}
                   --no-channel-copy
                   --no-root-password
-                  --system ${self.nixosConfigurations.gram.config.system.build.toplevel}
+                  --system ${self.nixosConfigurations.manara.config.system.build.toplevel}
                   --root $mountpoint)
               }
             ''

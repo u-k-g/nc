@@ -358,11 +358,11 @@
         "rev": "cb6dd31a392a0d79ed090befc03f05d0ad375bba",
         "revCount": 270,
         "type": "git",
-        "url": "ssh://git@github.com/mogenson/PaperWM.spoon.git"
+        "url": "https://github.com/mogenson/PaperWM.spoon.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@github.com/mogenson/PaperWM.spoon.git"
+        "url": "https://github.com/mogenson/PaperWM.spoon.git"
       }
     },
     "root": {

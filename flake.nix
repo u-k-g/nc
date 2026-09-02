@@ -95,7 +95,7 @@
     themes.url = "github:RGBCube/ThemeNix";
 
     paperwm = {
-      url = "git+ssh://git@github.com/mogenson/PaperWM.spoon.git";
+      url = "git+https://github.com/mogenson/PaperWM.spoon.git";
       flake = false;
     };
 

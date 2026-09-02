@@ -10,15 +10,14 @@
 
   boot.initrd.availableKernelModules = [
     "nvme"
-    "thunderbolt"
     "usb_storage"
     "uas"
     "xhci_pci"
   ];
   boot.initrd.kernelModules = lib.lists.singleton "i915";
   boot.kernelModules = [
+    "ideapad_laptop"
     "kvm-intel"
-    "lg-laptop"
   ];
   boot.extraModulePackages = [ ];
 

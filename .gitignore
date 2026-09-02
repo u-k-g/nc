@@ -29,7 +29,7 @@
 !*.nu
 !*.age
 
-!hosts/gram/facter.json
+!hosts/manara/facter.json
 
 !dotfiles/config/FreeCAD/v1-1/system.cfg
 !dotfiles/config/FreeCAD/v1-1/user.cfg
@@ -55,4 +55,3 @@
 !.agents/skills/
 !.agents/skills/*/
 !.agents/skills/*/SKILL.md
-

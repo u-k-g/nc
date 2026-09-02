@@ -11,7 +11,9 @@ let
   inherit (lib.modules) mkForce;
 
   install = getExe' pkgs.coreutils "install";
+  grep = getExe' pkgs.gnugrep "grep";
   mktemp = getExe' pkgs.coreutils "mktemp";
+  powerProfilesCtl = getExe' pkgs.power-profiles-daemon "powerprofilesctl";
   remove = getExe' pkgs.coreutils "rm";
   systemdId128 = getExe' pkgs.systemd "systemd-id128";
   test = getExe' pkgs.coreutils "test";
@@ -31,7 +33,7 @@ in
   nc.nixos.server.enable = true;
   nc.radicle.enable = false;
 
-  networking.hostName = "gram";
+  networking.hostName = "manara";
 
   disko.devices.disk.main = {
     device = "/dev/nvme0n1";
@@ -62,7 +64,7 @@ in
       content.type = "bcachefs";
       content = {
         filesystem = config.persist.filesystemName;
-        label = "nvme.gram";
+        label = "nvme.manara";
       };
     };
   };
@@ -121,7 +123,6 @@ in
   services.bcachefs.autoScrub.enable = true;
   services.fstrim.enable = true;
 
-  services.hardware.bolt.enable = true;
   services.fwupd.enable = true;
   services.thermald.enable = true;
 
@@ -168,9 +169,9 @@ in
 
   environment.etc."machine-id".source = "/var/lib/systemd/machine-id";
 
-  system.activationScripts.gram-machine-id = {
+  system.activationScripts.manara-machine-id = {
     deps = singleton "etc";
-    text = ''
+    text = /* bash */ ''
       if ! ${test} -s /var/lib/systemd/machine-id; then
         machineIdFile="$(${mktemp})"
         trap '${remove} --force "$machineIdFile"' EXIT
@@ -180,17 +181,48 @@ in
     '';
   };
 
-  systemd.services.gram-battery-care = {
-    description = "Limit LG Gram battery charging to 80 percent";
+  systemd.services.manara-battery-conservation = {
+    description = "Enable Lenovo battery conservation mode";
     after = singleton "systemd-modules-load.service";
     wantedBy = singleton "multi-user.target";
 
-    script = ''
-      for threshold in /sys/class/power_supply/*/charge_control_end_threshold; do
-        if [[ -w "$threshold" ]]; then
-          printf '80\n' > "$threshold"
+    script = /* bash */ ''
+      configured=false
+
+      for setting in /sys/class/power_supply/*/charge_types; do
+        if [[ -w "$setting" ]] && ${grep} --quiet --extended-regexp 'Long(_| )Life' "$setting"; then
+          printf 'Long_Life\n' > "$setting"
+          configured=true
         fi
       done
+
+      if [[ "$configured" == false ]]; then
+        for setting in /sys/bus/platform/devices/VPC2004:*/conservation_mode; do
+          if [[ -w "$setting" ]]; then
+            printf '1\n' > "$setting"
+          fi
+        done
+      fi
+    '';
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+  };
+
+  systemd.services.manara-performance-profile = {
+    description = "Select the performance power profile";
+    after = singleton "power-profiles-daemon.service";
+    requires = singleton "power-profiles-daemon.service";
+    wantedBy = singleton "multi-user.target";
+
+    script = /* bash */ ''
+      if ${powerProfilesCtl} list | ${grep} --quiet --fixed-strings 'performance:'; then
+        ${powerProfilesCtl} set performance
+      else
+        printf 'power-profiles-daemon does not expose a performance profile\n' >&2
+      fi
     '';
 
     serviceConfig = {
