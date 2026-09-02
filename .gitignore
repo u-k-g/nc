@@ -49,3 +49,10 @@
 !dotfiles/home/.gitconfig
 !dotfiles/home/.gitignore_global
 !packages/fast-workspace-switch/fast-workspace-switch.swift
+
+# AGENT SKILLS
+!.agents/
+!.agents/skills/
+!.agents/skills/*/
+!.agents/skills/*/SKILL.md
+
