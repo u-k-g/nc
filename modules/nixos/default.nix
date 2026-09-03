@@ -1,4 +1,8 @@
-{ ... }:
+{
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   boot.loader.systemd-boot.enable = true;
@@ -15,4 +19,12 @@
   programs.zsh.enable = true;
 
   security.sudo.wheelNeedsPassword = true;
+
+  system.activationScripts.binbash = {
+    deps = lib.lists.singleton "binsh";
+    text = ''
+      ln -sfn "${pkgs.bashInteractive}/bin/bash" /bin/.bash.tmp
+      mv /bin/.bash.tmp /bin/bash
+    '';
+  };
 }
