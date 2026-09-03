@@ -8,6 +8,8 @@
 
   services.openssh.enable = true;
 
+  programs.mosh.enable = true;
+
   time.timeZone = "America/New_York";
 
   programs.zsh.enable = true;

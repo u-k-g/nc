@@ -3,6 +3,7 @@ alias rm = rm --verbose
 alias mv = mv --verbose
 alias cp = cp --recursive --verbose
 alias nixup = nix profile upgrade nix --verbose
+alias mosh = ^mosh --no-init
 def tree [...args] { ^eza --tree --git-ignore --group-directories-first ...$args }
 # def python3 [...args] { print "use uv" }
 # def which [...args] { ^which -a ...$args }
