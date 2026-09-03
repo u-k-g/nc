@@ -135,7 +135,7 @@ in
     enable = true;
     checkReversePath = "loose";
     extraReversePathFilterRules = ''iifname "${config.services.tailscale.interfaceName}" accept'';
-    interfaces.${config.services.tailscale.interfaceName}.allowedTCPPorts = singleton 22;
+    trustedInterfaces = singleton "tailscale0";
   };
 
   services.openssh = {
