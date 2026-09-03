@@ -34,6 +34,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    nixpkgs-install-media.url = "github:NixOS/nixpkgs/a3116115851d68b8952a2a4221cc25a84e56b532";
+
     chaotic = {
       url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
       inputs.home-manager.follows = "";

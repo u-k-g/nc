@@ -341,6 +341,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-install-media": {
+      "locked": {
+        "lastModified": 1788297115,
+        "narHash": "sha256-Z+vUNbfd2FIKkWOTkcT7RYlh3oFCnig/d2eXD1SWf2E=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a3116115851d68b8952a2a4221cc25a84e56b532",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "a3116115851d68b8952a2a4221cc25a84e56b532",
+        "type": "github"
+      }
+    },
     "paneru": {
       "inputs": {
         "crane": "crane",
@@ -402,6 +418,7 @@
         "homebrew-tinycast": "homebrew-tinycast",
         "nix-darwin": "nix-darwin",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-install-media": "nixpkgs-install-media",
         "paneru": "paneru",
         "paperwm": "paperwm",
         "themes": "themes"

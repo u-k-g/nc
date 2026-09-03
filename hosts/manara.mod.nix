@@ -1,4 +1,5 @@
 {
+  inputs,
   lib,
   self,
   ...
@@ -51,57 +52,103 @@ in
             }
           ) { };
 
-          installer-manara = pkgs.callPackage (
-            {
-              coreutils,
-              lib,
-              nixos-install,
-              util-linux,
-              writers,
-            }:
-            let
-              inherit (lib.meta) getExe getExe';
-              chmod = getExe' coreutils "chmod";
-              copy = getExe' coreutils "cp";
-              lsblk = getExe' util-linux "lsblk";
-              mkdir = getExe' coreutils "mkdir";
-            in
-            writers.writeNuBin "install-manara" /* nu */ ''
-              def main [] {
-                let mountpoint = "/mnt"
-                let target = "${self.nixosConfigurations.manara.config.disko.devices.disk.main.device}"
+          installer-manara =
+            pkgs.callPackage
+              (
+                {
+                  bcachefsKernelVersion,
+                  bcachefsModule,
+                  coreutils,
+                  gnugrep,
+                  kmod,
+                  lib,
+                  nixos-install,
+                  util-linux,
+                  writeShellApplication,
+                  writers,
+                }:
+                let
+                  inherit (lib.meta) getExe getExe';
+                  chmod = getExe' coreutils "chmod";
+                  copy = getExe' coreutils "cp";
+                  grep = getExe gnugrep;
+                  insmod = getExe' kmod "insmod";
+                  lsblk = getExe' util-linux "lsblk";
+                  mkdir = getExe' coreutils "mkdir";
+                  modprobe = getExe' kmod "modprobe";
+                  uname = getExe' coreutils "uname";
 
-                print "The Manara installer will permanently erase this disk:"
-                ^${lsblk} --output NAME,PATH,SIZE,MODEL,SERIAL,TYPE,MOUNTPOINTS $target
-                let confirmation = (input "Type 'ERASE manara' to continue: ")
-                if $confirmation != "ERASE manara" {
-                  print "Installation cancelled."
-                  exit 1
-                }
+                  ensureBcachefs = writeShellApplication {
+                    name = "ensure-manara-installer-bcachefs";
+                    text = /* bash */ ''
+                      if ${grep} --quiet --word-regexp bcachefs /proc/filesystems; then
+                        exit 0
+                      fi
 
-                ^${mkdir} --parents $mountpoint
-                ^${chmod} 755 $mountpoint
+                      runningKernel="$(${uname} --kernel-release)"
+                      if [[ "$runningKernel" != ${lib.escapeShellArg bcachefsKernelVersion} ]]; then
+                        printf 'The Manara installer carries Bcachefs for kernel %s, but this installer is running %s.\n' \
+                          ${lib.escapeShellArg bcachefsKernelVersion} "$runningKernel" >&2
+                        exit 65
+                      fi
 
-                DISKO_SKIP_SWAP=1 ^${self.nixosConfigurations.manara.config.system.build.diskoScript}
+                      for dependency in lz4_compress libpoly1305 raid6_pq xor libchacha lz4hc_compress; do
+                        ${modprobe} "$dependency"
+                      done
 
-                let connections = "/etc/NetworkManager/system-connections"
-                if ($connections | path exists) {
-                  let target = $"($mountpoint)/etc/NetworkManager/system-connections"
-                  ^${mkdir} --parents $target
-                  ^${copy} --archive $"($connections)/." $target
-                  ^${chmod} --recursive go-rwx $target
-                }
+                      ${insmod} ${bcachefsModule}/lib/modules/${bcachefsKernelVersion}/updates/src/fs/bcachefs/bcachefs.ko.xz
 
-                (exec ${getExe nixos-install}
-                  --flake "${self}#manara"
-                  --no-channel-copy
-                  --no-root-password
-                  --option accept-flake-config true
-                  --option experimental-features "nix-command flakes pipe-operators"
-                  --root $mountpoint)
-              }
-            ''
-          ) { };
+                      if ! ${grep} --quiet --word-regexp bcachefs /proc/filesystems; then
+                        printf 'The Bcachefs module loaded without registering the filesystem.\n' >&2
+                        exit 69
+                      fi
+                    '';
+                  };
+                in
+                writers.writeNuBin "install-manara" /* nu */ ''
+                  def main [] {
+                    let mountpoint = "/mnt"
+                    let target = "${self.nixosConfigurations.manara.config.disko.devices.disk.main.device}"
+
+                    ^${getExe ensureBcachefs}
+
+                    print "The Manara installer will permanently erase this disk:"
+                    ^${lsblk} --output NAME,PATH,SIZE,MODEL,SERIAL,TYPE,MOUNTPOINTS $target
+                    let confirmation = (input "Type 'ERASE manara' to continue: ")
+                    if $confirmation != "ERASE manara" {
+                      print "Installation cancelled."
+                      exit 1
+                    }
+
+                    ^${mkdir} --parents $mountpoint
+                    ^${chmod} 755 $mountpoint
+
+                    DISKO_SKIP_SWAP=1 ^${self.nixosConfigurations.manara.config.system.build.diskoScript}
+
+                    let connections = "/etc/NetworkManager/system-connections"
+                    if ($connections | path exists) {
+                      let target = $"($mountpoint)/etc/NetworkManager/system-connections"
+                      ^${mkdir} --parents $target
+                      ^${copy} --archive $"($connections)/." $target
+                      ^${chmod} --recursive go-rwx $target
+                    }
+
+                    (exec ${getExe nixos-install}
+                      --flake "${self}#manara"
+                      --no-channel-copy
+                      --no-root-password
+                      --option accept-flake-config true
+                      --option experimental-features "nix-command flakes pipe-operators"
+                      --root $mountpoint)
+                  }
+                ''
+              )
+              {
+                bcachefsKernelVersion =
+                  inputs.nixpkgs-install-media.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages.kernel.modDirVersion;
+                bcachefsModule =
+                  inputs.nixpkgs-install-media.legacyPackages.${pkgs.stdenv.hostPlatform.system}.linuxPackages.bcachefs;
+              };
         };
     };
 }
