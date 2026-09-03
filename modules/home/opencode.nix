@@ -238,9 +238,9 @@ in
           else if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then
             ''
               if ${getExe pkgs.gnugrep} --quiet --word-regexp --ignore-case avx2 /proc/cpuinfo; then
-                asset_name=opencode-linux-x64.tar.gz
+                asset_name=opencode-linux-x64-musl.tar.gz
               else
-                asset_name=opencode-linux-x64-baseline.tar.gz
+                asset_name=opencode-linux-x64-baseline-musl.tar.gz
               fi
             ''
           else
@@ -255,13 +255,14 @@ in
 
         release_json="$temp_dir/release.json"
         if ! ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_json"; then
-          if [ -x "$install_dir/opencode" ]; then
-            installed_version="$("$install_dir/opencode" --version 2>/dev/null || true)"
+          if [ -x "$install_dir/opencode" ] \
+            && installed_version="$("$install_dir/opencode" --version 2>/dev/null)" \
+            && [ -n "$installed_version" ]; then
             printf 'warning: failed to check latest OpenCode release; keeping OpenCode %s\n' "$installed_version" >&2
             exit 0
           fi
-          printf 'warning: failed to check latest OpenCode release; skipping OpenCode install\n' >&2
-          exit 0
+          printf 'error: failed to check latest OpenCode release; OpenCode is not installed\n' >&2
+          exit 1
         fi
 
         tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$release_json")"
@@ -277,8 +278,9 @@ in
 
         if [ -x "$install_dir/opencode" ] \
           && [ -f "$state_file" ] \
-          && [ "$(< "$state_file")" = "$state_value" ]; then
-          installed_version="$("$install_dir/opencode" --version 2>/dev/null || true)"
+          && [ "$(< "$state_file")" = "$state_value" ] \
+          && installed_version="$("$install_dir/opencode" --version 2>/dev/null)" \
+          && [ -n "$installed_version" ]; then
           printf 'OpenCode %s is already installed\n' "$installed_version"
           exit 0
         fi
@@ -309,6 +311,14 @@ in
           printf 'error: OpenCode archive did not contain an executable opencode file\n' >&2
           exit 1
         fi
+        if ! downloaded_version="$("$extract_dir/opencode" --version 2>/dev/null)"; then
+          printf 'error: downloaded OpenCode binary is not runnable on this system\n' >&2
+          exit 1
+        fi
+        if [ -z "$downloaded_version" ]; then
+          printf 'error: downloaded OpenCode binary did not report a version\n' >&2
+          exit 1
+        fi
 
         ${pkgs.coreutils}/bin/mkdir --parents "$install_dir"
         ${pkgs.coreutils}/bin/install --mode 0755 "$extract_dir/opencode" "$install_dir/.opencode.new"
@@ -319,8 +329,7 @@ in
         printf '%s' "$state_value" > "$state_file.new"
         ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
 
-        installed_version="$("$install_dir/opencode" --version 2>/dev/null || true)"
-        printf 'Installed OpenCode %s from %s\n' "$installed_version" "$asset_url"
+        printf 'Installed OpenCode %s from %s\n' "$downloaded_version" "$asset_url"
       )
     '';
 

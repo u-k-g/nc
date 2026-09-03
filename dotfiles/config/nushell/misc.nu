@@ -20,7 +20,7 @@ def nixbump [
   let lockfile = ($flake | path join "flake.lock")
   let candidate_lock = ($flake | path join ".flake.lock.candidate")
   let current_rev = (open --raw $lockfile | from json | get nodes.nixpkgs.locked.rev)
-  let system = (^nix --no-warn-dirty eval --impure --raw --expr builtins.currentSystem | str trim)
+  let system = "@system@"
   let target = $"($flake)#packages.($system).default"
   let run_quiet_build = {|status, reference_lock|
     let runner = 'status="$1"; timeout_sec="$2"; shift 2; log="$(mktemp -t nixbump.XXXXXX)"; trap "rm -f $log" EXIT; if [ -w /dev/tty ]; then tty=/dev/tty; elif [ -t 2 ]; then tty=/dev/stderr; else tty=; fi; start=$(date +%s); timeout --kill-after=5s "$timeout_sec" "$@" >"$log" 2>&1 & pid=$!; while kill -0 "$pid" 2>/dev/null; do if [ -n "$tty" ]; then elapsed=$(($(date +%s) - start)); last_line=$(tail -n 1 "$log" 2>/dev/null | tr -d "\r\033" | cut -c1-100); if [ -n "$last_line" ]; then printf "\r\033[2K%s | %s | elapsed=%ss" "$status" "$last_line" "$elapsed" >"$tty" 2>/dev/null || tty=; else printf "\r\033[2K%s | elapsed=%ss" "$status" "$elapsed" >"$tty" 2>/dev/null || tty=; fi; fi; sleep 1; done; wait "$pid"; code=$?; if [ -n "$tty" ]; then printf "\r\033[2K" >"$tty" 2>/dev/null || true; fi; exit "$code"'
@@ -199,7 +199,7 @@ def "nu-keybind commandline-copy" []: nothing -> nothing {
     "```"
   ]
   | str join (char nl)
-  | pbcopy
+  | ^@clipboardCopy@
 }
 
 $env.config.keybindings ++= [
@@ -219,18 +219,59 @@ def fing [
   --sweep(-s) # Also ping every host first; slower, but can find devices missed by arp-scan.
   --no-hostnames(-n) # Skip DNS/mDNS/NetBIOS hostname lookups.
 ] {
-  let iface = "en0"
+  let is_macos = $nu.os-info.name == "macos"
+  let iface = if $is_macos {
+    let route_result = (do { ^route -n get default } | complete)
+    $route_result.stdout
+    | lines
+    | parse -r '^\s*interface:\s+(?P<interface>\S+)$'
+    | get interface.0?
+    | default ""
+  } else {
+    let route_result = (do { ^ip -json route show default } | complete)
+    try {
+      $route_result.stdout
+      | from json
+      | get 0.dev
+    } catch {
+      ""
+    }
+  }
+
+  if ($iface | is-empty) {
+    error make {msg: "Could not determine the default network interface."}
+  }
+
+  let address = if $is_macos {
+    do { ^ipconfig getifaddr $iface } | complete | get stdout
+  } else {
+    let address_result = (do { ^ip -json -4 address show dev $iface } | complete)
+    try {
+      $address_result.stdout
+      | from json
+      | get 0.addr_info
+      | where family == "inet"
+      | get 0.local
+    } catch {
+      ""
+    }
+  }
   let network = (
-    ^ipconfig getifaddr $iface
+    $address
     | str trim
     | split row "."
     | take 3
     | str join "."
   )
 
-  if $sweep and ($network | is-not-empty) {
+  if ($network | is-empty) {
+    error make {msg: $"Could not determine the IPv4 network for ($iface)."}
+  }
+
+  if $sweep {
+    let timeout_args = if $is_macos { ["-W" "200"] } else { ["-W" "1"] }
     seq 1 254 | par-each --threads 64 {|n|
-      do { ^ping -q -n -c 1 -W 200 $"($network).($n)" } | complete | ignore
+      do { ^ping -q -n -c 1 ...$timeout_args $"($network).($n)" } | complete | ignore
     }
   }
 
@@ -246,7 +287,7 @@ def fing [
   )
 
   # Also check system ARP cache (includes devices from ping sweep that arp-scan missed)
-  let system_arp_entries = (
+  let system_arp_entries = if $is_macos {
     do {
       let raw = (^arp -a | lines)
       if ($raw | is-empty) { [] } else {
@@ -257,7 +298,16 @@ def fing [
         | each {|e| {ip: $e.ip mac: $e.mac vendor: "(from system ARP)"} }
       }
     }
-  )
+  } else {
+    do {
+      let raw = (^ip neigh show dev $iface | lines)
+      if ($raw | is-empty) { [] } else {
+        $raw
+        | parse -r '^(?P<ip>[0-9.]+)\s+.*lladdr\s+(?P<mac>[0-9a-f:]{17})\s+.*$'
+        | each {|e| {ip: $e.ip mac: $e.mac vendor: "(from system ARP)"} }
+      }
+    }
+  }
 
   # Merge and dedupe (arp-scan results take precedence for vendor info)
   let entries = ($arp_scan_entries ++ $system_arp_entries | uniq-by ip)
@@ -327,37 +377,38 @@ def fing [
   let ssh_local_hosts_by_ip = (
     $ssh_local_hostnames
     | par-each --threads 16 {|host|
-      let dscache_out = (^dscacheutil -q host -a name $host | lines | str trim)
-      let dscache_ip = (
-        $dscache_out
-        | where {|line| $line =~ '^ip_address:' }
-        | get 0?
-        | default ""
-        | parse -r '^ip_address:\s*(?P<ip>[0-9.]+)$'
-        | get ip.0?
-        | default ""
-      )
-      let dns_sd_ip = (
-        if ($dscache_ip | is-empty) {
+      let ip = if $is_macos {
+        let dscache_out = (^dscacheutil -q host -a name $host | lines | str trim)
+        let dscache_ip = (
+          $dscache_out
+          | where {|line| $line =~ '^ip_address:' }
+          | get 0?
+          | default ""
+          | parse -r '^ip_address:\s*(?P<ip>[0-9.]+)$'
+          | get ip.0?
+          | default ""
+        )
+        if ($dscache_ip | is-not-empty) {
+          $dscache_ip
+        } else {
           let dns_sd_result = (do { ^timeout 1 dns-sd -G v4 $host } | complete)
           $dns_sd_result.stdout
           | lines
           | parse -r '.*\s(?P<ip>[0-9]+(?:\.[0-9]+){3})\s+[0-9]+.*'
           | get ip.0?
           | default ""
+        }
+      } else {
+        let avahi_result = (do { ^timeout 1 avahi-resolve-host-name --ipv4 --terminate $host } | complete)
+        if $avahi_result.exit_code == 0 {
+          $avahi_result.stdout
+          | parse -r '^\S+\s+(?P<ip>[0-9.]+)$'
+          | get ip.0?
+          | default ""
         } else {
           ""
         }
-      )
-      let ip = (
-        [
-          $dscache_ip
-          $dns_sd_ip
-        ]
-        | where {|candidate| $candidate | is-not-empty }
-        | get 0?
-        | default ""
-      )
+      }
 
       {
         ip: $ip
@@ -383,22 +434,34 @@ def fing [
         if ($ssh_local_hostname | is-not-empty) {
           $ssh_local_hostname
         } else {
-          let dscache_out = (^dscacheutil -q host -a address $e.ip | lines | str trim)
-          let h1 = ($dscache_out | where {|l| $l =~ '^name:' } | get 0? | default "")
-          if not ($h1 | is-empty) {
-            let dscache_hostname = (
-              $h1
-              | parse -r '^name:\s*(.+)$'
-              | get capture0.0
+          let system_hostname = if $is_macos {
+            let dscache_out = (^dscacheutil -q host -a address $e.ip | lines | str trim)
+            $dscache_out
+            | where {|line| $line =~ '^name:' }
+            | get 0?
+            | default ""
+            | parse -r '^name:\s*(?P<hostname>.+)$'
+            | get hostname.0?
+            | default ""
+          } else {
+            let avahi_result = (do { ^timeout 1 avahi-resolve-address --ipv4 --terminate $e.ip } | complete)
+            if $avahi_result.exit_code == 0 {
+              $avahi_result.stdout
+              | parse -r '^\S+\s+(?P<hostname>\S+)$'
+              | get hostname.0?
               | default ""
-            )
-            do $clean_hostname $dscache_hostname
+            } else {
+              ""
+            }
+          }
+          if ($system_hostname | is-not-empty) {
+            do $clean_hostname $system_hostname
           } else {
             let dig_result = (do { ^dig +time=1 +tries=1 +short -x $e.ip } | complete)
             let dig_out = $dig_result.stdout | lines
-            if ($dig_out | is-not-empty) {
+            let fallback_hostname = if ($dig_out | is-not-empty) {
               do $clean_hostname ($dig_out | get 0)
-            } else {
+            } else if $is_macos {
               let reverse_mdns_name = (
                 $e.ip
                 | split row "."
@@ -417,12 +480,19 @@ def fing [
               if ($mdns_ptr_hostname | is-not-empty) {
                 do $clean_hostname $mdns_ptr_hostname
               } else {
-                let nbtscan_out = (^nbtscan -q -m 1 -t 300 $e.ip e> /dev/null)
-                if ($nbtscan_out | is-not-empty) {
-                  $nbtscan_out | parse -r '^\S+\s+\S+\s+\S+\s+(\S+)' | get capture0.0 | default ""
-                } else {
-                  "<no-hostname>"
-                }
+                ""
+              }
+            } else {
+              ""
+            }
+            if ($fallback_hostname | is-not-empty) {
+              $fallback_hostname
+            } else {
+              let nbtscan_out = (^nbtscan -q -m 1 -t 300 $e.ip e> /dev/null)
+              if ($nbtscan_out | is-not-empty) {
+                $nbtscan_out | parse -r '^\S+\s+\S+\s+\S+\s+(\S+)' | get capture0.0 | default ""
+              } else {
+                "<no-hostname>"
               }
             }
           }

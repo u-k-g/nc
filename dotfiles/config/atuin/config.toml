@@ -174,7 +174,6 @@ keymap_cursor = { vim_insert = "blink-bar", vim_normal = "steady-block" }
 common_subcommands = [
   #   "apt",
   "brew",
-  "bun",
   "git",
 ]
 

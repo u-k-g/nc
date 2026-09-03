@@ -7,14 +7,8 @@
 
 let
   inherit (lib.lists) optionals;
-  inherit (lib.meta) getExe;
-  inherit (lib.modules) mkIf;
   user = config.nc.user;
   workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
-
-  bunGlobalPackages = [
-    "tscircuit@0.0.1837"
-  ];
 
   kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
     exec /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli "$@"
@@ -91,6 +85,8 @@ let
     vivid
 
     deno
+    corepackPnpm
+    tio
   ];
 
   workstationPackages = with pkgs; [
@@ -104,11 +100,8 @@ let
     ffsend
     handy
     scrcpy
-    tio
 
-    bun
     nodejs
-    corepackPnpm
     zig
     lua
     fnm
@@ -178,11 +171,4 @@ in
       ++ optionals (workstation && pkgs.stdenv.isLinux) linuxPackages
       ++ optionals (workstation && pkgs.stdenv.isDarwin) darwinPackages;
   };
-
-  nc.userActivationScripts.bun-global-packages = mkIf workstation ''
-    export BUN_INSTALL="$HOME/.bun"
-
-    ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages} \
-      || printf 'warning: failed to install Bun global packages\n' >&2
-  '';
 }

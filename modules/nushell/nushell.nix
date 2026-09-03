@@ -9,6 +9,7 @@
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (lib.generators) toJSON;
+  inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
   inherit (lib.strings)
     concatMapStringsSep
@@ -22,6 +23,7 @@ let
   user = config.nc.user;
   theme = config.nc.theme;
   home = user.homeDirectory;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
   dotfiles = ../../dotfiles;
   hex = color: "#${color}";
   rgb =
@@ -47,9 +49,6 @@ let
       "--color=header:${hex theme.base04},label:${hex theme.base06},query:${hex theme.base06}"
     ];
     GIT_SSL_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-    HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
-    HOMEBREW_PREFIX = "/opt/homebrew";
-    HOMEBREW_REPOSITORY = "/opt/homebrew";
     NIX_LINK = "${home}/.local/state/nix/profile";
     NIX_PROFILES = "/nix/var/nix/profiles/default /run/current-system/sw /etc/profiles/per-user/${user.name}";
     NIX_SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
@@ -63,26 +62,38 @@ let
     ZDOTDIR = "${home}/.config/zsh";
   }
   // optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+    HOMEBREW_CELLAR = "/opt/homebrew/Cellar";
+    HOMEBREW_PREFIX = "/opt/homebrew";
+    HOMEBREW_REPOSITORY = "/opt/homebrew";
     LIBRARY_PATH = makeLibraryPath [ pkgs.libiconv ];
   };
 
   sessionPath = [
-    "${home}/.bun/bin"
     "${home}/.deno/bin"
     "${home}/.local/share/pnpm"
+  ]
+  ++ optionals workstation [
     "${home}/.platformio/penv/bin"
     "${home}/.platformio/packages/toolchain-gccarmnoneeabi-teensy/bin"
+  ]
+  ++ [
     "/etc/profiles/per-user/${user.name}/bin"
     "/run/wrappers/bin"
     "/run/current-system/sw/bin"
     "/nix/var/nix/profiles/default/bin"
+  ]
+  ++ optionals pkgs.stdenv.hostPlatform.isDarwin [
     "/opt/homebrew/sbin"
     "/opt/homebrew/bin"
     "/opt/homebrew/opt/llvm/bin"
+  ]
+  ++ [
     "${home}/.config/bin"
     "${home}/.cargo/bin"
     "${home}/.local/bin"
     "${home}/.opencode/bin"
+  ]
+  ++ optionals pkgs.stdenv.hostPlatform.isDarwin [
     "${home}/.lmstudio/bin"
   ];
 
@@ -162,8 +173,10 @@ let
       $inherited_path
     }
     $env.PATH = (${toJSON { } sessionPath} | append $inherited_path | uniq)
-    $env.MANPATH = ($env.MANPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/man" | uniq | str join (char esep))
-    $env.INFOPATH = ($env.INFOPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/info" | uniq | str join (char esep))
+    ${optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+      $env.MANPATH = ($env.MANPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/man" | uniq | str join (char esep))
+      $env.INFOPATH = ($env.INFOPATH? | default "" | split row (char esep) | prepend "/opt/homebrew/share/info" | uniq | str join (char esep))
+    ''}
     $env.XDG_DATA_DIRS = ([
       "/nix/var/nix/profiles/default/share"
       "/run/current-system/sw/share"
@@ -217,6 +230,19 @@ let
       "/usr/bin/pbcopy"
     else
       lib.getExe' pkgs.wl-clipboard "wl-copy";
+
+  miscConfig =
+    fileContents (dotfiles + /config/nushell/misc.nu)
+    |>
+      replaceStrings
+        [
+          "@clipboardCopy@"
+          "@system@"
+        ]
+        [
+          clipboardCopy
+          pkgs.stdenv.hostPlatform.system
+        ];
 
   wrtcmtmsgConfig = ''
     def wrtcmtmsg [] {
@@ -291,7 +317,7 @@ let
     shadowXcodePath
     (fileContents ./nushell.config.nu)
     "use ${terminfoAutogen}/terminfo-autogen.nu"
-    (fileContents (dotfiles + /config/nushell/misc.nu))
+    miscConfig
     (optionalString pkgs.stdenv.hostPlatform.isDarwin (
       fileContents (dotfiles + /config/nushell/misc-darwin.nu)
     ))
