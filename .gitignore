@@ -16,6 +16,7 @@
 !packages/**/
 !secrets/
 !secrets/**/
+!tailscale/
 
 !AGENTS.md
 !LICENSE.md
@@ -30,6 +31,7 @@
 !*.age
 
 !hosts/manara/facter.json
+!hosts/policy.hujson
 
 !dotfiles/config/FreeCAD/v1-1/system.cfg
 !dotfiles/config/FreeCAD/v1-1/user.cfg
