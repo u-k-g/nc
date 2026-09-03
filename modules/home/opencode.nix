@@ -234,6 +234,9 @@ in
           if pkgs.stdenv.hostPlatform.system == "aarch64-darwin" then
             ''
               asset_name=opencode-darwin-arm64.zip
+              opencode_version() {
+                "$1" --version
+              }
             ''
           else if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then
             ''
@@ -242,6 +245,18 @@ in
               else
                 asset_name=opencode-linux-x64-baseline.tar.gz
               fi
+
+              opencode_version() {
+                ${pkgs.stdenv.cc.bintools.dynamicLinker} \
+                  --library-path ${
+                    lib.escapeShellArg
+                    <| lib.makeLibraryPath [
+                      pkgs.glibc
+                      pkgs.stdenv.cc.cc.lib
+                    ]
+                  } \
+                  "$1" --version
+              }
             ''
           else
             throw "unsupported OpenCode platform: ${pkgs.stdenv.hostPlatform.system}"
@@ -256,7 +271,7 @@ in
         release_json="$temp_dir/release.json"
         if ! ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_json"; then
           if [ -x "$install_dir/opencode" ] \
-            && installed_version="$("$install_dir/opencode" --version 2>/dev/null)" \
+            && installed_version="$(opencode_version "$install_dir/opencode" 2>/dev/null)" \
             && [ -n "$installed_version" ]; then
             printf 'warning: failed to check latest OpenCode release; keeping OpenCode %s\n' "$installed_version" >&2
             exit 0
@@ -279,7 +294,7 @@ in
         if [ -x "$install_dir/opencode" ] \
           && [ -f "$state_file" ] \
           && [ "$(< "$state_file")" = "$state_value" ] \
-          && installed_version="$("$install_dir/opencode" --version 2>/dev/null)" \
+          && installed_version="$(opencode_version "$install_dir/opencode" 2>/dev/null)" \
           && [ -n "$installed_version" ]; then
           printf 'OpenCode %s is already installed\n' "$installed_version"
           exit 0
@@ -312,23 +327,7 @@ in
           exit 1
         fi
 
-        ${
-          lib.optionalString pkgs.stdenv.hostPlatform.isLinux
-          <| ''
-            ${getExe pkgs.patchelf} \
-              --set-interpreter ${lib.escapeShellArg pkgs.stdenv.cc.bintools.dynamicLinker} \
-              --set-rpath ${
-                lib.escapeShellArg
-                <| lib.makeLibraryPath [
-                  pkgs.glibc
-                  pkgs.stdenv.cc.cc.lib
-                ]
-              } \
-              "$extract_dir/opencode"
-          ''
-        }
-
-        if ! downloaded_version="$("$extract_dir/opencode" --version 2>/dev/null)"; then
+        if ! downloaded_version="$(opencode_version "$extract_dir/opencode")"; then
           printf 'error: downloaded OpenCode binary is not runnable on this system\n' >&2
           exit 1
         fi
