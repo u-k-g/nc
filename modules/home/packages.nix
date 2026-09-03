@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib.lists) optionals;
+  inherit (lib.lists) optionals singleton;
   user = config.nc.user;
   workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
 
@@ -84,7 +84,6 @@ let
     microfetch
     vivid
 
-    gcc
     gnumake
     pkg-config
     python3
@@ -93,7 +92,8 @@ let
     deno
     corepackPnpm
     tio
-  ];
+  ]
+  ++ optionals pkgs.stdenv.isLinux (singleton pkgs.gcc);
 
   extendedPackages = with pkgs; [
     zellij
@@ -109,7 +109,6 @@ let
     lua
 
     llvm
-    clang
     clang-tools
     lld
 
@@ -163,6 +162,7 @@ let
 
   darwinPackages = [
     kicadCli
+    pkgs.clang
   ];
 in
 {
