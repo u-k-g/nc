@@ -31,6 +31,26 @@ let
       base0E = "69D69A";
       base0F = "F07372";
     };
+    jade = {
+      name = "Jade";
+      author = "steez";
+      base00 = "06100C";
+      base01 = "121C15";
+      base02 = "18221A";
+      base03 = "53685B";
+      base04 = "718064";
+      base05 = "CACE9E";
+      base06 = "F6F5DD";
+      base07 = "FAFAF5";
+      base08 = "FF5345";
+      base09 = "E5C736";
+      base0A = "2DD5B7";
+      base0B = "63B07A";
+      base0C = "8CD3CB";
+      base0D = "8CD3CB";
+      base0E = "D2689C";
+      base0F = "509475";
+    };
     gruvbox-dark-hard = inputs.themes.raw.gruvbox-dark-hard;
     rose-pine = inputs.themes.raw.rose-pine;
     matte-black = {
@@ -61,11 +81,12 @@ in
       type = enum [
         "black-metal"
         "grove"
+        "jade"
         "gruvbox-dark-hard"
         "rose-pine"
         "matte-black"
       ];
-      default = "grove";
+      default = "jade";
       description = "Color preset used by every themed NC application.";
     };
 

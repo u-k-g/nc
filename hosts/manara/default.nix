@@ -27,8 +27,6 @@ in
     homeDirectory = "/home/ukg";
   };
 
-  nc.themePreset = "grove";
-
   nc.nixos.cosmic.enable = true;
   nc.nixos.server.enable = true;
   nc.radicle.enable = false;

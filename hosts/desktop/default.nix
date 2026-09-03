@@ -14,9 +14,6 @@
     homeDirectory = "/home/ukg";
   };
 
-  # Also available: "black-metal", "gruvbox-dark-hard", "rose-pine", and "matte-black".
-  nc.themePreset = "grove";
-
   networking.hostName = "desktop";
 
   nc.nixos.workstation.enable = true;
