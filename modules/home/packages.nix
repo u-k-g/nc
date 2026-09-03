@@ -84,12 +84,13 @@ let
     microfetch
     vivid
 
+    nodejs
     deno
     corepackPnpm
     tio
   ];
 
-  workstationPackages = with pkgs; [
+  extendedPackages = with pkgs; [
     pkg-config
 
     zellij
@@ -101,10 +102,8 @@ let
     handy
     scrcpy
 
-    nodejs
     zig
     lua
-    fnm
 
     llvm
     clang
@@ -167,7 +166,7 @@ in
   home.users.${user.name} = {
     packages =
       essentialPackages
-      ++ optionals workstation workstationPackages
+      ++ optionals workstation extendedPackages
       ++ optionals (workstation && pkgs.stdenv.isLinux) linuxPackages
       ++ optionals (workstation && pkgs.stdenv.isDarwin) darwinPackages;
   };
