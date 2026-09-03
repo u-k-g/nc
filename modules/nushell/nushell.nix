@@ -273,6 +273,18 @@ let
     }
   '';
 
+  promptConfig =
+    replaceStrings
+      [
+        "@localPromptAccent@"
+        "@remotePromptAccent@"
+      ]
+      [
+        "${hex theme.base0D}"
+        "${hex theme.base09}"
+      ]
+    <| fileContents (dotfiles + /config/nushell/prompts.nu);
+
   nuConfig = lib.concatStringsSep "\n" [
     nuVariables
     nuPath
@@ -283,7 +295,7 @@ let
     (optionalString pkgs.stdenv.hostPlatform.isDarwin (
       fileContents (dotfiles + /config/nushell/misc-darwin.nu)
     ))
-    (fileContents (dotfiles + /config/nushell/prompts.nu))
+    promptConfig
     "source ${carapaceConfig}"
     "source ${justCompletions}"
     "source ${direnvHook}"

@@ -1,5 +1,14 @@
 let PROMPT_STYLE = "flowy"
 # let PROMPT_STYLE = "boxy"
+let PROMPT_ACCENT_COLOR = if (($env.SSH_CONNECTION? | default "") | is-not-empty) {
+  "@remotePromptAccent@"
+} else {
+  "@localPromptAccent@"
+}
+let PROMPT_ACCENT = ansi { fg: $PROMPT_ACCENT_COLOR }
+let PROMPT_ACCENT_BOLD = ansi { fg: $PROMPT_ACCENT_COLOR attr: b }
+let PROMPT_ACCENT_DIMMED = ansi { fg: $PROMPT_ACCENT_COLOR attr: d }
+let PROMPT_ACCENT_ITALIC = ansi { fg: $PROMPT_ACCENT_COLOR attr: i }
 $env.JJ_WORKSPACE_ROOT = ""
 $env.JJ_WORKSPACE_ROOT_PWD = ""
 $env.JJ_WORKSPACE_ROOT_TS = ""
@@ -47,9 +56,9 @@ def get-jj-right-prompt [] {
   let has_changes = try {
     do -i { (^jj --no-pager status | str contains "orking copy change") }
   } catch { false }
-  let bookmark_part = if ($closest_bookmark | is-not-empty) { $"(ansi blue)[(ansi blue_italic)($closest_bookmark)(ansi reset)(ansi blue)](ansi reset)" } else { "" }
-  let change_id_part = if ($change_id_shortest | is-not-empty) { $"(ansi reset)(ansi blue_italic)($change_id_shortest)(ansi reset)" } else { "" }
-  let status_part = if $has_changes { $"(ansi blue_dimmed)(ansi bo)*(ansi reset) " } else { $"(ansi dark_gray_bold)·(ansi reset) " }
+  let bookmark_part = if ($closest_bookmark | is-not-empty) { $"($PROMPT_ACCENT)[($PROMPT_ACCENT_ITALIC)($closest_bookmark)(ansi reset)($PROMPT_ACCENT)](ansi reset)" } else { "" }
+  let change_id_part = if ($change_id_shortest | is-not-empty) { $"(ansi reset)($PROMPT_ACCENT_ITALIC)($change_id_shortest)(ansi reset)" } else { "" }
+  let status_part = if $has_changes { $"($PROMPT_ACCENT_DIMMED)(ansi bo)*(ansi reset) " } else { $"(ansi dark_gray_bold)·(ansi reset) " }
   let parts = [$bookmark_part $change_id_part $status_part] | where {|x| $x | is-not-empty }
   let value = if ($parts | is-empty) {
     ""
@@ -78,7 +87,7 @@ def get-git-prompt [] {
     $branch
   }
   let value = if ($branch | is-not-empty) {
-    $"(ansi reset)(ansi blue_italic)($branch)(ansi reset)"
+    $"(ansi reset)($PROMPT_ACCENT_ITALIC)($branch)(ansi reset)"
   } else {
     ""
   }
@@ -91,18 +100,18 @@ def prompt-header [--left-char: string] {
   let jj_workspace_root = get-jj-workspace-root
   let body = if ($jj_workspace_root | is-not-empty) {
     let subpath = pwd | path relative-to $jj_workspace_root
-    let subpath = if ($subpath | is-not-empty) { $"(ansi dark_gray_bold) › (ansi reset)(ansi blue_italic)($subpath)" }
-    $"(ansi blue_bold)($jj_workspace_root | path basename)($subpath)(ansi reset)"
+    let subpath = if ($subpath | is-not-empty) { $"(ansi dark_gray_bold) › (ansi reset)($PROMPT_ACCENT_ITALIC)($subpath)" }
+    $"($PROMPT_ACCENT_BOLD)($jj_workspace_root | path basename)($subpath)(ansi reset)"
   } else {
     let pwd = if (pwd | str starts-with $env.HOME) {
       "~" | path join (pwd | path relative-to $env.HOME)
     } else { pwd }
-    $"(ansi blue_italic)($pwd)(ansi reset)"
+    $"($PROMPT_ACCENT_ITALIC)($pwd)(ansi reset)"
   }
   $"(ansi dark_gray_bold)($left_char)(ansi reset) ($body)(char newline)"
 }
-$env.PROMPT_INDICATOR_VI_NORMAL = if $PROMPT_STYLE == "boxy" { $"(ansi dark_gray_bold)┗━ (ansi blue)$(ansi reset) " } else { $"(ansi dark_gray_bold)╰─ (ansi blue)$(ansi reset) " }
-$env.PROMPT_INDICATOR_VI_INSERT = if $PROMPT_STYLE == "boxy" { $"(ansi dark_gray_bold)┗━ (ansi blue)$(ansi reset) " } else { $"(ansi dark_gray_bold)╰─ (ansi blue)$(ansi reset) " }
+$env.PROMPT_INDICATOR_VI_NORMAL = if $PROMPT_STYLE == "boxy" { $"(ansi dark_gray_bold)┗━ ($PROMPT_ACCENT)$(ansi reset) " } else { $"(ansi dark_gray_bold)╰─ ($PROMPT_ACCENT)$(ansi reset) " }
+$env.PROMPT_INDICATOR_VI_INSERT = if $PROMPT_STYLE == "boxy" { $"(ansi dark_gray_bold)┗━ ($PROMPT_ACCENT)$(ansi reset) " } else { $"(ansi dark_gray_bold)╰─ ($PROMPT_ACCENT)$(ansi reset) " }
 $env.PROMPT_MULTILINE_INDICATOR = ""
 $env.PROMPT_COMMAND = { prompt-header --left-char (if $PROMPT_STYLE == "boxy" { "┏━" } else { "╭─" }) }
 $env.PROMPT_COMMAND_RIGHT = {||
