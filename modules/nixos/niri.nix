@@ -14,7 +14,7 @@ let
   user = config.nc.user;
   theme = config.nc.theme;
   hex = color: "#${color}";
-  heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
+  heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
   dms = getExe pkgs.dms-shell;
   qtEnvironment = [
     "QT_QPA_PLATFORMTHEME=${config.qt.platformTheme}"

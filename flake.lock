@@ -135,6 +135,26 @@
         "url": "https://flakehub.com/f/DeterminateSystems/flake-schemas/%3D0.5.0.tar.gz"
       }
     },
+    "helium": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788349244,
+        "narHash": "sha256-v19SN8O20o/DgP6ffH9hUCsfTjm6f4uWmWC4UOuEmpA=",
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "rev": "02c6d2f33960eda4a3579247ef51be8f81690e82",
+        "type": "github"
+      },
+      "original": {
+        "owner": "amaanq",
+        "repo": "helium-flake",
+        "type": "github"
+      }
+    },
     "hjem": {
       "inputs": {
         "nixpkgs": [
@@ -371,6 +391,7 @@
         "chaotic": "chaotic",
         "disko": "disko",
         "flake-parts": "flake-parts",
+        "helium": "helium",
         "hjem": "hjem",
         "homebrew": "homebrew",
         "homebrew-apple": "homebrew-apple",

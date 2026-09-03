@@ -1,5 +1,5 @@
 {
-  description = "Nix Collective";
+  description = "Nix Flake Vault";
 
   nixConfig = {
     experimental-features = [
@@ -57,6 +57,11 @@
 
     hjem = {
       url = "github:feel-co/hjem?ref=pull/167/merge";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    helium = {
+      url = "github:amaanq/helium-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

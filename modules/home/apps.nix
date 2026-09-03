@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -8,13 +9,14 @@
 let
   inherit (lib.lists) optionals;
   user = config.nc.user;
-  heliumBrowser = pkgs.callPackage ../../packages/helium-browser { };
+  heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
 in
 {
   home.users.${user.name} = {
     packages =
       with pkgs;
       [
+        heliumBrowser
         kitty
         obsidian
       ]
@@ -23,7 +25,6 @@ in
       ]
       ++ optionals pkgs.stdenv.isLinux [
         pkgs.ghostty
-        heliumBrowser
         pkgs.orca-slicer
         pkgs.ungoogled-chromium
         zed-editor
