@@ -133,6 +133,7 @@ in
 
   networking.firewall = {
     enable = true;
+    checkReversePath = "loose";
     interfaces.tailscale0.allowedTCPPorts = singleton 22;
   };
 
