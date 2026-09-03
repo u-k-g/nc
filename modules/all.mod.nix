@@ -28,6 +28,7 @@
     terminal = ./home/terminal.nix;
     version-control = ./home/version-control.nix;
     watchman = ./home/watchman.nix;
+    writer = ./home/writer.nix;
   };
 
   flake.darwinModules = {
