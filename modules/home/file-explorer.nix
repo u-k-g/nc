@@ -10,9 +10,10 @@ let
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
 in
 {
-  home.users.${user.name} = {
+  home.users.${user.name} = mkIf workstation {
     xdg.mime-apps.default-applications =
       mkIf pkgs.stdenv.isLinux
       <|

@@ -11,6 +11,7 @@ let
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
   discord =
     (pkgs.discord.override {
       withOpenASAR = true;
@@ -27,7 +28,7 @@ let
       });
 in
 {
-  home.users.${user.name} = {
+  home.users.${user.name} = mkIf workstation {
     xdg.mime-apps.default-applications =
       mkIf pkgs.stdenv.isLinux
       <| flip genAttrs (const "discord.desktop") [

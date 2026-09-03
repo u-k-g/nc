@@ -7,28 +7,27 @@
 }:
 
 let
-  inherit (lib.lists) optionals;
+  inherit (lib.lists) optionals singleton;
   user = config.nc.user;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
   heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
+  workstationPackages =
+    singleton pkgs.obsidian
+    ++ (if pkgs.stdenv.isDarwin then singleton pkgs.ghostty-bin else [ ])
+    ++ optionals pkgs.stdenv.isLinux [
+      pkgs.ghostty
+      pkgs.orca-slicer
+      pkgs.ungoogled-chromium
+      pkgs.zed-editor
+    ];
 in
 {
   home.users.${user.name} = {
-    packages =
-      with pkgs;
-      [
-        heliumBrowser
-        kitty
-        obsidian
-      ]
-      ++ optionals pkgs.stdenv.isDarwin [
-        pkgs.ghostty-bin
-      ]
-      ++ optionals pkgs.stdenv.isLinux [
-        pkgs.ghostty
-        pkgs.orca-slicer
-        pkgs.ungoogled-chromium
-        zed-editor
-      ];
+    packages = [
+      heliumBrowser
+      pkgs.kitty
+    ]
+    ++ optionals workstation workstationPackages;
 
     xdg.data.files = lib.modules.mkIf pkgs.stdenv.isLinux {
       "applications/helium.desktop" = {

@@ -55,7 +55,6 @@ in
             {
               coreutils,
               lib,
-              nix,
               nixos-install,
               util-linux,
               writers,
@@ -93,15 +92,12 @@ in
                   ^${chmod} --recursive go-rwx $target
                 }
 
-                (^${getExe nix} copy
-                  --no-check-sigs
-                  --to $"local?root=($mountpoint)"
-                  ${self.nixosConfigurations.manara.config.system.build.toplevel})
-
                 (exec ${getExe nixos-install}
+                  --flake "${self}#manara"
                   --no-channel-copy
                   --no-root-password
-                  --system ${self.nixosConfigurations.manara.config.system.build.toplevel}
+                  --option accept-flake-config true
+                  --option experimental-features "nix-command flakes pipe-operators"
                   --root $mountpoint)
               }
             ''

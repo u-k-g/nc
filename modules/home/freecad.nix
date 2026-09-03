@@ -9,10 +9,11 @@ let
   inherit (lib.lists) singleton;
   inherit (lib.modules) mkIf;
   user = config.nc.user;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
   freecadConfigSource = ../../dotfiles/config/FreeCAD/v1-1;
 in
 {
-  home.users.${user.name} = {
+  home.users.${user.name} = mkIf workstation {
     packages = mkIf pkgs.stdenv.isLinux <| singleton pkgs.freecad;
 
     xdg.config.files."FreeCAD/v1-1/system.cfg" = {

@@ -13,6 +13,7 @@ let
   inherit (lib.trivial) floor;
   user = config.nc.user;
   theme = config.nc.theme;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
   json = pkgs.formats.json { };
   ninjabrainBotJar = pkgs.fetchurl {
     url = "https://github.com/Ninjabrain1/Ninjabrain-Bot/releases/download/1.5.2/Ninjabrain-Bot-1.5.2.jar";
@@ -261,7 +262,7 @@ let
   '';
 in
 {
-  home.users.${user.name} = mkMerge [
+  home.users.${user.name} = mkIf workstation <| mkMerge [
     {
       packages = [
         (if pkgs.stdenv.isLinux then prismlauncherGamemode else pkgs.prismlauncher)

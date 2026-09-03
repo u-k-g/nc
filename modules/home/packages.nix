@@ -8,7 +8,9 @@
 let
   inherit (lib.lists) optionals;
   inherit (lib.meta) getExe;
+  inherit (lib.modules) mkIf;
   user = config.nc.user;
+  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
 
   bunGlobalPackages = [
     "tscircuit@0.0.1837"
@@ -34,7 +36,7 @@ let
     else
       pkgs.dix;
 
-  commonPackages = with pkgs; [
+  essentialPackages = with pkgs; [
     bash
     nushell
     atuin
@@ -46,7 +48,6 @@ let
     rsync
     rclone
     curl
-    pkg-config
     cacert
 
     helix
@@ -59,7 +60,6 @@ let
 
     tmux
     carapace
-    zellij
     btop
     yazi
     lazyssh
@@ -68,27 +68,45 @@ let
     fish
     hyperfine
     mosh
-    dix
 
     ripgrep
     ast-grep
-    gitleaks
     fd
     eza
     zoxide
     unzip
     just
+    jq
 
     sd
     ffmpeg
+    imagemagick
+
+    arp-scan
+    nmap
+    nbtscan
+    usbutils
+
+    microfetch
+    vivid
+
+    deno
+  ];
+
+  workstationPackages = with pkgs; [
+    pkg-config
+
+    zellij
+    dix
+
+    gitleaks
+
     ffsend
     handy
     scrcpy
     tio
-    imagemagick
 
     bun
-    deno
     nodejs
     corepackPnpm
     zig
@@ -138,14 +156,6 @@ let
     platformio
     arduino-language-server
     tytools
-
-    arp-scan
-    nmap
-    nbtscan
-    usbutils
-
-    microfetch
-    vivid
   ];
 
   linuxPackages = with pkgs; [
@@ -163,13 +173,13 @@ in
 {
   home.users.${user.name} = {
     packages =
-      commonPackages
-      ++ optionals pkgs.stdenv.isLinux linuxPackages
-      ++ optionals pkgs.stdenv.isDarwin darwinPackages;
-
+      essentialPackages
+      ++ optionals workstation workstationPackages
+      ++ optionals (workstation && pkgs.stdenv.isLinux) linuxPackages
+      ++ optionals (workstation && pkgs.stdenv.isDarwin) darwinPackages;
   };
 
-  nc.userActivationScripts.bun-global-packages = ''
+  nc.userActivationScripts.bun-global-packages = mkIf workstation ''
     export BUN_INSTALL="$HOME/.bun"
 
     ${getExe pkgs.bun} install --global ${lib.escapeShellArgs bunGlobalPackages} \
