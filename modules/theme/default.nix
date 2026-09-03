@@ -34,7 +34,7 @@ let
     jade = {
       name = "Jade";
       author = "steez";
-      base00 = "06100C";
+      base00 = "071C15";
       base01 = "121C15";
       base02 = "18221A";
       base03 = "53685B";
