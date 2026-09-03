@@ -84,6 +84,11 @@ let
     microfetch
     vivid
 
+    gcc
+    gnumake
+    pkg-config
+    python3
+
     nodejs
     deno
     corepackPnpm
@@ -91,8 +96,6 @@ let
   ];
 
   extendedPackages = with pkgs; [
-    pkg-config
-
     zellij
     dix
 
