@@ -211,17 +211,17 @@ in
     };
   };
 
-  systemd.services.manara-performance-profile = {
-    description = "Select the performance power profile";
+  systemd.services.manara-power-profile = {
+    description = "Select the balanced power profile";
     after = singleton "power-profiles-daemon.service";
     requires = singleton "power-profiles-daemon.service";
     wantedBy = singleton "multi-user.target";
 
     script = /* bash */ ''
-      if ${powerProfilesCtl} list | ${grep} --quiet --fixed-strings 'performance:'; then
-        ${powerProfilesCtl} set performance
+      if ${powerProfilesCtl} list | ${grep} --quiet --fixed-strings 'balanced:'; then
+        ${powerProfilesCtl} set balanced
       else
-        printf 'power-profiles-daemon does not expose a performance profile\n' >&2
+        printf 'power-profiles-daemon does not expose a balanced profile\n' >&2
       fi
     '';
 

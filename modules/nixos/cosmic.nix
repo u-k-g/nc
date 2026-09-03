@@ -7,9 +7,13 @@
 
 let
   inherit (lib.lists) singleton;
-  inherit (lib.modules) mkAfter mkIf;
+  inherit (lib.meta) getExe';
+  inherit (lib.modules) mkAfter mkForce mkIf;
   inherit (lib.options) mkEnableOption;
 
+  cosmicSession = getExe' pkgs.cosmic-session "start-cosmic";
+  environment = getExe' pkgs.coreutils "env";
+  systemdCat = getExe' pkgs.systemd "systemd-cat";
   user = config.nc.user;
   managed = text: {
     type = "copy";
@@ -86,7 +90,14 @@ in
       };
     };
 
+    services.greetd.settings.default_session = mkForce {
+      command = "${environment} XCURSOR_THEME=Pop ${systemdCat} --identifier=cosmic-session ${cosmicSession}";
+      user = user.name;
+    };
+
     services.xserver.enable = false;
+
+    systemd.defaultUnit = "graphical.target";
 
     environment.sessionVariables.NIXOS_OZONE_WL = "1";
     environment.systemPackages = singleton cosmicRun;
