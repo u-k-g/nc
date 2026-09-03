@@ -281,7 +281,7 @@ let
       ]
       [
         "${hex theme.base0D}"
-        "${hex theme.base09}"
+        "${hex theme.base0E}"
       ]
     <| fileContents (dotfiles + /config/nushell/prompts.nu);
 
