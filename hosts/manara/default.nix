@@ -134,7 +134,8 @@ in
   networking.firewall = {
     enable = true;
     checkReversePath = "loose";
-    interfaces.tailscale0.allowedTCPPorts = singleton 22;
+    extraReversePathFilterRules = ''iifname "${config.services.tailscale.interfaceName}" accept'';
+    interfaces.${config.services.tailscale.interfaceName}.allowedTCPPorts = singleton 22;
   };
 
   services.openssh = {
