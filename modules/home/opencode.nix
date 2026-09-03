@@ -238,9 +238,9 @@ in
           else if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then
             ''
               if ${getExe pkgs.gnugrep} --quiet --word-regexp --ignore-case avx2 /proc/cpuinfo; then
-                asset_name=opencode-linux-x64-musl.tar.gz
+                asset_name=opencode-linux-x64.tar.gz
               else
-                asset_name=opencode-linux-x64-baseline-musl.tar.gz
+                asset_name=opencode-linux-x64-baseline.tar.gz
               fi
             ''
           else
@@ -311,6 +311,23 @@ in
           printf 'error: OpenCode archive did not contain an executable opencode file\n' >&2
           exit 1
         fi
+
+        ${
+          lib.optionalString pkgs.stdenv.hostPlatform.isLinux
+          <| ''
+            ${getExe pkgs.patchelf} \
+              --set-interpreter ${lib.escapeShellArg pkgs.stdenv.cc.bintools.dynamicLinker} \
+              --set-rpath ${
+                lib.escapeShellArg
+                <| lib.makeLibraryPath [
+                  pkgs.glibc
+                  pkgs.stdenv.cc.cc.lib
+                ]
+              } \
+              "$extract_dir/opencode"
+          ''
+        }
+
         if ! downloaded_version="$("$extract_dir/opencode" --version 2>/dev/null)"; then
           printf 'error: downloaded OpenCode binary is not runnable on this system\n' >&2
           exit 1
