@@ -1,13 +1,5 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ config, pkgs, ... }:
 
-let
-  inherit (lib.meta) getExe;
-in
 {
   nc.user = {
     name = "uzair";
@@ -26,9 +18,4 @@ in
   };
 
   programs.zsh.enable = true;
-
-  launchd.daemons.tailscale-allow-incoming = {
-    command = "${getExe config.services.tailscale.package} set --shields-up=false";
-    serviceConfig.KeepAlive.SuccessfulExit = false;
-  };
 }

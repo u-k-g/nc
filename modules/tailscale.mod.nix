@@ -1,6 +1,10 @@
+{ lib, ... }:
+let
+  inherit (lib.lists) singleton;
+in
 {
   flake.darwinModules.tailscale = {
-    services.tailscale.enable = true;
+    homebrew.casks = singleton "tailscale-app";
   };
 
   flake.nixosModules.tailscale = {
