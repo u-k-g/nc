@@ -7,13 +7,14 @@
 
 let
   inherit (lib.lists) singleton;
-  inherit (lib.meta) getExe';
+  inherit (lib.meta) getExe getExe';
   inherit (lib.modules) mkForce;
 
   install = getExe' pkgs.coreutils "install";
   grep = getExe' pkgs.gnugrep "grep";
   mktemp = getExe' pkgs.coreutils "mktemp";
   powerProfilesCtl = getExe' pkgs.power-profiles-daemon "powerprofilesctl";
+  systemctl = getExe' pkgs.systemd "systemctl";
   remove = getExe' pkgs.coreutils "rm";
   systemdId128 = getExe' pkgs.systemd "systemd-id128";
   test = getExe' pkgs.coreutils "test";
@@ -83,6 +84,7 @@ in
       "/var/lib/fwupd"
       "/var/lib/systemd"
       "/var/lib/tailscale"
+      "/var/lib/upower"
       "/var/log"
     ];
   };
@@ -160,7 +162,13 @@ in
     IdleAction = "ignore";
   };
 
-  services.upower.ignoreLid = true;
+  services.upower = {
+    ignoreLid = true;
+    # The AC-aware policy below owns shutdown; UPower's HybridSleep default
+    # falls back to PowerOff when sleep and hibernation are disabled.
+    allowRiskyCriticalPowerAction = true;
+    criticalPowerAction = "Ignore";
+  };
 
   systemd.sleep.settings.Sleep = {
     AllowSuspend = false;
@@ -214,22 +222,58 @@ in
   };
 
   systemd.services.manara-power-profile = {
-    description = "Select the balanced power profile";
+    description = "Manage AC/battery power and shut down at 20% on battery";
     after = singleton "power-profiles-daemon.service";
     requires = singleton "power-profiles-daemon.service";
     wantedBy = singleton "multi-user.target";
 
-    script = /* bash */ ''
-      if ${powerProfilesCtl} list | ${grep} --quiet --fixed-strings 'balanced:'; then
-        ${powerProfilesCtl} set balanced
-      else
-        printf 'power-profiles-daemon does not expose a balanced profile\n' >&2
-      fi
-    '';
-
     serviceConfig = {
       Type = "oneshot";
-      RemainAfterExit = true;
+      ExecStart = getExe <| pkgs.writers.writeNuBin "manara-power-policy" /* nu */ ''
+        def read-power [name: string]: nothing -> string {
+          open --raw $"/sys/class/power_supply/($name)" | str trim
+        }
+
+        # Unknown or unreadable AC state must never authorize a shutdown.
+        let ac = read-power "ACAD/online"
+        let capacity = read-power "BAT1/capacity" | into int
+        let status = read-power "BAT1/status"
+        print $"AC=($ac) battery=($capacity)% status=($status)"
+
+        let profile = match $ac {
+          "1" => "balanced"
+          "0" => "power-saver"
+          _ => { error make { msg: "Unknown AC state; skipping power policy" } }
+        }
+        let current = ^${powerProfilesCtl} get | complete
+        if $current.exit_code != 0 or ($current.stdout | str trim) != $profile {
+          let result = ^${powerProfilesCtl} set $profile | complete
+          if $result.exit_code != 0 {
+            print --stderr $"Failed to select ($profile): ($result.stderr)"
+          }
+        }
+
+        if $ac == "0" and $status == "Discharging" and $capacity >= 0 and $capacity <= 20 {
+          # Recheck immediately before shutdown in case AC was reconnected.
+          if (read-power "ACAD/online") == "0" and (read-power "BAT1/status") == "Discharging" {
+            print $"Battery at ($capacity)% without AC; powering off"
+            let result = ^${systemctl} poweroff | complete
+            if $result.exit_code != 0 {
+              error make { msg: $"Shutdown failed: ($result.stderr)" }
+            }
+          }
+        }
+      '';
+    };
+  };
+
+  systemd.timers.manara-power-profile = {
+    description = "Check Manara's power source and battery every minute";
+    wantedBy = singleton "timers.target";
+    timerConfig = {
+      OnBootSec = "30s";
+      OnUnitInactiveSec = "60s";
+      AccuracySec = "1s";
     };
   };
 
