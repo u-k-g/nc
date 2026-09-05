@@ -34,6 +34,11 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    codex = {
+      url = "file+https://unpkg.com/@openai/codex@latest/package.json";
+      flake = false;
+    };
+
     t3 = {
       url = "github:pingdotgg/t3code";
       flake = false;

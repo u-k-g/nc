@@ -65,6 +65,18 @@
         "type": "github"
       }
     },
+    "codex": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-5Y50ns7zcjMde4ZbPUbIokqR4op5vxBlEd+InYbjrFc=",
+        "type": "file",
+        "url": "https://unpkg.com/@openai/codex@latest/package.json"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://unpkg.com/@openai/codex@latest/package.json"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1785541369,
@@ -405,6 +417,7 @@
       "inputs": {
         "agenix": "agenix",
         "chaotic": "chaotic",
+        "codex": "codex",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "helium": "helium",
