@@ -12,8 +12,15 @@ let PROMPT_ACCENT_ITALIC = ansi { fg: $PROMPT_ACCENT_COLOR attr: i }
 $env.GIT_PROMPT_PWD = ""
 $env.GIT_PROMPT_VALUE = ""
 $env.GIT_PROMPT_TS = ""
-def get-jj-workspace-root [] {
-  try { ^jj --ignore-working-copy workspace root err> $null_device | str trim } catch { "" }
+def get-jj-workspace-root []: nothing -> string {
+  mut directory = $env.PWD
+  loop {
+    if ($directory | path join '.jj' 'working_copy' | path exists) { break }
+    let parent = ($directory | path dirname)
+    if $parent == $directory { return "" }
+    $directory = $parent
+  }
+  $directory
 }
 def get-jj-right-prompt [] {
   # Watchman's snapshot trigger refreshes the working copy in the background.
