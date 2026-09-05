@@ -7,9 +7,8 @@
 
 let
   inherit (lib.generators) toJSON;
-  inherit (lib.lists) optionals singleton;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) concatMapStringsSep;
+  inherit (lib.strings) concatMapStringsSep escapeShellArg makeBinPath;
 
   codexHookDir = "/etc/codex/hooks";
   codexGitPolicyName = "codex-git-policy.py";
@@ -692,7 +691,22 @@ in
   };
 
   home.users.${config.nc.user.name} = {
-    packages = optionals pkgs.stdenv.hostPlatform.isLinux <| singleton pkgs.codex;
+    # Use only nixpkgs' version metadata, pinned by flake.lock; pnpm installs the CLI.
+    activationScripts.codex-install = /* bash */ ''
+      (
+        set -euo pipefail
+        export PNPM_HOME=${escapeShellArg "${config.nc.user.homeDirectory}/.local/share/pnpm"}
+        export PATH="$PNPM_HOME/bin:$PNPM_HOME:${
+          makeBinPath [
+            pkgs.nodejs
+            pkgs.coreutils
+          ]
+        }:$PATH"
+        export SHELL=${getExe pkgs.bashInteractive}
+        ${getExe pkgs.pnpm} add --global --save-exact \
+          ${escapeShellArg "@openai/codex@${pkgs.codex.version}"}
+      )
+    '';
 
     files = {
       ".codex/rules/git.rules".text = ''

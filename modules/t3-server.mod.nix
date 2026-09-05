@@ -76,9 +76,9 @@
           wantedBy = singleton "multi-user.target";
 
           path = [
+            "${config.nc.user.homeDirectory}/.local/share/pnpm"
             pkgs.nodejs
             pkgs.git
-            pkgs.codex
             pkgs.tailscale
           ];
 

@@ -61,7 +61,6 @@
       "abue-ammar/tinycast/tinycast@beta"
       "battery"
       "blip"
-      "codex"
       "font-sketchybar-app-font"
       "hammerspoon"
       "karabiner-elements"
