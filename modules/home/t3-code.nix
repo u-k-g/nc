@@ -24,7 +24,7 @@ in
 
           export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
 
-          api='https://api.github.com/repos/pingdotgg/t3code/releases?per_page=100'
+          api='https://api.github.com/repos/pingdotgg/t3code/releases/latest'
           t3_code_app=${lib.escapeShellArg t3CodeApp}
           t3_code_data_dir=${lib.escapeShellArg t3CodeDataDir}
           state_file=${lib.escapeShellArg t3CodeState}
@@ -56,19 +56,17 @@ in
           if ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_probe"; then
             release="$(${getExe pkgs.jq} --compact-output '
               [
-                .[]
-                | select(.draft | not) as $release
+                select(.draft == false and .prerelease == false)
+                | select(.tag_name | test("^v[0-9]+[.][0-9]+[.][0-9]+$")) as $release
                 | $release.assets[]
                 | select(.name | endswith("-arm64.dmg"))
                 | {
                     asset_name: .name,
                     asset_url: .browser_download_url,
-                    published_at: $release.published_at,
                     tag: $release.tag_name
                   }
               ]
-              | sort_by(.published_at)
-              | last // {}
+              | first // {}
             ' "$release_probe")"
             ${pkgs.coreutils}/bin/rm -f "$release_probe"
             tag="$(printf '%s' "$release" | ${getExe pkgs.jq} --raw-output '.tag // empty')"
@@ -88,7 +86,7 @@ in
           fi
 
           if [ -z "$tag" ] || [ -z "$asset_name" ] || [ -z "$asset_url" ]; then
-            printf 'error: failed to resolve the newest T3 Code arm64 DMG from release metadata\n' >&2
+            printf 'error: failed to resolve the latest stable T3 Code arm64 DMG from release metadata\n' >&2
             exit 1
           fi
 
