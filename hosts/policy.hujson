@@ -3,7 +3,7 @@
     {
       "src": ["autogroup:member"],
       "dst": ["autogroup:self"],
-      "ip": ["tcp:22"]
+      "ip": ["tcp:22", "tcp:443", "tcp:3773"]
     }
   ]
 }
