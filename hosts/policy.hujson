@@ -4,6 +4,11 @@
       "src": ["autogroup:member"],
       "dst": ["autogroup:self"],
       "ip": ["tcp:22", "tcp:443", "tcp:3773"]
+    },
+    {
+      "src": ["autogroup:member"],
+      "dst": ["100.96.29.81"],
+      "ip": ["tcp:8443"]
     }
   ]
 }

@@ -31,6 +31,12 @@ in
   nc.nixos.cosmic.enable = true;
   nc.nixos.server.enable = true;
   nc.nixos.t3-server.enable = true;
+
+  nc.nixos.hermes = {
+    enable = true;
+    hostname = "manara.tail4b71d2.ts.net";
+  };
+
   nc.radicle.enable = false;
 
   networking.hostName = "manara";

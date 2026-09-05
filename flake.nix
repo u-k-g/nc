@@ -34,6 +34,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    hermes-agent.url = "github:NousResearch/hermes-agent";
+
     codex = {
       url = "github:NixOS/nixpkgs/master";
     };
