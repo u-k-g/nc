@@ -216,6 +216,23 @@
         "type": "github"
       }
     },
+    "hermes-desktop-web": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788206985,
+        "narHash": "sha256-RS/WC+voDelXq1F6u+jx01DBzXQczPs6DtqegdmtZE4=",
+        "owner": "lgc2333",
+        "repo": "hermes-agent-desktop-web",
+        "rev": "f1ae2bb3efe0ed25d73a65367f401a1eaf6781eb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lgc2333",
+        "repo": "hermes-agent-desktop-web",
+        "rev": "f1ae2bb3efe0ed25d73a65367f401a1eaf6781eb",
+        "type": "github"
+      }
+    },
     "hjem": {
       "inputs": {
         "nixpkgs": [
@@ -579,6 +596,7 @@
         "flake-parts": "flake-parts",
         "helium": "helium",
         "hermes-agent": "hermes-agent",
+        "hermes-desktop-web": "hermes-desktop-web",
         "hjem": "hjem",
         "homebrew": "homebrew",
         "homebrew-apple": "homebrew-apple",

@@ -39,6 +39,18 @@
           description = "Loopback dashboard port.";
         };
 
+        webPort = mkOption {
+          type = port;
+          default = 9120;
+          description = "Loopback desktop UI proxy port.";
+        };
+
+        webPackage = mkOption {
+          type = package;
+          default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.hermes-desktop-web;
+          description = "Pinned desktop browser UI and proxy.";
+        };
+
         httpsPort = mkOption {
           type = port;
           default = 8443;
@@ -130,6 +142,58 @@
           };
         };
 
+        systemd.services.hermes-web = mkIf config.nc.nixos.hermes.enable {
+          description = "Hermes desktop browser UI";
+          wantedBy = singleton "multi-user.target";
+          wants = singleton "hermes.service";
+          after = singleton "hermes.service";
+          startLimitIntervalSec = 0;
+
+          serviceConfig = {
+            User = config.nc.user.name;
+            Restart = "always";
+            RestartSec = 5;
+            UMask = "0077";
+            NoNewPrivileges = true;
+            ProtectSystem = "strict";
+            ProtectHome = true;
+            PrivateTmp = true;
+            Environment = [
+              "DENO_NO_UPDATE_CHECK=1"
+              "DENO_DIR=/tmp/hermes-deno"
+            ];
+            ExecStart = escapeShellArgs [
+              (getExe pkgs.deno)
+              "run"
+              "--no-config"
+              "--no-lock"
+              "--cached-only"
+              "--no-check"
+              "--allow-net=127.0.0.1:${toString config.nc.nixos.hermes.port},127.0.0.1:${toString config.nc.nixos.hermes.webPort}"
+              "--allow-read=${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web"
+              (pkgs.writeText "hermes-web.ts" /* typescript */ ''
+                import { createProxyHandler } from "${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web/proxy/main.ts";
+
+                const publicUrl = new URL("https://${config.nc.nixos.hermes.hostname}:${toString config.nc.nixos.hermes.httpsPort}");
+                const gateway = "http://127.0.0.1:${toString config.nc.nixos.hermes.port}";
+                const handler = createProxyHandler({
+                  webDist: "${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web/dist/",
+                  allowedTargets: [gateway],
+                  defaultGatewayUrl: gateway,
+                });
+
+                Deno.serve({ hostname: "127.0.0.1", port: ${toString config.nc.nixos.hermes.webPort} }, (request) => {
+                  const origin = request.headers.get("origin");
+                  if (request.headers.get("host") !== publicUrl.host || (origin !== null && origin !== publicUrl.origin)) {
+                    return new Response("Forbidden", { status: 403 });
+                  }
+                  return handler(request);
+                });
+              '')
+            ];
+          };
+        };
+
         # Foreground Serve has a systemd-owned lifecycle. It removes only its
         # own listener when stopped; never reset the shared T3 Serve config.
         systemd.services.hermes-serve = mkIf config.nc.nixos.hermes.enable {
@@ -137,11 +201,11 @@
           wantedBy = singleton "multi-user.target";
           after = [
             "tailscaled.service"
-            "hermes.service"
+            "hermes-web.service"
           ];
           wants = [
             "tailscaled.service"
-            "hermes.service"
+            "hermes-web.service"
           ];
           startLimitIntervalSec = 0;
 
@@ -151,7 +215,7 @@
               "serve"
               "--yes"
               "--https=${toString config.nc.nixos.hermes.httpsPort}"
-              "http://127.0.0.1:${toString config.nc.nixos.hermes.port}"
+              "http://127.0.0.1:${toString config.nc.nixos.hermes.webPort}"
             ];
             Restart = "always";
             RestartSec = 5;
