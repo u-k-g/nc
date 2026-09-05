@@ -66,15 +66,19 @@
       }
     },
     "codex": {
-      "flake": false,
       "locked": {
-        "narHash": "sha256-5Y50ns7zcjMde4ZbPUbIokqR4op5vxBlEd+InYbjrFc=",
-        "type": "file",
-        "url": "https://unpkg.com/@openai/codex@latest/package.json"
+        "lastModified": 1788638574,
+        "narHash": "sha256-kJ5g1E58HqZtH/cvHQrlUbdVGdTCtOASwuZZAMxWisk=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "8ef2818d76c7bacc893efce297882477b9f189e6",
+        "type": "github"
       },
       "original": {
-        "type": "file",
-        "url": "https://unpkg.com/@openai/codex@latest/package.json"
+        "owner": "NixOS",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "crane": {

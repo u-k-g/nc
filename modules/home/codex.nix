@@ -10,7 +10,6 @@ let
   inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
   inherit (lib.strings) concatMapStringsSep escapeShellArg makeBinPath;
-  inherit (lib.trivial) importJSON;
 
   codexHookDir = "/etc/codex/hooks";
   codexGitPolicyName = "codex-git-policy.py";
@@ -693,7 +692,7 @@ in
   };
 
   home.users.${config.nc.user.name} = {
-    # flake.lock pins npm's latest stable package metadata; pnpm installs that version.
+    # A dedicated nixpkgs/master input keeps the pnpm version independently locked.
     activationScripts.codex-install = /* bash */ ''
       (
         set -euo pipefail
@@ -706,7 +705,9 @@ in
         }:$PATH"
         export SHELL=${getExe pkgs.bashInteractive}
         ${getExe pkgs.pnpm} add --global --save-exact \
-          ${escapeShellArg "@openai/codex@${(importJSON inputs.codex.outPath).version}"}
+          ${escapeShellArg "@openai/codex@${
+            inputs.codex.legacyPackages.${pkgs.stdenv.hostPlatform.system}.codex.version
+          }"}
       )
     '';
 

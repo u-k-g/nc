@@ -35,8 +35,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     codex = {
-      url = "file+https://unpkg.com/@openai/codex@latest/package.json";
-      flake = false;
+      url = "github:NixOS/nixpkgs/master";
     };
 
     t3 = {
