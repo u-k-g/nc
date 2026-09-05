@@ -6,11 +6,32 @@
 }:
 
 let
+  inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.generators) toJSON;
   inherit (lib.lists) singleton;
-  inherit (lib.modules) mkIf;
   user = config.nc.user;
-  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
 in
 {
-  home.users.${user.name}.packages = mkIf workstation <| singleton pkgs.watchman;
+  environment.etc = optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+    # launchd does not inherit the user's WATCHMAN_CONFIG_FILE.
+    "watchman.json".source = "${
+      config.home.users.${user.name}.xdg.config.directory
+    }/watchman/watchman.json";
+  };
+
+  home.users.${user.name} = {
+    packages = singleton pkgs.watchman;
+    environment.sessionVariables.WATCHMAN_CONFIG_FILE = "${
+      config.home.users.${user.name}.xdg.config.directory
+    }/watchman/watchman.json";
+
+    xdg.config.files."watchman/watchman.json" = {
+      generator = toJSON { };
+      value.ignore_dirs = [
+        ".direnv"
+        "node_modules"
+        "target"
+      ];
+    };
+  };
 }

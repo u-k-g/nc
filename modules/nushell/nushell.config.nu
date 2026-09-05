@@ -108,11 +108,6 @@ $env.config.hooks.pre_execution = ($env.config.hooks.pre_execution? | default []
       $env.GIT_PROMPT_PWD = ""
       $env.GIT_PROMPT_VALUE = ""
     }
-    if ($cmd == "jj") or ($cmd | str starts-with "jj ") {
-      $env.JJ_WORKSPACE_ROOT_PWD = ""
-      $env.JJ_RIGHT_PROMPT_PWD = ""
-      $env.JJ_RIGHT_PROMPT_VALUE = ""
-    }
   }
 ])
 
