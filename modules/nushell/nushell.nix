@@ -70,6 +70,7 @@ let
 
   sessionPath = [
     "${home}/.deno/bin"
+    "${home}/.local/share/pnpm/bin"
     "${home}/.local/share/pnpm"
   ]
   ++ optionals workstation [

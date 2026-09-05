@@ -213,11 +213,11 @@
     "homebrew-cask": {
       "flake": false,
       "locked": {
-        "lastModified": 1788584968,
-        "narHash": "sha256-ioTUz+JiGTxeiDQyb6pOqQdletQcCd5coJcU+TLUyxY=",
+        "lastModified": 1788634433,
+        "narHash": "sha256-5fOkMq2Qe/Hj5VzSJ4O4y0KT8uAyVyJYIC6Z/4ltxBg=",
         "owner": "homebrew",
         "repo": "homebrew-cask",
-        "rev": "3a34d305ec56339d052ef810122c53d70513bd7f",
+        "rev": "e2314e0a141c616c28da78af8c190607f6902506",
         "type": "github"
       },
       "original": {
@@ -229,11 +229,11 @@
     "homebrew-core": {
       "flake": false,
       "locked": {
-        "lastModified": 1788587387,
-        "narHash": "sha256-7pLhxcZjIMulXs0K6vzQ7uuCSRP1oqsSHn/T2xaiV7g=",
+        "lastModified": 1788634059,
+        "narHash": "sha256-vliQFR18mHBi21eEYYhnEJYCwsIz364Zdjta4oDLf1U=",
         "owner": "homebrew",
         "repo": "homebrew-core",
-        "rev": "61f6acbf550b9ecd346833e53fbc44be7328bb64",
+        "rev": "c3f60a5e9cc9a50b0172ed908ce8c389416a5796",
         "type": "github"
       },
       "original": {
@@ -421,6 +421,7 @@
         "nixpkgs-install-media": "nixpkgs-install-media",
         "paneru": "paneru",
         "paperwm": "paperwm",
+        "t3": "t3",
         "themes": "themes"
       }
     },
@@ -436,6 +437,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "t3": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788634647,
+        "narHash": "sha256-+hweFxklmXFExLNKtK8TSr6zdixhC6yr2ugZkyJC2qY=",
+        "owner": "pingdotgg",
+        "repo": "t3code",
+        "rev": "4ca71463a289e7b96b5776b6f6bbdecefe4757e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pingdotgg",
+        "repo": "t3code",
         "type": "github"
       }
     },
