@@ -12,7 +12,7 @@ let
   theme = config.nc.theme;
   dotfiles = ../../dotfiles;
   json = pkgs.formats.json { };
-  clipboardProvider = if pkgs.stdenv.isLinux then "wayland" else "pasteboard";
+  clipboardProvider = if pkgs.stdenv.hostPlatform.isLinux then "wayland" else "pasteboard";
   zedKeymapSource = dotfiles + /config/zed/keymap.json;
   zedSettingsSource = dotfiles + /config/zed/settings.json;
   zedSettingsFile =
@@ -187,7 +187,7 @@ let
 in
 {
   home.users.${user.name} = {
-    packages = lib.optionals pkgs.stdenv.isLinux [ pkgs.wl-clipboard ];
+    packages = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.wl-clipboard ];
 
     xdg.config.files."helix/config.toml" = {
       generator = (pkgs.formats.toml { }).generate "helix-config.toml";

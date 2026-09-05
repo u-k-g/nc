@@ -692,7 +692,7 @@ in
   };
 
   home.users.${config.nc.user.name} = {
-    packages = optionals pkgs.stdenv.isLinux <| singleton pkgs.codex;
+    packages = optionals pkgs.stdenv.hostPlatform.isLinux <| singleton pkgs.codex;
 
     files = {
       ".codex/rules/git.rules".text = ''

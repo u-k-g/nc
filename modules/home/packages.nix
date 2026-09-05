@@ -8,7 +8,7 @@
 let
   inherit (lib.lists) optionals;
   user = config.nc.user;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
 
   kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
     exec /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli "$@"
@@ -23,7 +23,7 @@ let
   };
 
   dix =
-    if pkgs.stdenv.isDarwin then
+    if pkgs.stdenv.hostPlatform.isDarwin then
       pkgs.dix.overrideAttrs (_: {
         doCheck = false;
       })
@@ -129,7 +129,7 @@ in
     packages =
       essentialPackages
       ++ optionals workstation extendedPackages
-      ++ optionals (workstation && pkgs.stdenv.isLinux) linuxPackages
-      ++ optionals (workstation && pkgs.stdenv.isDarwin) darwinPackages;
+      ++ optionals (workstation && pkgs.stdenv.hostPlatform.isLinux) linuxPackages
+      ++ optionals (workstation && pkgs.stdenv.hostPlatform.isDarwin) darwinPackages;
   };
 }

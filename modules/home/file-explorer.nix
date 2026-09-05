@@ -10,12 +10,12 @@ let
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
 in
 {
   home.users.${user.name} = mkIf workstation {
     xdg.mime-apps.default-applications =
-      mkIf pkgs.stdenv.isLinux
+      mkIf pkgs.stdenv.hostPlatform.isLinux
       <|
         flip genAttrs (const "org.kde.dolphin.desktop") [
           "inode/directory"
@@ -81,7 +81,7 @@ in
           "application/x-stuffit"
         ];
 
-    packages = mkIf pkgs.stdenv.isLinux [
+    packages = mkIf pkgs.stdenv.hostPlatform.isLinux [
       pkgs.kdePackages.dolphin
       pkgs.kdePackages.ark
     ];

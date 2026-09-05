@@ -80,7 +80,7 @@ let
   '';
 in
 {
-  home.users.${user.name} = mkIf pkgs.stdenv.isLinux {
+  home.users.${user.name} = mkIf pkgs.stdenv.hostPlatform.isLinux {
     packages = lib.lists.singleton theme.icons.package;
 
     environment.sessionVariables = {

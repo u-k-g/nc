@@ -13,7 +13,7 @@ let
   inherit (lib.trivial) floor;
   user = config.nc.user;
   theme = config.nc.theme;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
   json = pkgs.formats.json { };
   ninjabrainBotJar = pkgs.fetchurl {
     url = "https://github.com/Ninjabrain1/Ninjabrain-Bot/releases/download/1.5.2/Ninjabrain-Bot-1.5.2.jar";
@@ -265,15 +265,15 @@ in
   home.users.${user.name} = mkIf workstation <| mkMerge [
     {
       packages = [
-        (if pkgs.stdenv.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
+        (if pkgs.stdenv.hostPlatform.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
       ]
-      ++ lib.optionals pkgs.stdenv.isLinux [
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
         ninb
         pkgs.waywall
       ];
     }
 
-    (mkIf pkgs.stdenv.isLinux {
+    (mkIf pkgs.stdenv.hostPlatform.isLinux {
       xdg.config.files."waywall/init.lua".text = ''
         local waywall = require("waywall")
         local helpers = require("waywall.helpers")

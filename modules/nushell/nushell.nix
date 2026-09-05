@@ -23,7 +23,7 @@ let
   user = config.nc.user;
   theme = config.nc.theme;
   home = user.homeDirectory;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
   dotfiles = ../../dotfiles;
   hex = color: "#${color}";
   rgb =

@@ -11,7 +11,7 @@ let
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
   discord =
     (pkgs.discord.override {
       withOpenASAR = true;
@@ -30,17 +30,17 @@ in
 {
   home.users.${user.name} = mkIf workstation {
     xdg.mime-apps.default-applications =
-      mkIf pkgs.stdenv.isLinux
+      mkIf pkgs.stdenv.hostPlatform.isLinux
       <| flip genAttrs (const "discord.desktop") [
         "x-scheme-handler/discord"
       ];
 
-    packages = optionals pkgs.stdenv.isLinux [
+    packages = optionals pkgs.stdenv.hostPlatform.isLinux [
       pkgs.cinny-desktop
       discord
     ];
 
-    xdg.config.files."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.isLinux {
+    xdg.config.files."Vencord/settings/quickCss.css" = mkIf pkgs.stdenv.hostPlatform.isLinux {
       text = config.nc.theme.discordCss;
     };
   };

@@ -78,13 +78,13 @@ in
       AddressRandomizationRange = "full";
     };
 
-    services.journald.extraConfig = ''
-      Compress=yes
-      Seal=yes
-      SystemKeepFree=5G
-      SystemMaxUse=2G
-      MaxRetentionSec=1month
-    '';
+    services.journald.settings.Journal = {
+      Compress = true;
+      Seal = true;
+      SystemKeepFree = "5G";
+      SystemMaxUse = "2G";
+      MaxRetentionSec = "1month";
+    };
 
     services.logind.settings.Login.WallMessages = false;
 

@@ -138,7 +138,7 @@ in
 
         keybindings =
           (
-            if pkgs.stdenv.isLinux then
+            if pkgs.stdenv.hostPlatform.isLinux then
               {
                 "ctrl+1" = "goto_tab 1";
                 "ctrl+2" = "goto_tab 2";

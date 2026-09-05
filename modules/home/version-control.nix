@@ -112,8 +112,8 @@ in
 
         github.user = "u-k-g";
 
-        commit.gpgsign = pkgs.stdenv.isDarwin;
-        tag.gpgSign = pkgs.stdenv.isDarwin;
+        commit.gpgsign = pkgs.stdenv.hostPlatform.isDarwin;
+        tag.gpgSign = pkgs.stdenv.hostPlatform.isDarwin;
 
         feature.manyFiles = true;
 
@@ -124,7 +124,7 @@ in
           required = true;
         };
       }
-      // optionalAttrs pkgs.stdenv.isDarwin {
+      // optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
         gpg.format = "ssh";
       };
     };

@@ -8,7 +8,7 @@
 
 let
   inherit (lib.lists) optionals;
-  workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
+  workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
 in
 {
   fonts.packages =

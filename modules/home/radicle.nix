@@ -29,7 +29,7 @@ in
         {
           file = ./radicle.age;
         }
-        // optionalAttrs pkgs.stdenv.isDarwin {
+        // optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
           owner = config.system.primaryUser;
         };
 
