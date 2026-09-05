@@ -6,7 +6,7 @@
 }:
 
 let
-  inherit (lib.lists) optionals singleton;
+  inherit (lib.lists) optionals;
   user = config.nc.user;
   workstation = pkgs.stdenv.isDarwin || config.nc.nixos.workstation.enable;
 
@@ -52,11 +52,9 @@ let
     gh
     mergiraf
 
-    tmux
     carapace
     btop
     yazi
-    lazyssh
     dialog
     inshellisense
     fish
@@ -73,8 +71,6 @@ let
     jq
 
     sd
-    ffmpeg
-    imagemagick
 
     arp-scan
     nmap
@@ -84,72 +80,35 @@ let
     microfetch
     vivid
 
-    gnumake
     pkg-config
     python3
 
     nodejs
-    deno
     corepackPnpm
     tio
-  ]
-  ++ optionals pkgs.stdenv.isLinux (singleton pkgs.gcc);
+  ];
 
   extendedPackages = with pkgs; [
-    zellij
     dix
-
-    gitleaks
 
     ffsend
     handy
-    scrcpy
 
-    zig
     lua
 
-    llvm
-    clang-tools
-    lld
-
-    cargo-deny
-    cargo-expand
-    cargo-fuzz
-    cargo-nextest
-    evcxr
-    cargo
-    clippy
-    rust-analyzer
-    rustc
-    rustfmt
-
-    cmakeCurses
-
-    ruff
     uv
-    biome
-    oxlint
     nixfmt
     topiary
     shfmt
     shellcheck
 
-    cmake-language-server
     markdown-oxide
     nixd
     taplo
-    texlab
     tree-sitter
     bash-language-server
-    ty
     typos
     yaml-language-server
-    zls
-
-    arduino-cli
-    platformio
-    arduino-language-server
-    tytools
   ];
 
   linuxPackages = with pkgs; [

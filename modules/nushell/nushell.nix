@@ -39,7 +39,6 @@ let
     CARGO_HTTP_CAINFO = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     CARGO_NET_GIT_FETCH_WITH_CLI = "true";
     CURL_CA_BUNDLE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-    DENO_CONFIG = "${home}/.config/deno/config.json";
     DETSYS_IDS_TELEMETRY = "disabled";
     EDITOR = "hx";
     FZF_DEFAULT_OPTS = lib.concatStringsSep " " [
@@ -69,15 +68,8 @@ let
   };
 
   sessionPath = [
-    "${home}/.deno/bin"
     "${home}/.local/share/pnpm/bin"
     "${home}/.local/share/pnpm"
-  ]
-  ++ optionals workstation [
-    "${home}/.platformio/penv/bin"
-    "${home}/.platformio/packages/toolchain-gccarmnoneeabi-teensy/bin"
-  ]
-  ++ [
     "/etc/profiles/per-user/${user.name}/bin"
     "/run/wrappers/bin"
     "/run/current-system/sw/bin"
@@ -86,11 +78,9 @@ let
   ++ optionals pkgs.stdenv.hostPlatform.isDarwin [
     "/opt/homebrew/sbin"
     "/opt/homebrew/bin"
-    "/opt/homebrew/opt/llvm/bin"
   ]
   ++ [
     "${home}/.config/bin"
-    "${home}/.cargo/bin"
     "${home}/.local/bin"
     "${home}/.opencode/bin"
   ]
@@ -365,8 +355,6 @@ in
 
           history_filter = [
             "^clear$"
-            "^clear ; tmux clear-history"
-            "^clear; tmux clear-history"
           ];
 
           theme.name = "nc";

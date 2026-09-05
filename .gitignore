@@ -44,8 +44,6 @@
 !dotfiles/config/karabiner/karabiner.json
 !dotfiles/config/sketchybar/plugins/icon_map.data
 !dotfiles/config/sketchybar/sketchybarrc
-!dotfiles/config/tmux/scripts/sessionizer
-!dotfiles/config/tmux/tmux.conf
 !dotfiles/config/zed/keymap.json
 !dotfiles/config/zed/settings.json
 !dotfiles/home/.gitconfig
