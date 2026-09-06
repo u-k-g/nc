@@ -47,7 +47,16 @@
 
         webPackage = mkOption {
           type = package;
-          default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.hermes-desktop-web;
+          default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.hermes-desktop-web.override {
+            theme = config.nc.theme;
+            themeAssets = pkgs.callPackage ../packages/hermes-desktop-web/theme.nix {
+              theme = config.nc.theme;
+            };
+            mobileAssets = pkgs.callPackage ../packages/hermes-desktop-web/mobile.nix {
+              src = inputs.hermes-desktop-web;
+              background = "#${config.nc.theme.base00}";
+            };
+          };
           description = "Pinned desktop browser UI and proxy.";
         };
 

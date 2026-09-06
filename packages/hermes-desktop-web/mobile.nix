@@ -4,19 +4,20 @@
   imagemagick,
   lib,
   src,
+  background ? "#f7f7f7",
 }:
 
 runCommand "hermes-mobile-assets" { nativeBuildInputs = lib.lists.singleton imagemagick; } /* bash */ ''
   mkdir -p "$out"
   magick ${src}/vendor/hermes-desktop/assets/icon.png -resize 192x192 "$out/pwa-192.png"
   magick ${src}/vendor/hermes-desktop/assets/icon.png -resize 512x512 "$out/pwa-512.png"
-  magick ${src}/vendor/hermes-desktop/assets/icon.png -resize 320x320 -background '#f7f7f7' -gravity center -extent 512x512 "$out/pwa-maskable.png"
+  magick ${src}/vendor/hermes-desktop/assets/icon.png -resize 320x320 -background '${background}' -gravity center -extent 512x512 "$out/pwa-maskable.png"
   cp ${
     writeText "manifest.webmanifest" /* json */ ''
       {
         "id": "/", "name": "Hermes · Manara", "short_name": "Hermes",
         "start_url": "/", "scope": "/", "display": "standalone",
-        "background_color": "#f7f7f7", "theme_color": "#f7f7f7",
+        "background_color": "${background}", "theme_color": "${background}",
         "icons": [
           { "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
           { "src": "/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
