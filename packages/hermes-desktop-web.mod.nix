@@ -13,6 +13,7 @@
             writeText,
             mobileAssets,
             browserAssets,
+            bridgeAssets,
             lib,
             theme ? null,
             themeAssets ? null,
@@ -38,6 +39,8 @@
                 cp ${mobileAssets}/mobile.css apps/web/src/mobile.css
                 cp ${browserAssets}/mobile-viewport*.ts apps/web/src/
                 node ${browserAssets}/patch-composer-focus.mjs
+                cp ${bridgeAssets}/*.ts apps/web/src/bridge/gateway/
+                node ${bridgeAssets}/patch-rest.mjs
                   cp ${mobileAssets}/sw.js ${mobileAssets}/manifest.webmanifest ${mobileAssets}/*.png vendor/hermes-desktop/public/
                   substituteInPlace apps/proxy/src/main.ts \
                     --replace-fail "'.json': 'application/json; charset=utf-8'," "'.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json'," \
@@ -55,6 +58,7 @@
                         import { installContextMenuInterceptor } from './context-menu-interceptor';
                         import { installWebBridge } from './bridge/adapter';
                         import { loadRegistry, saveRegistry, defaultMockConnection } from './bridge/registry';
+                        import { fetchProxyMeta } from './bridge/gateway/rest';
                         import './web.css';
                       import './mobile.css';
                       import { installMobileViewport } from './mobile-viewport';
@@ -72,9 +76,9 @@
                         else window.addEventListener('load', registerPwa, { once: true });
 
                         async function start() {
-                          const response = await fetch('/api/proxy/meta');
-                          if (!response.ok) throw new Error('Cannot load Hermes connection settings');
-                          const { defaultGatewayUrl } = await response.json();
+                          const meta = await fetchProxyMeta();
+                          if (!meta?.defaultGatewayUrl) throw new Error('Cannot load Hermes connection settings');
+                          const { defaultGatewayUrl } = meta;
                           const registry = loadRegistry();
                           if (registry.connections.length === 1 && registry.connections[0].url === defaultMockConnection().url) {
                             registry.connections[0] = {
@@ -88,7 +92,19 @@
                           await import('../../../vendor/hermes-desktop/src/main');
                         }
                         start().catch((error) => {
-                          document.body.textContent = 'Hermes could not start. Reload to retry.';
+                          const panel = document.createElement('main');
+                          panel.setAttribute('role', 'alert');
+                          panel.style.cssText = 'padding:24px;max-width:32rem;margin:auto;font:16px system-ui';
+                          const heading = document.createElement('h1');
+                          heading.textContent = 'Hermes could not start';
+                          const message = document.createElement('p');
+                          message.textContent = 'Check your connection to Manara, then try again.';
+                          const retry = document.createElement('button');
+                          retry.textContent = 'Retry';
+                          retry.style.cssText = 'font:inherit;padding:12px 24px;cursor:pointer';
+                          retry.onclick = () => window.location.reload();
+                          panel.append(heading, message, retry);
+                          (document.getElementById('root') ?? document.body).replaceChildren(panel);
                           console.error(error);
                         });
                     ''
@@ -159,6 +175,7 @@
             src = inputs.hermes-desktop-web;
           };
           browserAssets = pkgs.callPackage ./hermes-desktop-web/browser.nix { };
+          bridgeAssets = pkgs.callPackage ./hermes-desktop-web/bridge.nix { };
         };
   };
 }
