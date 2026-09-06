@@ -14,6 +14,7 @@
             mobileAssets,
             browserAssets,
             bridgeAssets,
+            lifecycleAssets,
             lib,
             theme ? null,
             themeAssets ? null,
@@ -41,6 +42,12 @@
                 node ${browserAssets}/patch-composer-focus.mjs
                 cp ${bridgeAssets}/*.ts apps/web/src/bridge/gateway/
                 node ${bridgeAssets}/patch-rest.mjs
+                cp ${lifecycleAssets}/submission-journal.ts ${lifecycleAssets}/submission-recovery.tsx vendor/hermes-desktop/src/lib/
+                cp ${lifecycleAssets}/*.test.ts apps/web/src/
+                node ${lifecycleAssets}/patch-lifecycle.mjs
+                cp vendor/hermes-shared/src/json-rpc-gateway-replay.test.ts apps/web/src/gateway-replay-upstream.test.ts
+                substituteInPlace apps/web/src/gateway-replay-upstream.test.ts \
+                  --replace-fail "from './json-rpc-gateway'" "from '@hermes/shared'"
                   cp ${mobileAssets}/sw.js ${mobileAssets}/manifest.webmanifest ${mobileAssets}/*.png vendor/hermes-desktop/public/
                   substituteInPlace apps/proxy/src/main.ts \
                     --replace-fail "'.json': 'application/json; charset=utf-8'," "'.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json'," \
@@ -176,6 +183,7 @@
           };
           browserAssets = pkgs.callPackage ./hermes-desktop-web/browser.nix { };
           bridgeAssets = pkgs.callPackage ./hermes-desktop-web/bridge.nix { };
+          lifecycleAssets = pkgs.callPackage ./hermes-desktop-web/lifecycle.nix { };
         };
   };
 }
