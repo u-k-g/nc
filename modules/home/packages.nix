@@ -82,6 +82,7 @@ let
 
     pkg-config
     python3
+    uv
 
     nodejs
     corepackPnpm
@@ -96,7 +97,6 @@ let
 
     lua
 
-    uv
     nixfmt
     topiary
     shfmt
