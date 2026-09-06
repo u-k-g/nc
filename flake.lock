@@ -356,6 +356,22 @@
         "type": "github"
       }
     },
+    "homebrew-freecad": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788056891,
+        "narHash": "sha256-rImPGActDwN8Daqpyd7PLRUb2f9jTLczFdJi8XnaFf0=",
+        "owner": "FreeCAD",
+        "repo": "homebrew-freecad",
+        "rev": "0f11c78444d08a689268a9d3295e4116ff08b91e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "FreeCAD",
+        "repo": "homebrew-freecad",
+        "type": "github"
+      }
+    },
     "homebrew-osx-cross-arm": {
       "flake": false,
       "locked": {
@@ -602,6 +618,7 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "homebrew-felixkratz": "homebrew-felixkratz",
+        "homebrew-freecad": "homebrew-freecad",
         "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",
         "homebrew-tinycast": "homebrew-tinycast",
         "nix-darwin": "nix-darwin",
