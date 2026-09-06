@@ -9,6 +9,7 @@
       ...
     }:
     let
+      inherit (lib.attrsets) recursiveUpdate;
       inherit (lib.generators) toJSON;
       inherit (lib.lists) singleton;
       inherit (lib.meta) getExe getExe';
@@ -20,6 +21,12 @@
     {
       options.nc.nixos.hermes = {
         enable = mkEnableOption "Hermes dashboard over Tailscale";
+
+        settings = mkOption {
+          type = (pkgs.formats.json { }).type;
+          default = { };
+          description = "Host-specific managed Hermes settings merged over the shared defaults.";
+        };
 
         package = mkOption {
           type = package;
@@ -83,7 +90,8 @@
         # ~/.hermes/config.yaml.
         environment.etc."hermes/config.yaml".text =
           mkIf config.nc.nixos.hermes.enable
-          <| toJSON { } {
+          <| toJSON { }
+          <| recursiveUpdate {
             dashboard.public_url = "https://${config.nc.nixos.hermes.hostname}:${toString config.nc.nixos.hermes.httpsPort}";
 
             # Machine wiring — services this install depends on.
@@ -174,7 +182,7 @@
               "*chmod*nc*"
               "*chown*nc*"
             ];
-          };
+          } config.nc.nixos.hermes.settings;
 
         # write_file/patch sandbox: sessions may only create or modify files in
         # Hermes' own home and /tmp; every other path is denied for the file

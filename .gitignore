@@ -49,6 +49,8 @@
 !dotfiles/home/.gitconfig
 !dotfiles/home/.gitignore_global
 !packages/fast-workspace-switch/fast-workspace-switch.swift
+!packages/browser-use/pyproject.toml
+!packages/browser-use/uv.lock
 
 # AGENT SKILLS
 !.agents/
