@@ -37,6 +37,16 @@
             # Seed the single local gateway before the desktop stores initialize.
             postPatch =
               /* bash */ ''
+                # This deployment stays in one browser window. The shared capability
+                # checks hide window actions in menus, the palette and preview panes,
+                # and make window-opening helpers no-ops (session links fall back to tabs).
+                substituteInPlace vendor/hermes-desktop/src/store/windows.ts \
+                  --replace-fail "return typeof window !== 'undefined' && typeof window.hermesDesktop?.openSessionWindow === 'function'" 'return false' \
+                  --replace-fail "return typeof window !== 'undefined' && typeof window.hermesDesktop?.openWindow === 'function'" 'return false' \
+                  --replace-fail "return typeof window !== 'undefined' && typeof window.hermesDesktop?.openBrowserWindow === 'function'" 'return false'
+                # Remove the action from shortcut settings and keyboard dispatch too.
+                substituteInPlace vendor/hermes-desktop/src/lib/keybinds/actions.ts \
+                  --replace-fail "  { id: 'session.newWindow', category: 'session', defaults: ['mod+shift+n'] }," ""
                 cp ${mobileAssets}/mobile.css apps/web/src/mobile.css
                 cp ${browserAssets}/mobile-viewport*.ts apps/web/src/
                 node ${browserAssets}/patch-composer-focus.mjs
