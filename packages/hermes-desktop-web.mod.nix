@@ -21,7 +21,7 @@
           }:
           stdenv.mkDerivation (final: {
             pname = "hermes-desktop-web";
-            version = "0.0.0-f1ae2bb";
+            version = "0.0.0-${inputs.hermes-desktop-web.shortRev}";
             src = inputs.hermes-desktop-web;
             nativeBuildInputs = [
               nodejs

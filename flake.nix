@@ -37,7 +37,7 @@
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
     hermes-desktop-web = {
-      url = "github:lgc2333/hermes-agent-desktop-web/f1ae2bb3efe0ed25d73a65367f401a1eaf6781eb";
+      url = "github:lgc2333/hermes-agent-desktop-web";
       flake = false;
     };
 
