@@ -31,7 +31,7 @@ runCommand "hermes-mobile-assets" { nativeBuildInputs = lib.lists.singleton imag
       @media (max-width: 767px) and (pointer: coarse) {
         html, body { overscroll-behavior: none; }
         :root, body, #root, [data-contrib-shell], [data-slot="sidebar-wrapper"] {
-          height: 100dvh !important;
+          height: var(--hermes-viewport-height, 100dvh) !important;
           min-height: 0;
         }
         [data-contrib-shell] {

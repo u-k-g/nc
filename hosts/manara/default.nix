@@ -34,6 +34,7 @@ in
 
   nc.nixos.hermes = {
     enable = true;
+    browser-cdp.enable = true;
     hostname = "manara.tail4b71d2.ts.net";
   };
 
