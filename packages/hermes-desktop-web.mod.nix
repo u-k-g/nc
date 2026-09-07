@@ -15,6 +15,8 @@
             browserAssets,
             bridgeAssets,
             lifecycleAssets,
+            completedRunAssets,
+            bufferedOutputAssets,
             lib,
             theme ? null,
             themeAssets ? null,
@@ -55,6 +57,12 @@
                 cp ${lifecycleAssets}/submission-journal.ts ${lifecycleAssets}/submission-recovery.tsx vendor/hermes-desktop/src/lib/
                 cp ${lifecycleAssets}/*.test.ts apps/web/src/
                 node ${lifecycleAssets}/patch-lifecycle.mjs
+                cp ${completedRunAssets}/completed-run.tsx vendor/hermes-desktop/src/components/assistant-ui/thread/
+                cp ${completedRunAssets}/completed-run.test.ts apps/web/src/
+                node ${completedRunAssets}/patch-completed-run.mjs
+                cp ${bufferedOutputAssets}/buffered-output.tsx vendor/hermes-desktop/src/lib/
+                cp ${bufferedOutputAssets}/buffered-output.test.ts apps/web/src/
+                node ${bufferedOutputAssets}/patch-buffered-output.mjs
                 cp vendor/hermes-shared/src/json-rpc-gateway-replay.test.ts apps/web/src/gateway-replay-upstream.test.ts
                 substituteInPlace apps/web/src/gateway-replay-upstream.test.ts \
                   --replace-fail "from './json-rpc-gateway'" "from '@hermes/shared'"
@@ -194,6 +202,8 @@
           browserAssets = pkgs.callPackage ./hermes-desktop-web/browser.nix { };
           bridgeAssets = pkgs.callPackage ./hermes-desktop-web/bridge.nix { };
           lifecycleAssets = pkgs.callPackage ./hermes-desktop-web/lifecycle.nix { };
+          completedRunAssets = pkgs.callPackage ./hermes-desktop-web/completed-run.nix { };
+          bufferedOutputAssets = pkgs.callPackage ./hermes-desktop-web/buffered-output.nix { };
         };
   };
 }
