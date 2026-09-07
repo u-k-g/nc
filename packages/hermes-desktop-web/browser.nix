@@ -6,6 +6,85 @@
 runCommand "hermes-browser-interactions" { } /* bash */ ''
   mkdir -p "$out"
   cp ${
+    writeText "patch-external-links.mjs" /* javascript */ ''
+      import fs from 'node:fs';
+      const base = 'vendor/hermes-desktop/src/';
+      function patch(file, before, after, count = 1) {
+        const path = base + file;
+        const source = fs.readFileSync(path, 'utf8');
+        if (source.split(before).length !== count + 1) throw Error(`Review external-browser patch: ''${file}`);
+        fs.writeFileSync(path, source.replaceAll(before, after));
+      }
+      // Managed preference: every click path reads the same value, including
+      // callers that explicitly pass native:false. No stale local preference
+      // can send links back into a webview after an update or reload.
+      patch('lib/external-link.tsx',
+        'export function openLink(href: string, options: { native?: boolean } = {}): void {',
+        `export const IN_APP_BROWSER_ENABLED = false
+      export function openLink(href: string, options: { native?: boolean } = {}): void {`);
+      patch('lib/external-link.tsx',
+        'if (options.native || hudForcesNativeLinks() ||',
+        'if (!IN_APP_BROWSER_ENABLED || options.native || hudForcesNativeLinks() ||');
+      patch('app/context-menu/app-context-menu.tsx',
+        'import { hostPathLabel, hudForcesNativeLinks, normalizeExternalUrl, openExternalLink }',
+        'import { hostPathLabel, hudForcesNativeLinks, IN_APP_BROWSER_ENABLED, normalizeExternalUrl, openExternalLink }');
+      patch('app/context-menu/app-context-menu.tsx',
+        'const openInApp = !hudForcesNativeLinks()',
+        'const openInApp = IN_APP_BROWSER_ENABLED && !hudForcesNativeLinks()', 2);
+      // URL attachment clicks must open synchronously in the user gesture,
+      // before the async local-file resolver can lose popup permission.
+      patch('components/chat/preview-attachment.tsx',
+        "import { Download, MonitorPlay } from '@/lib/icons'",
+        "import { Download, MonitorPlay } from '@/lib/icons'\nimport { openLink } from '@/lib/external-link'");
+      patch('components/chat/preview-attachment.tsx',
+        '  async function togglePreview() {',
+        `  async function togglePreview() {
+          if (new RegExp('^https?://', 'i').test(target)) {
+            openLink(target)
+            return
+          }`);
+      patch('app/settings/appearance-settings.tsx',
+        '          <ListRow\n            action={<LanguageSwitcher />}',
+        `          <ListRow
+                  title="Open web links in"
+                  description="Web links always open in a normal browser tab. In-app browsing is never used for links."
+                  action={<span className="text-sm text-muted-foreground">External browser</span>}
+                />
+                <ListRow
+                  action={<LanguageSwitcher />}`);
+    ''
+  } "$out/patch-external-links.mjs"
+  cp ${
+    writeText "external-browser.test.ts" /* typescript */ ''
+      import { createElement as h } from 'react';
+      import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+      import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+      import { ExternalLink, IN_APP_BROWSER_ENABLED, openLink } from '@/lib/external-link';
+      const original = window.hermesDesktop;
+      const openExternal = vi.fn();
+      beforeEach(() => {
+        openExternal.mockReset();
+        window.hermesDesktop = { openExternal } as unknown as Window['hermesDesktop'];
+      });
+      afterEach(() => { cleanup(); window.hermesDesktop = original; });
+      it.each([{}, { native: false }, { native: true }])('always routes links externally with options %j', options => {
+        expect(IN_APP_BROWSER_ENABLED).toBe(false);
+        openLink('https://example.com/docs', options);
+        expect(openExternal).toHaveBeenCalledExactlyOnceWith('https://example.com/docs');
+      });
+      it('handles ordinary, modified and middle clicks synchronously', () => {
+        render(h(ExternalLink, { href: 'https://example.com/docs' }, 'Documentation'));
+        const link = screen.getByRole('link', { name: 'Documentation' });
+        fireEvent.click(link);
+        fireEvent.click(link, { ctrlKey: true });
+        fireEvent.click(link, { metaKey: true });
+        fireEvent(link, new MouseEvent('auxclick', { button: 1, bubbles: true, cancelable: true }));
+        expect(openExternal).toHaveBeenCalledTimes(4);
+        expect(openExternal.mock.calls.every(([url]) => url === 'https://example.com/docs')).toBe(true);
+      });
+    ''
+  } "$out/external-browser.test.ts"
+  cp ${
     writeText "mobile-viewport.ts" /* typescript */ ''
       // Resize the mobile shell without putting keyboard animation into React state.
       export function installMobileViewport() {
