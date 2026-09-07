@@ -168,13 +168,17 @@ runCommand "hermes-completed-run" { } /* bash */ ''
           h(CompletedRunMessages, { indices: [0, 1, 2], components }),
         );
       }
-      it("collapses on completion, expands and re-collapses while retaining the final answer", async () => {
+      it("keeps live work and message identity when a run completes", () => {
         const view = render(h(Harness, { running: true }));
-        expect(screen.getByText("Earlier commentary")).toBeTruthy();
-        expect(
-          screen.queryByRole("button", { name: "Worked for 2m 13s" }),
-        ).toBeNull();
+        const commentary = screen.getByText("Earlier commentary");
+        const answer = screen.getByText("Final answer");
         view.rerender(h(Harness, { running: false }));
+        expect(screen.getByText("Earlier commentary")).toBe(commentary);
+        expect(screen.getByText("Final answer")).toBe(answer);
+        expect(screen.queryByRole("button", { name: "Worked for 2m 13s" })).toBeNull();
+      });
+      it("folds history, reverses disclosure state, and retains expanded work on close", async () => {
+        render(h(Harness, { running: false }));
         const button = await screen.findByRole("button", {
           name: "Worked for 2m 13s",
         });
@@ -190,8 +194,14 @@ runCommand "hermes-completed-run" { } /* bash */ ''
         expect(screen.getByText("Earlier commentary")).toBeTruthy();
         expect(screen.getByText("Work details")).toBeTruthy();
         expect(screen.getAllByText("Final answer")).toHaveLength(1);
+        const work = screen.getByText("Earlier commentary");
         fireEvent.click(button);
-        expect(screen.queryByText("Earlier commentary")).toBeNull();
+        const region = document.getElementById(button.getAttribute("aria-controls")!);
+        expect(region?.getAttribute("aria-hidden")).toBe("true");
+        expect(region?.hasAttribute("inert")).toBe(true);
+        fireEvent.click(button);
+        expect(region?.getAttribute("aria-hidden")).toBe("false");
+        expect(screen.getByText("Earlier commentary")).toBe(work);
         expect(screen.getByText("Final answer")).toBeTruthy();
       });
     ''
@@ -209,12 +219,14 @@ runCommand "hermes-completed-run" { } /* bash */ ''
         createContext,
         useContext,
         useId,
+        useRef,
         useState,
         type ComponentProps,
         type ReactNode,
       } from "react";
       import { MESSAGE_PARTS_COMPONENTS } from "./message-parts";
       import { ChevronRightIcon } from "@/lib/icons";
+      import { InteractionDisclosure } from "@/lib/interaction-motion";
 
       // Presentation only: the runtime transcript stays intact for copy, retry and history.
       const FinalParts = createContext<readonly number[] | null>(null);
@@ -401,13 +413,9 @@ runCommand "hermes-completed-run" { } /* bash */ ''
                 {label}
                 <ChevronRightIcon aria-hidden="true" className={open ? "size-4 rotate-90" : "size-4"} />
               </button>
-              <div
-                id={id}
-                hidden={!open}
-                className="flex min-w-0 flex-col gap-(--conversation-turn-gap)"
-              >
-                {open && work}
-              </div>
+              <InteractionDisclosure id={id} open={open}>
+                {work}
+              </InteractionDisclosure>
             </div>
             {children}
           </>
@@ -433,7 +441,12 @@ runCommand "hermes-completed-run" { } /* bash */ ''
           signature === "null"
             ? null
             : (JSON.parse(signature) as NonNullable<ReturnType<typeof completedRun>>);
-        if (!run)
+        // Completing a live run must not replace work someone is reading.
+        // Only history mounted already complete folds; live message instances
+        // keep their keys, focus, expanded details and reading position.
+        const witnessedLive = useRef(false);
+        if (!run) witnessedLive.current = true;
+        if (!run || witnessedLive.current)
           return indices.map((index) => (
             <ThreadPrimitive.MessageByIndex
               components={components}

@@ -17,6 +17,7 @@
             lifecycleAssets,
             completedRunAssets,
             bufferedOutputAssets,
+            interactionAssets,
             lib,
             theme ? null,
             themeAssets ? null,
@@ -63,6 +64,10 @@
                 cp ${bufferedOutputAssets}/buffered-output.tsx vendor/hermes-desktop/src/lib/
                 cp ${bufferedOutputAssets}/buffered-output.test.ts apps/web/src/
                 node ${bufferedOutputAssets}/patch-buffered-output.mjs
+                cp ${interactionAssets}/interaction-feedback.ts ${interactionAssets}/interaction-motion.tsx vendor/hermes-desktop/src/lib/
+                cp ${interactionAssets}/*.test.ts apps/web/src/
+                cp ${interactionAssets}/interaction.css apps/web/src/
+                node ${interactionAssets}/patch-interactions.mjs
                 cp vendor/hermes-shared/src/json-rpc-gateway-replay.test.ts apps/web/src/gateway-replay-upstream.test.ts
                 substituteInPlace apps/web/src/gateway-replay-upstream.test.ts \
                   --replace-fail "from './json-rpc-gateway'" "from '@hermes/shared'"
@@ -86,6 +91,7 @@
                         import { fetchProxyMeta } from './bridge/gateway/rest';
                         import './web.css';
                       import './mobile.css';
+                      import './interaction.css';
                       import { installMobileViewport } from './mobile-viewport';
 
                       const disposeViewport = installMobileViewport();
@@ -204,6 +210,7 @@
           lifecycleAssets = pkgs.callPackage ./hermes-desktop-web/lifecycle.nix { };
           completedRunAssets = pkgs.callPackage ./hermes-desktop-web/completed-run.nix { };
           bufferedOutputAssets = pkgs.callPackage ./hermes-desktop-web/buffered-output.nix { };
+          interactionAssets = pkgs.callPackage ./hermes-desktop-web/interactions.nix { };
         };
   };
 }

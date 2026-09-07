@@ -570,15 +570,30 @@ runCommand "hermes-submission-lifecycle" { } /* bash */ ''
       import { useEffect, useState } from 'react';
       import { discardSubmission, listSubmissions, subscribeSubmissions, type Submission } from '@/lib/submission-journal';
 
-      export function SubmissionRecovery() {
+      export function SubmissionRecovery({ scope, stopStatus, onRetryStop }: {
+        scope: string | null;
+        stopStatus?: string | null;
+        onRetryStop?: () => Promise<void>;
+      }) {
         const [items, setItems] = useState<Submission[]>([]);
         const [error, setError] = useState(''');
+        const [copied, setCopied] = useState<string | null>(null);
         useEffect(() => {
           const refresh = () => { try { setItems(listSubmissions().filter(item => item.state !== 'acknowledged')); } catch { setError('Local recovery storage is unavailable.'); } };
           const off = subscribeSubmissions(refresh); refresh(); return off;
         }, []);
-        if (!items.length && !error) return null;
-        return <details className="relative z-4 pointer-events-auto mx-3 my-2 rounded-lg border border-current/20 bg-(--dt-input) p-3 text-sm" data-submission-recovery onPointerDown={event => event.stopPropagation()}>
+        const latest = items.filter(item => item.scope === scope).at(-1);
+        const delivery = latest
+          ? latest.state === 'sending' ? 'Saved locally · sending…'
+            : latest.state === 'saved' ? 'Saved locally · not sent. Open recovery below.'
+            : 'Delivery unconfirmed. Check the conversation before resending; open recovery below.'
+          : null;
+        return <>
+          <div data-interaction-status="" className="mx-3 flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
+            <span>{stopStatus || error || delivery}</span>
+            {stopStatus && onRetryStop && <button type="button" className="min-h-11 underline" onClick={() => void onRetryStop()}>Retry stop</button>}
+          </div>
+          {(items.length > 0 || error) && <details className="relative z-4 pointer-events-auto mx-3 my-2 rounded-lg border border-current/20 bg-(--dt-input) p-3 text-sm" data-submission-recovery onPointerDown={event => event.stopPropagation()}>
           <summary className="cursor-pointer" aria-live="polite">{items.length} locally saved submission{items.length === 1 ? ''' : 's'}{error && ' — storage unavailable'}</summary>
           <div className="max-h-60 overflow-auto">
             {error && <p role="alert">{error}</p>}
@@ -588,12 +603,13 @@ runCommand "hermes-submission-lifecycle" { } /* bash */ ''
               <textarea aria-label="Saved submission text" readOnly value={item.text} className="w-full rounded border border-current/20 bg-transparent p-2" />
               {item.attachmentCount > 0 && <p>Attachments are not saved here. Reattach them if you resend.</p>}
               <div className="flex gap-3">
-                <button type="button" className="min-h-11 px-2 underline" onClick={() => { void navigator.clipboard.writeText(item.text).catch(() => setError('Copy failed. Select the saved text to copy it.')); }}>Copy text</button>
+                <button type="button" className="min-h-11 px-2 underline" onClick={() => { void Promise.resolve().then(() => navigator.clipboard.writeText(item.text)).then(() => { setCopied(item.id); setError('''); }).catch(() => setError('Copy failed. Select the saved text to copy it.')); }}>{copied === item.id ? 'Copied' : 'Copy text'}</button>
                 {item.state !== 'sending' && <button type="button" className="min-h-11 px-2 underline" onClick={() => { if (window.confirm('Discard this local recovery copy?')) { try { discardSubmission(item.id); } catch { setError('Could not remove the recovery copy.'); } } }}>Discard copy</button>}
               </div>
             </div>)}
           </div>
-        </details>;
+        </details>}
+        </>;
       }
     ''
   } "$out/submission-recovery.tsx"
