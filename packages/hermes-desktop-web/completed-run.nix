@@ -24,6 +24,8 @@ runCommand "hermes-completed-run" { } /* bash */ ''
         completedRun,
         finalPartIndices,
       } from "@/components/assistant-ui/thread/completed-run";
+      import { toChatMessages } from '@/lib/chat-messages/hydration';
+      import { toRuntimeMessage } from '@/lib/chat-runtime';
       afterEach(cleanup);
       const text = (text: string) => ({ type: "text" as const, text });
       function message(
@@ -125,6 +127,30 @@ runCommand "hermes-completed-run" { } /* bash */ ''
         expect(history({ timelineCompletedAt: 225 })).toBe("Worked for 2m 5s");
         expect(history({})).toBe("Worked");
         expect(history({ durationS: NaN })).toBe("Worked");
+      });
+      it('recovers elapsed time through the real history hydration and runtime conversion', () => {
+        const restored = toChatMessages([
+          { role: 'user', content: 'Question', timestamp: 100 },
+          { role: 'assistant', content: 'Checking', timestamp: 105,
+            tool_calls: [{ id: 't', type: 'function', function: { name: 'terminal', arguments: '{}' } }] },
+          { role: 'tool', content: 'Done', tool_call_id: 't', timestamp: 180 },
+          { role: 'assistant', content: 'Final answer', timestamp: 233 }
+        ]).map(toRuntimeMessage);
+        // Hydration merges the tool exchange and final answer into one message,
+        // whose message-level timestamp is the start, not the completion.
+        expect(restored).toHaveLength(2);
+        expect(restored[1].metadata.custom.durationS).toBeUndefined();
+        expect(restored[1].metadata.custom.timelineCompletedAt).toBeUndefined();
+        expect(completedRun(restored, [0, 1], false)?.label).toBe('Worked for 2m 13s');
+      });
+      it('uses the latest saved part timestamp and ignores invalid live duration metadata', () => {
+        const restored = message('f', 'assistant', [
+          { type: 'reasoning', text: 'Work', timestamp: 105 },
+          { type: 'text', text: 'Answer', timestamp: 225 }
+        ], { timelineTimestamp: 105, durationS: NaN });
+        expect(completedRun([user, restored], [0, 1], false)?.label).toBe('Worked for 2m 5s');
+        const invalid = message('f', 'assistant', [...restored.content], { durationS: -1 });
+        expect(completedRun([user, invalid], [0, 1], false)?.label).toBe('Worked for 2m 5s');
       });
       function Assistant() {
         return h(MessagePrimitive.Root, null, h(CompletedMessageParts));
@@ -253,17 +279,29 @@ runCommand "hermes-completed-run" { } /* bash */ ''
         const earlier = indices.slice(1, -1);
         if (!earlier.length && !work.length) return null;
         const custom = final.metadata.custom;
-        const start = messages[indices[0]]?.metadata.custom?.timelineTimestamp;
-        const end = custom?.timelineCompletedAt;
-        const duration =
-          typeof custom?.durationS === "number"
-            ? custom.durationS
-            : typeof start === "number" &&
-                typeof end === "number" &&
-                start > 0 &&
-                end >= start
-              ? end - start
-              : undefined;
+        const validTimestamp = (value: unknown): value is number =>
+          typeof value === 'number' && Number.isFinite(value) && value > 0;
+        // History drops durationS/completedAt and coalesces tool exchanges into
+        // a message with the EARLIEST timestamp. Its parts retain the later
+        // timestamps, including the final answer. Never use createdAt here:
+        // the runtime synthesizes it from Date.now() when a timestamp is absent.
+        const timestamps = (message: ThreadMessage) => [
+          message.metadata.custom?.timelineTimestamp,
+          message.metadata.custom?.timelineCompletedAt,
+          ...message.content.flatMap(part => {
+            const timed = part as { timestamp?: unknown; completedAt?: unknown };
+            return [timed.timestamp, timed.completedAt];
+          })
+        ].filter(validTimestamp);
+        const workTimes = indices.slice(1).flatMap(index => timestamps(messages[index]));
+        const userTimes = timestamps(messages[indices[0]]);
+        const start = userTimes.length ? Math.min(...userTimes)
+          : workTimes.length ? Math.min(...workTimes) : undefined;
+        const end = workTimes.length ? Math.max(...workTimes) : undefined;
+        const measured = custom?.durationS;
+        const duration = typeof measured === 'number' && Number.isFinite(measured) && measured >= 0
+          ? measured
+          : start !== undefined && end !== undefined && end >= start ? end - start : undefined;
         const seconds =
           duration !== undefined && Number.isFinite(duration) && duration >= 0
             ? Math.round(duration)
