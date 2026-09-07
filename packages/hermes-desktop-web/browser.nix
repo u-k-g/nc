@@ -6,6 +6,40 @@
 runCommand "hermes-browser-interactions" { } /* bash */ ''
   mkdir -p "$out"
   cp ${
+    writeText "patch-titlebar-palette.mjs" /* javascript */ ''
+      import fs from 'node:fs';
+      const base = 'vendor/hermes-desktop/src/';
+      function patch(file, before, after) {
+        const path = base + file;
+        const source = fs.readFileSync(path, 'utf8');
+        if (source.split(before).length !== 2) throw Error(`Review titlebar palette patch: ''${file}`);
+        fs.writeFileSync(path, source.replace(before, after));
+      }
+      patch('app/shell/titlebar-controls.tsx',
+        "import { $hapticsMuted, toggleHapticsMuted } from '@/store/haptics'",
+        "import { $hapticsMuted, toggleHapticsMuted } from '@/store/haptics'\nimport { openCommandPalette } from '@/store/command-palette'");
+      patch('app/shell/titlebar-controls.tsx',
+        '  const systemTools: TitlebarTool[] = [',
+        `  const systemTools: TitlebarTool[] = [
+          {
+            actionId: 'nav.commandPalette',
+            icon: <TitlebarIcon name="search" />,
+            id: 'command-palette',
+            label: t.commandCenter.paletteTitle,
+            onSelect: () => {
+              triggerHaptic('open')
+              openCommandPalette()
+            }
+          },`);
+      // Reserve room for the extra pinned button on desktop as well as mobile.
+      patch('app/contrib/wiring.tsx', 'const SYSTEM_TOOL_COUNT = 5', 'const SYSTEM_TOOL_COUNT = 6');
+      patch('app/contrib/controller.tsx',
+        'Five static cluster buttons: four systemTools', 'Six static cluster buttons: five systemTools');
+      patch('app/contrib/controller.tsx',
+        '+ 5 * var(--titlebar-control-size, 24px)', '+ 6 * var(--titlebar-control-size, 24px)');
+    ''
+  } "$out/patch-titlebar-palette.mjs"
+  cp ${
     writeText "patch-external-links.mjs" /* javascript */ ''
       import fs from 'node:fs';
       const base = 'vendor/hermes-desktop/src/';

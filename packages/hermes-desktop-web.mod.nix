@@ -53,6 +53,7 @@
                 cp ${mobileAssets}/mobile.css apps/web/src/mobile.css
                 cp ${browserAssets}/mobile-viewport*.ts apps/web/src/
                 node ${browserAssets}/patch-composer-focus.mjs
+                node ${browserAssets}/patch-titlebar-palette.mjs
                 node ${browserAssets}/patch-external-links.mjs
                 cp ${browserAssets}/external-browser.test.ts apps/web/src/
                 cp ${bridgeAssets}/*.ts apps/web/src/bridge/gateway/
