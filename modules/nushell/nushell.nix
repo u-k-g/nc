@@ -148,7 +148,7 @@ let
   );
 
   nuVariables =
-    sessionVariables
+    config.home.users.${user.name}.environment.sessionVariables
     |> lib.mapAttrsToList (
       name: value: ''
         $env.${name} = ${toJSON { } value}
