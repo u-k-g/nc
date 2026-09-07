@@ -105,11 +105,6 @@
       flake = false;
     };
 
-    homebrew-freecad = {
-      url = "github:FreeCAD/homebrew-freecad";
-      flake = false;
-    };
-
     homebrew-osx-cross-arm = {
       url = "github:osx-cross/homebrew-arm";
       flake = false;
