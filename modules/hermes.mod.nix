@@ -54,17 +54,17 @@
 
         webPackage = mkOption {
           type = package;
-          default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.hermes-desktop-web.override {
-            theme = config.nc.theme;
-            themeAssets = pkgs.callPackage ../packages/hermes-desktop-web/theme.nix {
-              theme = config.nc.theme;
-            };
-            mobileAssets = pkgs.callPackage ../packages/hermes-desktop-web/mobile.nix {
-              src = inputs.hermes-desktop-web;
-              background = "#${config.nc.theme.base00}";
-            };
-          };
+          default = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.hermes-desktop-web;
           description = "Pinned desktop browser UI and proxy.";
+        };
+
+        webTheme = mkOption {
+          type = package;
+          default = pkgs.callPackage ../packages/hermes-desktop-web-theme.nix {
+            theme = config.nc.theme;
+            src = inputs.hermes-desktop-web;
+          };
+          description = "Public Hermes theme data and fonts generated from the active themenix theme.";
         };
 
         httpsPort = mkOption {
@@ -345,7 +345,7 @@
               "--cached-only"
               "--no-check"
               "--allow-net=127.0.0.1:${toString config.nc.nixos.hermes.port},127.0.0.1:${toString config.nc.nixos.hermes.webPort}"
-              "--allow-read=${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web"
+              "--allow-read=${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web,${config.nc.nixos.hermes.webTheme}"
               (pkgs.writeText "hermes-web.ts" /* typescript */ ''
                 import { createProxyHandler } from "${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web/proxy/main.ts";
 
@@ -353,6 +353,7 @@
                 const gateway = "http://127.0.0.1:${toString config.nc.nixos.hermes.port}";
                 const handler = createProxyHandler({
                   webDist: "${config.nc.nixos.hermes.webPackage}/share/hermes-desktop-web/dist/",
+                  themeDist: "${config.nc.nixos.hermes.webTheme}/",
                   allowedTargets: [gateway],
                   defaultGatewayUrl: gateway,
                 });
