@@ -3153,11 +3153,9 @@
 
         ## Format
 
-        Use:
+        Return plain text in this format:
 
-        ```text
         <scope>: <description>
-        ```
 
         The scope is the area of the codebase being changed, such as a module, component, package, directory, command, feature area, or subsystem. It is not a conventional-commit type like `feat`, `fix`, `refactor`, `chore`, `docs`, or `test` unless that is truly the name of the changed area.
 
@@ -3168,7 +3166,8 @@
         - Keep it concise and specific.
         - Use imperative or concise present-tense wording when natural.
         - Avoid trailing punctuation.
-        - Do not include bullets, Markdown fences, explanation, alternatives, quotes, or prefixes like `Commit message:`.
+        - Do not include any backticks anywhere in the output, including inline-code wrappers or Markdown code fences.
+        - Do not include bullets, explanation, alternatives, quotes, or prefixes like `Commit message:`.
       '';
 
       ".agents/skills/wrtcmtmsg/agents/openai.yaml".text = ''
