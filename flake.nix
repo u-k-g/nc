@@ -34,6 +34,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    autolith.url = "github:lambda-symbolics/autolith";
+
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
     hermes-desktop-web = {
