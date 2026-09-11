@@ -8,6 +8,8 @@
   };
 
   system.stateVersion = 6;
+
+  nc.syncthing.enable = true;
   system.primaryUser = config.nc.user.name;
 
   nixpkgs.hostPlatform = "aarch64-darwin";

@@ -41,6 +41,8 @@ in
 
   nc.radicle.enable = false;
 
+  nc.syncthing.enable = true;
+
   networking.hostName = "manara";
 
   programs.nix-ld.enable = true;
