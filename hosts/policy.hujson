@@ -1,14 +1,20 @@
 {
-  "grants": [
-    {
-      "src": ["autogroup:member"],
-      "dst": ["autogroup:self"],
-      "ip": ["tcp:22", "tcp:443", "tcp:3773"]
-    },
-    {
-      "src": ["autogroup:member"],
-      "dst": ["100.96.29.81"],
-      "ip": ["tcp:8443"]
-    }
-  ]
+	"grants": [
+		{
+			"src": ["100.96.29.81", "100.93.128.84", "100.78.224.36"],
+			"dst": ["100.96.29.81", "100.93.128.84", "100.78.224.36"],
+			"ip":  ["tcp:22000"]
+		},
+		{
+			"src": ["autogroup:member"],
+			"dst": ["autogroup:self"],
+			"ip":  ["tcp:22", "tcp:443", "tcp:3773"]
+		},
+		{
+			"src": ["autogroup:member"],
+			"dst": ["100.96.29.81"],
+			"ip":  ["tcp:8443"]
+		}
+	]
 }
+
