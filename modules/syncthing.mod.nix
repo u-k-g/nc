@@ -59,8 +59,11 @@
       };
 
       config.nc.syncthing.devices = {
+        manara.id = "KMYCXNA-2LX5PSV-IF6HWL5-ZE3KBE3-YBGPQ4L-RWPKL6Z-CPVDV47-ARTF2AG";
         manara.addresses = singleton "tcp://100.96.29.81:22000";
+        darwinbook.id = "G25CZDH-NFM2RXT-L4CFD25-AGV2B3T-YS6F32R-BFEGQDB-PCZJRF2-2EMJVQY";
         darwinbook.addresses = singleton "tcp://100.93.128.84:22000";
+        phone.id = "YLTWG7D-RWGKAYD-54EZSY4-Q7KGE4W-J2QUL7R-U6KPUDY-BUNGLHN-A2ZUKQS";
         phone.addresses = singleton "tcp://100.78.224.36:22000";
       };
     };
