@@ -98,7 +98,11 @@
     "button": false,
     "dock": "right"
   },
-  "autosave": "off",
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 500
+    }
+  },
   "vim_mode": false,
   "git_panel": {
     "status_style": "icon",
