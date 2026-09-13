@@ -200,7 +200,7 @@
                   {
                     "type": "frontmost_application_if",
                     "bundle_identifiers": [
-                      "^com\\.writer-computer$"
+                      "^app\\.suzuri\\.Suzuri$"
                     ]
                   }
                 ]
@@ -217,7 +217,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b com.writer-computer"
+                    "shell_command": "/usr/bin/open -b app.suzuri.Suzuri"
                   }
                 ]
               },
