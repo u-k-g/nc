@@ -708,6 +708,10 @@ in
           ${escapeShellArg "@openai/codex@${
             inputs.codex.legacyPackages.${pkgs.stdenv.hostPlatform.system}.codex.version
           }"}
+        # GUI provider probes may not inherit the Nix profile's PATH.
+        ${getExe pkgs.gnused} --in-place \
+          ${escapeShellArg "s|exec node |exec ${getExe pkgs.nodejs} |g"} \
+          "$PNPM_HOME/bin/codex"
       )
     '';
 
