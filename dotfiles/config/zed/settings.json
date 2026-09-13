@@ -7,6 +7,19 @@
         "mode": "agent-full-access"
       },
       "type": "registry"
+    },
+    "opencode": {
+      "default_config_options": {
+        "model": "opencode-go/deepseek-v4.1-flash"
+      },
+      "favorite_config_option_values": {
+        "model": [
+          "opencode-go/deepseek-v4.1-flash",
+          "opencode-go/kimi-k3",
+          "openai/gpt-6-astra"
+        ]
+      },
+      "type": "registry"
     }
   },
   "which_key": {
@@ -109,12 +122,12 @@
     },
     "starts_open": false,
     "git_status": true,
-    "folder_icons": false,
     "entry_spacing": "standard",
     "file_icons": true,
     "hide_gitignore": false,
     "button": true,
-    "dock": "right"
+    "dock": "left",
+    "folder_indicator": "chevron"
   },
   "agent": {
     "thinking_display": "always_collapsed",
@@ -124,7 +137,7 @@
     },
     "button": true,
     "use_modifier_to_send": true,
-    "dock": "left",
+    "dock": "right",
     "default_profile": "write"
   },
   "base_keymap": "VSCode",
@@ -136,5 +149,6 @@
   "auto_install_extensions": {
     "git-firefly": true
   },
-  "format_on_save": "off"
+  "format_on_save": "off",
+  "proxy": ""
 }
