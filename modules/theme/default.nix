@@ -86,7 +86,7 @@ in
         "rose-pine"
         "matte-black"
       ];
-      default = "jade";
+      default = "grove";
       description = "Color preset used by every themed NC application.";
     };
 
