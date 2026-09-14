@@ -126,10 +126,11 @@ in
     max-jobs = 2;
   };
 
-  systemd.tmpfiles.rules = [
-    "d /tmp 1777 root root 21d"
-    "d /var/tmp 1777 root root 21d"
-  ];
+  # Replace systemd's default tmp.conf instead of adding duplicate path rules.
+  environment.etc."tmpfiles.d/tmp.conf".text = ''
+    d /tmp 1777 root root 21d
+    d /var/tmp 1777 root root 21d
+  '';
 
   # Daemon builds and agent subprocesses do not inherit interactive shell settings.
   # Keep this scoped to developer services; ordinary services retain /tmp semantics.
