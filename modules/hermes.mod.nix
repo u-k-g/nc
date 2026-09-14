@@ -185,14 +185,14 @@
           } config.nc.nixos.hermes.settings;
 
         # write_file/patch sandbox: sessions may only create or modify files in
-        # Hermes' own home and /tmp; every other path is denied for the file
+        # Hermes' own home and /var/tmp; every other path is denied for the file
         # tools. Managed scope keeps the agent from relaxing it. Terminal and
         # kernel writes into the flake are blocked at the syscall level by the
         # read-only mounts on the services below.
         environment.etc."hermes/.env".text =
           mkIf config.nc.nixos.hermes.enable
           <| ''
-            HERMES_WRITE_SAFE_ROOT=${config.nc.user.homeDirectory}/.hermes:/tmp
+            HERMES_WRITE_SAFE_ROOT=${config.nc.user.homeDirectory}/.hermes:/var/tmp
           '';
 
         # The cron scheduler only ticks inside a running gateway — Hermes
@@ -335,7 +335,7 @@
             PrivateTmp = true;
             Environment = [
               "DENO_NO_UPDATE_CHECK=1"
-              "DENO_DIR=/tmp/hermes-deno"
+              "DENO_DIR=/var/tmp/hermes-deno"
             ];
             ExecStart = escapeShellArgs [
               (getExe pkgs.deno)

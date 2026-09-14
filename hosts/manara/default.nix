@@ -97,6 +97,8 @@ in
       "/var/lib/tailscale"
       "/var/lib/upower"
       "/var/log"
+      # Root is a 25%-of-RAM tmpfs; multi-GB developer scratch belongs on the SSD.
+      "/var/tmp"
     ];
   };
 
@@ -122,6 +124,33 @@ in
   nix.settings = {
     cores = 4;
     max-jobs = 2;
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /tmp 1777 root root 21d"
+    "d /var/tmp 1777 root root 21d"
+  ];
+
+  # Daemon builds and agent subprocesses do not inherit interactive shell settings.
+  # Keep this scoped to developer services; ordinary services retain /tmp semantics.
+  systemd.services.nix-daemon.environment = {
+    inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
+  };
+
+  systemd.services.t3code.environment = {
+    inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
+  };
+
+  systemd.services.hermes.environment = {
+    inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
+  };
+
+  systemd.services.hermes-gateway.environment = {
+    inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
+  };
+
+  systemd.user.services.browser-cdp.environment = {
+    inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
   };
 
   swapDevices = mkForce [ ];
@@ -240,41 +269,43 @@ in
 
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = getExe <| pkgs.writers.writeNuBin "manara-power-policy" /* nu */ ''
-        def read-power [name: string]: nothing -> string {
-          open --raw $"/sys/class/power_supply/($name)" | str trim
-        }
-
-        # Unknown or unreadable AC state must never authorize a shutdown.
-        let ac = read-power "ACAD/online"
-        let capacity = read-power "BAT1/capacity" | into int
-        let status = read-power "BAT1/status"
-        print $"AC=($ac) battery=($capacity)% status=($status)"
-
-        let profile = match $ac {
-          "1" => "balanced"
-          "0" => "power-saver"
-          _ => { error make { msg: "Unknown AC state; skipping power policy" } }
-        }
-        let current = ^${powerProfilesCtl} get | complete
-        if $current.exit_code != 0 or ($current.stdout | str trim) != $profile {
-          let result = ^${powerProfilesCtl} set $profile | complete
-          if $result.exit_code != 0 {
-            print --stderr $"Failed to select ($profile): ($result.stderr)"
+      ExecStart =
+        getExe
+        <| pkgs.writers.writeNuBin "manara-power-policy" /* nu */ ''
+          def read-power [name: string]: nothing -> string {
+            open --raw $"/sys/class/power_supply/($name)" | str trim
           }
-        }
 
-        if $ac == "0" and $status == "Discharging" and $capacity >= 0 and $capacity <= 20 {
-          # Recheck immediately before shutdown in case AC was reconnected.
-          if (read-power "ACAD/online") == "0" and (read-power "BAT1/status") == "Discharging" {
-            print $"Battery at ($capacity)% without AC; powering off"
-            let result = ^${systemctl} poweroff | complete
+          # Unknown or unreadable AC state must never authorize a shutdown.
+          let ac = read-power "ACAD/online"
+          let capacity = read-power "BAT1/capacity" | into int
+          let status = read-power "BAT1/status"
+          print $"AC=($ac) battery=($capacity)% status=($status)"
+
+          let profile = match $ac {
+            "1" => "balanced"
+            "0" => "power-saver"
+            _ => { error make { msg: "Unknown AC state; skipping power policy" } }
+          }
+          let current = ^${powerProfilesCtl} get | complete
+          if $current.exit_code != 0 or ($current.stdout | str trim) != $profile {
+            let result = ^${powerProfilesCtl} set $profile | complete
             if $result.exit_code != 0 {
-              error make { msg: $"Shutdown failed: ($result.stderr)" }
+              print --stderr $"Failed to select ($profile): ($result.stderr)"
             }
           }
-        }
-      '';
+
+          if $ac == "0" and $status == "Discharging" and $capacity >= 0 and $capacity <= 20 {
+            # Recheck immediately before shutdown in case AC was reconnected.
+            if (read-power "ACAD/online") == "0" and (read-power "BAT1/status") == "Discharging" {
+              print $"Battery at ($capacity)% without AC; powering off"
+              let result = ^${systemctl} poweroff | complete
+              if $result.exit_code != 0 {
+                error make { msg: $"Shutdown failed: ($result.stderr)" }
+              }
+            }
+          }
+        '';
     };
   };
 

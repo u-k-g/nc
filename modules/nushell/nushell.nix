@@ -54,6 +54,10 @@ let
     NODE_EXTRA_CA_CERTS = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
     PNPM_HOME = "${home}/.local/share/pnpm";
     SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+    # Manara's root is a small tmpfs; /var/tmp is SSD-backed developer scratch.
+    TMPDIR = "/var/tmp";
+    TMP = "/var/tmp";
+    TEMP = "/var/tmp";
     XDG_CACHE_HOME = "${home}/.cache";
     XDG_CONFIG_HOME = "${home}/.config";
     XDG_DATA_HOME = "${home}/.local/share";

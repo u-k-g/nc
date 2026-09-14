@@ -46,11 +46,12 @@ runCommand "hermes-web-theme"
       <fontconfig>
         <dir>${escapeXML "${theme.font.sans.package}/share/fonts"}</dir>
         <dir>${escapeXML "${theme.font.mono.package}/share/fonts"}</dir>
-        <cachedir>/tmp/hermes-web-font-cache</cachedir>
+        <cachedir prefix="xdg">fontconfig</cachedir>
       </fontconfig>
     '';
   }
   /* bash */ ''
+    export XDG_CACHE_HOME="$TMPDIR/cache"
     mkdir -p "$out"
     cp ${
       writeText "hermes-web-theme.json" (

@@ -2,7 +2,12 @@
 
 {
   flake.homeModules.slop =
-    { lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       inherit (lib.attrsets) mapAttrs' mapAttrsToList nameValuePair;
       inherit (lib.lists) elemAt groupBy;
@@ -3208,6 +3213,21 @@
                   }
                 ''
               ) files;
+          }
+        )
+        |> (
+          skills:
+          skills
+          // {
+            ".agents/AGENTS.md".text = ''
+              # Temporary files/clones/anything
+
+              Use `/var/tmp` for temporary files, development scratch, review worktrees,
+              package stores, and browser artifacts or anything you would think to use
+              /tmp for. never use `/tmp` for this work.
+            '';
+            ".codex/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
+            ".config/opencode/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
           }
         );
     };
