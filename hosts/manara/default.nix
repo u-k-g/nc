@@ -98,6 +98,7 @@ in
       "/var/lib/upower"
       "/var/log"
       # Root is a 25%-of-RAM tmpfs; multi-GB developer scratch belongs on the SSD.
+      "/tmp"
       "/var/tmp"
     ];
   };
@@ -133,7 +134,7 @@ in
   '';
 
   # Daemon builds and agent subprocesses do not inherit interactive shell settings.
-  # Keep this scoped to developer services; ordinary services retain /tmp semantics.
+  # Keep this scoped to developer services; ordinary services retain their environment.
   systemd.services.nix-daemon.environment = {
     inherit (config.home.users.${config.nc.user.name}.environment.sessionVariables) TMPDIR TMP TEMP;
   };
