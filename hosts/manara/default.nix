@@ -39,6 +39,8 @@ in
     hostname = "manara.tail4b71d2.ts.net";
   };
 
+  nc.nixos.arura.enable = true;
+
   nc.radicle.enable = false;
 
   nc.syncthing.enable = true;
@@ -96,6 +98,9 @@ in
       "/var/lib/systemd"
       "/var/lib/tailscale"
       "/var/lib/upower"
+      "/var/lib/arura-credentials"
+      "/var/lib/private/arura"
+      "/var/lib/private/arura-convex"
       "/var/log"
       # Root is a 25%-of-RAM tmpfs; multi-GB developer scratch belongs on the SSD.
       "/tmp"
@@ -171,6 +176,12 @@ in
   services.thermald.enable = true;
 
   networking.networkmanager.wifi.powersave = false;
+
+  # Avoid stranding Tailscale's coordination connection on an expired temporary address.
+  networking.tempAddresses = "disabled";
+
+  # Fail established TCP connections sooner when their path stops acknowledging data.
+  boot.kernel.sysctl."net.ipv4.tcp_retries2" = 8;
 
   services.tailscale = {
     enable = true;

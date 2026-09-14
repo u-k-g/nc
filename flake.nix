@@ -38,6 +38,8 @@
 
     hermes-agent.url = "github:NousResearch/hermes-agent";
 
+    arura.url = "github:u-k-g/arura";
+
     hermes-desktop-web = {
       url = "github:u-k-g/hermes-agent-desktop-web/main";
       flake = false;

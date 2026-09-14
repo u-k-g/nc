@@ -25,10 +25,28 @@
         "type": "github"
       }
     },
+    "arura": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1789412023,
+        "narHash": "sha256-A8g7hh2gsTdBtjkmcwPqvU2ZJF0cxrY6UjGoDK0ZYD4=",
+        "owner": "u-k-g",
+        "repo": "arura",
+        "rev": "2a9157f6a511d0294b775aa4c110f36d1a0bbbdd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "u-k-g",
+        "repo": "arura",
+        "type": "github"
+      }
+    },
     "autolith": {
       "inputs": {
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs_2"
       },
       "locked": {
         "lastModified": 1789300819,
@@ -236,7 +254,7 @@
       "inputs": {
         "flake-parts": "flake-parts_3",
         "home-manager": "home-manager",
-        "nixpkgs": "nixpkgs_2",
+        "nixpkgs": "nixpkgs_3",
         "npm-lockfile-fix": "npm-lockfile-fix",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
@@ -498,6 +516,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1786348146,
+        "narHash": "sha256-we5zDEFfn8TgzeWKjKDMIjeQZ59omEPl23NIF+13/ys=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d482ef84049d9b7276b83a06e4e4d76983830097",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d482ef84049d9b7276b83a06e4e4d76983830097",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1785318670,
         "narHash": "sha256-dN6Ou5x/+23FZLEpYP3IffO+NyJFzUlGumt1uu3MMaY=",
         "owner": "NixOS",
@@ -512,7 +546,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_3": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1788531059,
         "narHash": "sha256-hLD4l3QOGBQhkVp3mQ2lJ/YbEi99qUgKapb40KovZ88=",
@@ -646,6 +680,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "arura": "arura",
         "autolith": "autolith",
         "chaotic": "chaotic",
         "codex": "codex",
@@ -663,7 +698,7 @@
         "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",
         "homebrew-tinycast": "homebrew-tinycast",
         "nix-darwin": "nix-darwin",
-        "nixpkgs": "nixpkgs_3",
+        "nixpkgs": "nixpkgs_4",
         "nixpkgs-install-media": "nixpkgs-install-media",
         "paneru": "paneru",
         "paperwm": "paperwm",
