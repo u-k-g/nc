@@ -302,7 +302,8 @@ let
       ]
       [
         "${hex theme.base0D}"
-        "${hex theme.base0E}"
+        # Some palettes use the same color for both accents.
+        (hex (if theme.base0E == theme.base0D then theme.base09 else theme.base0E))
       ]
     <| fileContents (dotfiles + /config/nushell/prompts.nu);
 
