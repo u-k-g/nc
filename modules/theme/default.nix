@@ -10,7 +10,26 @@ let
   inherit (lib.options) mkOption;
   inherit (lib.types) attrs enum;
   themePresets = {
-    black-metal = inputs.themes.raw.black-metal;
+    black-rose = {
+      name = "Black Rose";
+      author = "metalelf0";
+      base00 = "000000";
+      base01 = "121212";
+      base02 = "222222";
+      base03 = "333333";
+      base04 = "999999";
+      base05 = "C1C1C1";
+      base06 = "999999";
+      base07 = "C1C1C1";
+      base08 = "5F8787";
+      base09 = "AAAAAA";
+      base0A = "A06666";
+      base0B = "DD9999";
+      base0C = "AAAAAA";
+      base0D = "888888";
+      base0E = "999999";
+      base0F = "444444";
+    };
     grove = {
       name = "Grove";
       author = "T3 Code";
@@ -53,38 +72,17 @@ let
     };
     gruvbox-dark-hard = inputs.themes.raw.gruvbox-dark-hard;
     rose-pine = inputs.themes.raw.rose-pine;
-    matte-black = {
-      name = "Matte Black";
-      author = "Taha YVR";
-      base00 = "121212";
-      base01 = "1E1E1E";
-      base02 = "333333";
-      base03 = "8A8A8D";
-      base04 = "BEBEBE";
-      base05 = "BEBEBE";
-      base06 = "EAEAEA";
-      base07 = "FFFFFF";
-      base08 = "D35F5F";
-      base09 = "E68E0D";
-      base0A = "FFC107";
-      base0B = "FFC107";
-      base0C = "BEBEBE";
-      base0D = "E68E0D";
-      base0E = "D35F5F";
-      base0F = "B91C1C";
-    };
   };
 in
 {
   options.nc = {
     themePreset = mkOption {
       type = enum [
-        "black-metal"
+        "black-rose"
         "grove"
         "jade"
         "gruvbox-dark-hard"
         "rose-pine"
-        "matte-black"
       ];
       default = "grove";
       description = "Color preset used by every themed NC application.";
