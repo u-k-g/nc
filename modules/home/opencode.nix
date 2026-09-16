@@ -98,8 +98,6 @@ in
   home.users.${user.name} = {
     xdg.config.files."opencode/opencode.json".text = toJSON { } {
       autoupdate = true;
-      plugin = [ "opencode-handoff" ];
-
       compaction = {
         auto = true;
         prune = true;
