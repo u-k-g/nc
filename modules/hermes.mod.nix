@@ -92,6 +92,9 @@
           mkIf config.nc.nixos.hermes.enable
           <| toJSON { }
           <| recursiveUpdate {
+            # Hermes discovers profiles and manages their bots and cron jobs at runtime.
+            gateway.multiplex_profiles = true;
+
             dashboard.public_url = "https://${config.nc.nixos.hermes.hostname}:${toString config.nc.nixos.hermes.httpsPort}";
 
             # Machine wiring — services this install depends on.
@@ -195,16 +198,16 @@
             HERMES_WRITE_SAFE_ROOT=${config.nc.user.homeDirectory}/.hermes:/var/tmp
           '';
 
-        # The cron scheduler only ticks inside a running gateway — Hermes
-        # ships no standalone cron daemon, and its own installer writes a
-        # hand-maintained user unit to ~/.config/systemd/user. Declaring the
-        # gateway here makes it a first-class service instead, with the same
-        # kernel-level read-only flake the dashboard has (cron jobs, messaging
-        # sessions and subagents all run under it). Hermes' single-instance
-        # lock means exactly one gateway may run; after switching, remove the
-        # old user unit (see the cutover note in the module comment below).
+        # One system gateway runs as the configured user, independently of login.
+        # Multiplexing lets Hermes discover profile changes and tick each profile's
+        # cron store without per-profile Nix declarations or installed user units.
+        # /etc/hermes supplies the managed overlay for profile-local configuration.
+        # The gateway and its children share the dashboard's read-only flake mount.
+        # This gateway also owns kanban dispatch; remove hand-installed gateways
+        # during cutover so they cannot compete for bot connections or its global
+        # dispatcher lock (the gateway single-instance lock is per Hermes home).
         systemd.services.hermes-gateway = mkIf config.nc.nixos.hermes.enable {
-          description = "Hermes Agent gateway (cron scheduler and messaging platforms)";
+          description = "Hermes Agent gateway (all profiles, cron and messaging)";
           wantedBy = singleton "multi-user.target";
           wants = singleton "network-online.target";
           after = singleton "network-online.target";
