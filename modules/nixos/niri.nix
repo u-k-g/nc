@@ -15,6 +15,7 @@ let
   theme = config.nc.theme;
   hex = color: "#${color}";
   heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
+  edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   dms = getExe pkgs.dms-shell;
   qtEnvironment = [
     "QT_QPA_PLATFORMTHEME=${config.qt.platformTheme}"
@@ -418,10 +419,10 @@ in
               // Match the Darwin/Paneru app launchers. Alt is the physical Cmd/Win-position key after keycode remapping.
               Alt+W repeat=false { spawn "${getExe focusOrLaunch}" "helium" "${getExe heliumBrowser}"; }
               Alt+O repeat=false { spawn "${getExe focusOrLaunch}" "obsidian" "${getExe pkgs.obsidian}"; }
-              Alt+Semicolon repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe pkgs.kitty}"; }
+              Alt+Semicolon repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
               Alt+C repeat=false { spawn "${getExe focusOrLaunch}" "freecad" "${lib.getExe' pkgs.freecad "freecad"}"; }
               Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe pkgs.opencode-desktop}"; }
-              Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe pkgs.zed-editor}"; }
+              Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe edgePkgs.zed-editor}"; }
 
               Alt+H { focus-column-left; }
               Alt+J { focus-workspace-down; }

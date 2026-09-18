@@ -11,21 +11,22 @@ let
   user = config.nc.user;
   workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
   heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
+  edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   workstationPackages =
     singleton pkgs.obsidian
     ++ (if pkgs.stdenv.hostPlatform.isDarwin then singleton pkgs.ghostty-bin else [ ])
     ++ optionals pkgs.stdenv.hostPlatform.isLinux [
       pkgs.ghostty
-      pkgs.orca-slicer
+      edgePkgs.orca-slicer
       pkgs.ungoogled-chromium
-      pkgs.zed-editor
+      edgePkgs.zed-editor
     ];
 in
 {
   home.users.${user.name} = {
     packages = [
       heliumBrowser
-      pkgs.kitty
+      edgePkgs.kitty
     ]
     ++ optionals workstation workstationPackages;
 

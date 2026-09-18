@@ -33,20 +33,26 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    edge.url = "github:NixOS/nixpkgs/master";
 
-    autolith.url = "github:lambda-symbolics/autolith";
+    autolith = {
+      url = "github:lambda-symbolics/autolith";
+      inputs.nixpkgs.follows = "edge";
+    };
 
-    hermes-agent.url = "github:NousResearch/hermes-agent";
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "edge";
+    };
 
-    arura.url = "github:u-k-g/arura";
+    arura = {
+      url = "github:u-k-g/arura";
+      inputs.nixpkgs.follows = "edge";
+    };
 
     hermes-desktop-web = {
       url = "github:u-k-g/hermes-agent-desktop-web/main";
       flake = false;
-    };
-
-    codex = {
-      url = "github:NixOS/nixpkgs/master";
     };
 
     t3 = {
@@ -84,7 +90,7 @@
 
     helium = {
       url = "github:amaanq/helium-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "edge";
     };
 
     homebrew.url = "github:zhaofengli/nix-homebrew";

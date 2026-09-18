@@ -1,6 +1,5 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
   ...
@@ -692,7 +691,6 @@ in
   };
 
   home.users.${config.nc.user.name} = {
-    # A dedicated nixpkgs/master input keeps the pnpm version independently locked.
     activationScripts.codex-install = /* bash */ ''
       (
         set -euo pipefail
@@ -704,10 +702,7 @@ in
           ]
         }:$PATH"
         export SHELL=${getExe pkgs.bashInteractive}
-        ${getExe pkgs.pnpm} add --global --save-exact \
-          ${escapeShellArg "@openai/codex@${
-            inputs.codex.legacyPackages.${pkgs.stdenv.hostPlatform.system}.codex.version
-          }"}
+        ${getExe pkgs.pnpm} add --global @openai/codex@latest
         # GUI provider probes may not inherit the Nix profile's PATH.
         ${getExe pkgs.gnused} --in-place \
           ${escapeShellArg "s|exec node |exec ${getExe pkgs.nodejs} |g"} \
