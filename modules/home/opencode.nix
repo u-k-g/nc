@@ -100,7 +100,7 @@ in
       type = "copy";
       permissions = "644";
       text = toJSON { } {
-        autoupdate = true;
+        autoupdate = false;
         compaction = {
           auto = true;
           prune = true;
@@ -230,7 +230,7 @@ in
 
         install_dir=${lib.escapeShellArg opencodeInstallDir}
         state_file=${lib.escapeShellArg opencodeCliState}
-        api=https://api.github.com/repos/anomalyco/opencode/releases/latest
+        api=https://api.github.com/repos/anomalyco/opencode/releases/tags/v1.18.31
 
         ${
           if pkgs.stdenv.hostPlatform.system == "aarch64-darwin" then
@@ -359,7 +359,7 @@ in
 
           export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
 
-          api=https://api.github.com/repos/anomalyco/opencode/releases/latest
+          api=https://api.github.com/repos/anomalyco/opencode/releases/tags/v1.18.31
           asset_name=opencode-desktop-mac-arm64.dmg
           desktop_app=${lib.escapeShellArg opencodeDesktopApp}
           desktop_data_dir=${lib.escapeShellArg opencodeDesktopDataDir}

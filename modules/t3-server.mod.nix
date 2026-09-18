@@ -91,6 +91,7 @@
             T3CODE_HOST = "127.0.0.1";
             T3CODE_PORT = "3773";
             T3CODE_TAILSCALE_SERVE = "true";
+            OPENCODE_DISABLE_AUTOUPDATE = "true";
           };
 
           serviceConfig = {
