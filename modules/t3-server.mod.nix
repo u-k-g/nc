@@ -76,6 +76,7 @@
           wantedBy = singleton "multi-user.target";
 
           path = [
+            "${config.nc.user.homeDirectory}/.local/bin"
             "${config.nc.user.homeDirectory}/.local/share/pnpm"
             pkgs.nodejs
             pkgs.git
