@@ -1,6 +1,8 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
+  environment.systemPath = [ "${config.nc.user.homeDirectory}/.local/bin" ];
+
   environment.systemPackages = [ pkgs.maccy ];
 
   networking = {
