@@ -98,6 +98,7 @@ in
   home.users.${user.name} = {
     xdg.config.files."opencode/opencode.json" = {
       type = "copy";
+      permissions = "644";
       text = toJSON { } {
         autoupdate = true;
         compaction = {
