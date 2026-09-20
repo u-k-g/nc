@@ -35,10 +35,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     edge.url = "github:NixOS/nixpkgs/master";
 
-    autolith = {
-      url = "github:lambda-symbolics/autolith";
-      inputs.nixpkgs.follows = "edge";
-    };
+    autolith.url = "github:lambda-symbolics/autolith";
 
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
