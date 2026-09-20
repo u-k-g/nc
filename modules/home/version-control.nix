@@ -219,10 +219,7 @@ in
         sign-on-push = true
 
         [fsmonitor]
-        backend = "watchman"
-
-        [fsmonitor.watchman]
-        register-snapshot-trigger = true
+        backend = "none"
 
         [merge-tools.mergiraf]
         program = "${getExe pkgs.mergiraf}"

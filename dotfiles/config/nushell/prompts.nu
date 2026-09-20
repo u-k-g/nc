@@ -23,9 +23,8 @@ def get-jj-workspace-root []: nothing -> string {
   $directory
 }
 def get-jj-right-prompt [] {
-  # Watchman's snapshot trigger refreshes the working copy in the background.
   let result = (do {
-    ^jj --quiet --ignore-working-copy --no-pager log --revisions '@ | heads(ancestors(@) & bookmarks())' --no-graph --template '
+    ^jj --quiet --no-pager log --revisions '@ | heads(ancestors(@) & bookmarks())' --no-graph --template '
       if(current_working_copy, "current", "ancestor") ++ "\t" ++
       local_bookmarks.map(|b| b.name()).join(", ") ++ "\t" ++
       change_id.shortest() ++ "\t" ++ if(empty, "false", "true") ++ "\n"
