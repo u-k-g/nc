@@ -8,6 +8,8 @@
 }:
 
 let
+  inherit (lib.meta) getExe;
+
   registry = {
     default = inputs.nixpkgs;
     nixpkgs = inputs.nixpkgs;
@@ -26,14 +28,22 @@ let
       }
     }
 
+    # `nix shell` execs $SHELL, which dev shells clobber with the stdenv
+    # build bash. Spawn nushell explicitly unless a command was given.
     def --wrapped > [...arguments: string] {
-      nix shell ...($arguments | each {
+      let installables = $arguments | each {
         if ($in | str contains "#") or ($in | str contains ":") {
           $in
         } else {
           "default#" + $in
         }
-      })
+      }
+
+      if ("-c" in $arguments) or ("--command" in $arguments) {
+        nix shell ...$installables
+      } else {
+        nix shell ...$installables -c ${getExe pkgs.nushell}
+      }
     }
   '';
 in

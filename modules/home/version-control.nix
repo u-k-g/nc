@@ -206,9 +206,9 @@ in
         ''''
         git_push_bookmark = '"ukg/change-" ++ change_id.short()'
 
-        [remotes."*"]
+        [remotes.origin]
         auto-track-bookmarks = "${user.handle}/*"
-        push-new-bookmarks = true
+        auto-track-created-bookmarks = "*"
 
         [remotes.rad]
         fetch-bookmarks = "*"
