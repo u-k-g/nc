@@ -10,10 +10,11 @@ $env.config.show_banner = false
 $env.config.rm.always_trash = false
 $env.config.recursion_limit = 100
 $env.config.table.mode = "restructured"
-$env.config.edit_mode = "vi"
+$env.config.edit_mode = "helix"
 $env.config.cursor_shape.emacs = "line"
-$env.config.cursor_shape.vi_insert = "line"
-$env.config.cursor_shape.vi_normal = "block"
+$env.config.cursor_shape.helix_insert = "line"
+$env.config.cursor_shape.helix_normal = "block"
+$env.config.cursor_shape.helix_select = "block"
 $env.config.completions.algorithm = "substring"
 $env.config.completions.sort = "smart"
 $env.config.completions.case_sensitive = false
@@ -90,7 +91,7 @@ $env.config.keybindings ++= [
     name: cdi
     modifier: alt
     keycode: char_c
-    mode: [emacs vi_insert vi_normal]
+    mode: [helix_insert helix_normal helix_select]
     event: {
       send: executehostcommand
       cmd: "cdi"

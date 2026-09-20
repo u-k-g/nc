@@ -9,7 +9,7 @@
 let
   inherit (lib.attrsets) optionalAttrs;
   inherit (lib.generators) toJSON;
-  inherit (lib.lists) optionals;
+  inherit (lib.lists) optionals singleton;
   inherit (lib.meta) getExe;
   inherit (lib.strings)
     concatMapStringsSep
@@ -327,6 +327,12 @@ let
   ];
 in
 {
+  nixpkgs.overlays = singleton (
+    _: _: {
+      inherit (inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system}) nushell;
+    }
+  );
+
   environment.variables = sessionVariables;
 
   environment.shells = [
