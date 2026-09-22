@@ -206,6 +206,9 @@ let
     export XDG_CONFIG_HOME="$TMPDIR/config"
     mkdir -p "$HOME" "$XDG_CONFIG_HOME"
     ${getExe pkgs.atuin} init nu --disable-up-arrow > $out
+    substituteInPlace $out --replace-fail \
+      'mode: [emacs, vi_normal, vi_insert]' \
+      'mode: [helix_insert, helix_normal, helix_select]'
   '';
 
   zoxideInit = pkgs.runCommand "zoxide.nu" { } ''
@@ -255,7 +258,7 @@ let
 
       let skill = open --raw ${toJSON { } "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
       let prompt = $skill + "\n\n" + $diff.stdout
-      let run = (^${getExe pkgs.opencode} run --model opencode-go/glm-5.3-flash --variant low -- $prompt | complete)
+      let run = (^${getExe pkgs.opencode} run --model opencode-go/mimo-v2.6-flash --variant low -- $prompt | complete)
 
       if $run.exit_code != 0 {
         error make {

@@ -13,15 +13,6 @@ let
   kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
     exec /Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli "$@"
   '';
-  corepackPnpm = pkgs.symlinkJoin {
-    name = "corepack-pnpm";
-    paths = [ pkgs.corepack ];
-    postBuild = ''
-      rm -f $out/bin/corepack
-      rm -f $out/bin/yarn
-    '';
-  };
-
   dix =
     if pkgs.stdenv.hostPlatform.isDarwin then
       pkgs.dix.overrideAttrs (_: {
@@ -85,7 +76,7 @@ let
     uv
 
     nodejs
-    corepackPnpm
+    pnpm
     tio
   ];
 
@@ -126,6 +117,11 @@ let
 in
 {
   home.users.${user.name} = {
+    xdg.config.files."pnpm/config.yaml" = {
+      generator = (pkgs.formats.yaml { }).generate "pnpm-config.yaml";
+      value.minimumReleaseAge = 72 * 60;
+    };
+
     packages =
       essentialPackages
       ++ optionals workstation extendedPackages

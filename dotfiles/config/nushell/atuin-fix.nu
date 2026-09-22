@@ -48,7 +48,7 @@ $env.config = (
         name: atuin_search_ctrl_r
         modifier: control
         keycode: char_r
-        mode: [emacs vi_normal vi_insert]
+        mode: [helix_insert helix_normal helix_select]
         event: {
           send: executehostcommand
           cmd: "atuin-search-ctrl-r"
@@ -58,7 +58,7 @@ $env.config = (
         name: atuin_search_up
         modifier: none
         keycode: up
-        mode: [emacs vi_normal vi_insert]
+        mode: [helix_insert helix_normal helix_select]
         event: {
           until: [
             {send: menuup}
