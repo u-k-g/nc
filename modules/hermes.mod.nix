@@ -102,7 +102,9 @@
             browser.backend = "browser-use";
             browser.cdp_url = "http://127.0.0.1:9333";
             computer_use.backend = "cua";
-            wake_word.enabled = true;
+            # The sealed env has no pip, so wake.start(gui) cannot install
+            # openwakeword and fills errors.log on every arm attempt.
+            wake_word.enabled = false;
             voice.auto_tts = false;
             memory.memory_enabled = false;
             memory.user_profile_enabled = false;
