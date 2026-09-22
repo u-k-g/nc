@@ -81,7 +81,7 @@
                   installed_version="$(/usr/bin/plutil \
                     -extract CFBundleShortVersionString raw \
                     "$suzuri_app/Contents/Info.plist")"
-                  printf 'warning: failed to check latest Suzuri release; keeping Suzuri %s\n' "$installed_version" >&2
+                  printf 'warning: failed to check latest Suzuri release; keeping installed app (bundle version %s)\n' "$installed_version" >&2
                   exit 0
                 fi
                 printf 'warning: failed to check latest Suzuri release; skipping Suzuri install\n' >&2
@@ -93,14 +93,12 @@
                 exit 1
               fi
 
+              version="''${tag#suzuri-v}"
               state_value="$tag $asset_name $asset_url"
               if app_is_valid "$suzuri_app" \
                 && [ -f "$state_file" ] \
                 && [ "$(< "$state_file")" = "$state_value" ]; then
-                installed_version="$(/usr/bin/plutil \
-                  -extract CFBundleShortVersionString raw \
-                  "$suzuri_app/Contents/Info.plist")"
-                printf 'Suzuri %s is already installed\n' "$installed_version"
+                printf 'Suzuri %s is already installed\n' "$version"
                 exit 0
               fi
 
@@ -164,10 +162,7 @@
               printf '%s' "$state_value" > "$state_file.new"
               ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
 
-              installed_version="$(/usr/bin/plutil \
-                -extract CFBundleShortVersionString raw \
-                "$suzuri_app/Contents/Info.plist")"
-              printf 'Installed Suzuri %s at %s\n' "$installed_version" "$suzuri_app"
+              printf 'Installed Suzuri %s at %s\n' "$version" "$suzuri_app"
             )
           '';
       };
