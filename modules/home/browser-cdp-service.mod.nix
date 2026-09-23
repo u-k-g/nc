@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 {
   flake.nixosModules.browser-cdp-service =
@@ -16,11 +16,10 @@
       inherit (lib.strings) escapeShellArgs;
       inherit (lib.types) port;
 
-      heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
     in
     {
       options.nc.nixos.hermes.browser-cdp = {
-        enable = mkEnableOption "headless Helium for browser automation";
+        enable = mkEnableOption "headless Chromium for browser automation";
 
         port = mkOption {
           type = port;
@@ -30,21 +29,25 @@
       };
 
       config.systemd.user.services.browser-cdp = mkIf config.nc.nixos.hermes.browser-cdp.enable {
-        description = "Headless Helium browser automation";
+        description = "Headless Chromium browser automation";
         wantedBy = singleton "default.target";
         unitConfig.ConditionUser = config.nc.user.name;
         startLimitIntervalSec = 0;
 
         serviceConfig = {
           ExecStart = escapeShellArgs [
-            (getExe heliumBrowser)
+            (getExe pkgs.chromium)
+            "--remote-debugging-address=127.0.0.1"
             "--remote-debugging-port=${toString config.nc.nixos.hermes.browser-cdp.port}"
-            "--user-data-dir=%h/.hermes/browser-automation-profile"
+            "--user-data-dir=%h/.hermes/browser-automation-chromium-profile"
             "--headless=new"
           ];
           Restart = "always";
           RestartSec = 5;
           UMask = "0077";
+          # Chromium's headless CDP navigation stalls when it inherits the
+          # desktop session bus from the user manager.
+          UnsetEnvironment = singleton "DBUS_SESSION_BUS_ADDRESS";
         };
       };
     };
