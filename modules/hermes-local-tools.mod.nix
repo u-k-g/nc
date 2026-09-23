@@ -104,13 +104,17 @@
           };
         };
 
+        # Hermes' browser tool reads raw profile config, bypassing the managed
+        # config.yaml overlay. Pin the same endpoint in its process environment.
         environment.etc."hermes/.env".text = mkAfter ''
           SEARXNG_URL=http://127.0.0.1:${toString config.nc.nixos.hermes.local-tools.searchPort}
+          BROWSER_CDP_URL=${config.nc.nixos.hermes.settings.browser.cdp_url}
         '';
 
         systemd.services = genAttrs [ "hermes" "hermes-gateway" ] (_: {
           path = singleton config.nc.nixos.hermes.local-tools.browserPackage;
           environment.SEARXNG_URL = "http://127.0.0.1:${toString config.nc.nixos.hermes.local-tools.searchPort}";
+          environment.BROWSER_CDP_URL = config.nc.nixos.hermes.settings.browser.cdp_url;
         });
 
         home.users.${config.nc.user.name} = {
