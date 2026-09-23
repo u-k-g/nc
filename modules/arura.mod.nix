@@ -127,7 +127,10 @@
             };
 
             arura = mkIf config.nc.nixos.arura.enable {
-              requires = singleton "arura-initialize.service";
+              requires = [
+                "arura-initialize.service"
+                "arura-convex.service"
+              ];
               after = [
                 "arura-initialize.service"
                 "hermes.service"
@@ -136,6 +139,22 @@
             arura-convex = mkIf config.nc.nixos.arura.enable {
               requires = singleton "arura-initialize.service";
               after = singleton "arura-initialize.service";
+              serviceConfig.TimeoutStartSec = 600;
+              # Loading the persisted Convex indexes can take longer than
+              # Arura's 30-second deployment readiness check.
+              serviceConfig.ExecStartPost = pkgs.writeShellScript "wait-arura-convex" ''
+                attempts=0
+                until ${getExe pkgs.curl} --fail --silent --max-time 2 \
+                  http://127.0.0.1:${toString config.services.arura.convexPort}/version \
+                  >/dev/null; do
+                  attempts=$((attempts + 1))
+                  if [ "$attempts" -ge 540 ]; then
+                    echo "Arura Convex did not become ready within 9 minutes" >&2
+                    exit 1
+                  fi
+                  ${pkgs.coreutils}/bin/sleep 1
+                done
+              '';
               # The pinned Arura module omits the backend's required site origin.
               # Remove this override after updating to the fixed Arura release.
               serviceConfig.ExecStart = mkForce "${getExe config.services.arura.convexPackage} --interface 127.0.0.1 --port ${toString config.services.arura.convexPort} --site-proxy-port ${toString config.services.arura.convexSitePort} --convex-origin ${escapeShellArg config.services.arura.convexPublicUrl} --convex-site ${escapeShellArg "${config.services.arura.convexPublicUrl}/http"} --instance-name \${CONVEX_INSTANCE_NAME} --instance-secret \${CONVEX_INSTANCE_SECRET} --disable-beacon --redact-logs-to-client";
