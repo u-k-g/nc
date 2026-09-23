@@ -30,7 +30,52 @@
 
         package = mkOption {
           type = package;
-          default = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          default =
+            inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+              (old: {
+                postInstall = (old.postInstall or "") + ''
+                  plugin_source=$(readlink "$out/share/hermes-agent/plugins")
+                  rm "$out/share/hermes-agent/plugins"
+                  cp -rL "$plugin_source" "$out/share/hermes-agent/plugins"
+                  chmod u+w "$out/share/hermes-agent/plugins/model-providers/opencode-zen"
+                  chmod u+w "$out/share/hermes-agent/plugins/model-providers/opencode-zen/__init__.py"
+                  patch -p1 -d "$out/share/hermes-agent" -i ${pkgs.writeText "hermes-go-catalog-reasoning.patch" ''
+                    diff --git a/plugins/model-providers/opencode-zen/__init__.py b/plugins/model-providers/opencode-zen/__init__.py
+                    --- a/plugins/model-providers/opencode-zen/__init__.py
+                    +++ b/plugins/model-providers/opencode-zen/__init__.py
+                    @@ -103,4 +103,22 @@ class OpenCodeGoProfile(ProviderProfile):
+                                 return re_.thinking_toggle_extras(reasoning_config, re_.KIMI_K2_EFFORTS)
+                             if _is_deepseek_thinking_model(model):
+                                 return re_.thinking_toggle_extras(reasoning_config, re_.DEEPSEEK_V4_EFFORTS, re_.DEEPSEEK_V4_OVERRIDES)
+                    +        # Follow the same models.dev effort options used by OpenCode's picker.
+                    +        # A catalog miss is refreshed on demand so newly added Go models work
+                    +        # even when Hermes has an older on-disk catalog at startup.
+                    +        effort = re_.requested_effort(reasoning_config)
+                    +        if effort:
+                    +            from agent.models_dev import _find_model_entry, fetch_models_dev
+                    +
+                    +            catalog = fetch_models_dev(allow_network=False)
+                    +            models = catalog.get("opencode-go", {}).get("models", {})
+                    +            entry = _find_model_entry(models, model, "opencode-go")
+                    +            if entry is None:
+                    +                catalog = fetch_models_dev(force_refresh=True)
+                    +                models = catalog.get("opencode-go", {}).get("models", {})
+                    +                entry = _find_model_entry(models, model, "opencode-go")
+                    +            if entry:
+                    +                for option in entry.get("reasoning_options", []):
+                    +                    if option.get("type") == "effort" and effort in option.get("values", []):
+                    +                        return {}, {"reasoning_effort": effort}
+                             return {}, {}
+                  ''}
+                  mkdir -p "$out/share/hermes-agent/python-overlay"
+                  provider_source=$(${old.passthru.hermesVenv}/bin/python3 -c 'import providers; print(providers.__file__)')
+                  cp -rL "$(dirname "$provider_source")" "$out/share/hermes-agent/python-overlay/providers"
+                  ln -s ../plugins "$out/share/hermes-agent/python-overlay/plugins"
+                  for command in hermes hermes-agent hermes-acp; do
+                    wrapProgram "$out/bin/$command" --prefix PYTHONPATH : "$out/share/hermes-agent/python-overlay"
+                  done
+                '';
+              });
           description = "Pinned Hermes package, including the browser UI.";
         };
 

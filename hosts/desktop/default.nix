@@ -21,6 +21,8 @@
   nc.nixos.nvidia.enable = true;
   nc.radicle.enable = false;
 
+  programs.blip.enable = true;
+
   services.desktopManager.plasma6.enable = lib.mkForce false;
 
   hardware.enableRedistributableFirmware = true;

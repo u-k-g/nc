@@ -39,6 +39,7 @@ in
         };
 
         modules = [
+          inputs.blip.nixosModules.default
           inputs.chaotic.nixosModules.default
         ]
         ++ attrValues inputs.self.nixosModules

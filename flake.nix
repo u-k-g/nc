@@ -37,6 +37,11 @@
 
     autolith.url = "github:lambda-symbolics/autolith";
 
+    blip = {
+      url = "github:blip-net/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
       inputs.nixpkgs.follows = "edge";

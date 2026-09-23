@@ -32,11 +32,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790172749,
-        "narHash": "sha256-G7vgpLMDvYrn3h0IHmxu2I7r8x1gzntnh0ycBfgIeCI=",
+        "lastModified": 1790178493,
+        "narHash": "sha256-BzLl/XYyFh+SfvwqHf/nCcVbI45afEbItX/KCQq3AC8=",
         "owner": "u-k-g",
         "repo": "arura",
-        "rev": "bc7fa4e35dd6caad702e0838a0cea60917c0e65b",
+        "rev": "e48b48795febf690c87ec2c4655743089788b7cc",
         "type": "github"
       },
       "original": {
@@ -61,6 +61,26 @@
       "original": {
         "owner": "lambda-symbolics",
         "repo": "autolith",
+        "type": "github"
+      }
+    },
+    "blip": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789663978,
+        "narHash": "sha256-EuMrdV75GL+bKvUbYsgOjBKL/kt/kdF3OKGq+HdxU2k=",
+        "owner": "blip-net",
+        "repo": "nix",
+        "rev": "6d7d89eea7d9db378e923502b6bca267eca61575",
+        "type": "github"
+      },
+      "original": {
+        "owner": "blip-net",
+        "repo": "nix",
         "type": "github"
       }
     },
@@ -265,11 +285,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790173179,
-        "narHash": "sha256-uHYDT4eez1MZdJoS84iYj4idRpi0Rf+LbXvGMs0puV8=",
+        "lastModified": 1790178402,
+        "narHash": "sha256-VKRUFGK2t1+XBJililwIuixThzrD0WQrWd6o/ewnkMA=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "d2ef7db751afcbee20120d124c41fe871c54b7b1",
+        "rev": "8191aa0660aef9021121b479a6a661dd92951558",
         "type": "github"
       },
       "original": {
@@ -654,6 +674,7 @@
         "agenix": "agenix",
         "arura": "arura",
         "autolith": "autolith",
+        "blip": "blip",
         "chaotic": "chaotic",
         "disko": "disko",
         "edge": "edge",

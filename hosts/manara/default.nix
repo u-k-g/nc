@@ -43,6 +43,8 @@ in
 
   nc.radicle.enable = false;
 
+  programs.blip.enable = true;
+
   nc.syncthing.enable = true;
 
   networking.hostName = "manara";
