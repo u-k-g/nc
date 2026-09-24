@@ -15,6 +15,7 @@
         concatMapStringsSep
         escapeShellArg
         removePrefix
+        removeSuffix
         splitString
         ;
     in
@@ -3228,6 +3229,13 @@
             ".codex/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".config/opencode/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".grok/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
+            ".cursor/rules/agents.mdc".text = ''
+              ---
+              description: "${removeSuffix "\n" config.files.".agents/AGENTS.md".text}"
+              globs:
+              alwaysApply: true
+              ---
+            '';
           }
         );
     };
