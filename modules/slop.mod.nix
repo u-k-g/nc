@@ -3220,18 +3220,10 @@
           skills
           // {
             ".agents/AGENTS.md".text = ''
-              Do not perform Git operations that mutate the working copy or repository
-              you are running in, or its remotes unless explicitly asked to.
-              Do not push, pull, fetch, commit, stage, unstage, stash, merge, rebase,
-              cherry-pick, reset, restore, checkout, switch, clean, or create, delete,
-              or modify branches, tags, worktrees, remotes, or Git configuration. Do
-              not modify Git metadata directly or bypass this rule through another tool,
-              script, or linked worktree that shares the same repository.
+              Never use `git`. Always use `jj`.
 
-              Read-only inspection such as status, diff, log, and show is allowed;
-              use `git --no-optional-locks` to avoid optional index writes.
-              Editing source files for the requested task is allowed. Leave changes
-              uncommitted and leave all mutating Git operations to the user.
+              Ask before anything that is not read-only. That includes edits and any
+              command that mutates state.
             '';
             ".codex/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".config/opencode/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
