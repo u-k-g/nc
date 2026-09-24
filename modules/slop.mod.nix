@@ -3231,10 +3231,11 @@
             ".grok/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".cursor/rules/agents.mdc".text = ''
               ---
-              description: "${removeSuffix "\n" config.files.".agents/AGENTS.md".text}"
-              globs:
+              description: Never use git. Always use jj. Ask before non-read-only actions.
               alwaysApply: true
               ---
+
+              ${removeSuffix "\n" config.files.".agents/AGENTS.md".text}
             '';
           }
         );
