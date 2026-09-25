@@ -1,6 +1,6 @@
 --- a/agent/tool_executor.py
 +++ b/agent/tool_executor.py
-@@ -1098,6 +1098,17 @@
+@@ -1123,6 +1123,17 @@
      # string-safe fallback so a rejected image result never poisons history.
      _tool_content = agent._tool_result_content_for_active_model(function_name, persisted_result)
      tool_message = make_tool_result_message(function_name, _tool_content, tool_call_id, effect_disposition=effect_disposition)
@@ -15,9 +15,9 @@
 +        from agent.turn_context import encode_tool_image_sidecar
 +
 +        tool_message["api_content"] = encode_tool_image_sidecar(persisted_result["content"])
-     messages.append(tool_message)
-     if not _flush_session_db_after_tool_progress(agent, messages, stage=f"tool result {function_name}"):
-         return None
+     # Prepare presentation data before the append. The emitting completion callback
+     # stays below the durability fence; raw tool/model content remains unchanged.
+     prepare_metadata = getattr(agent, "tool_result_metadata_callback", None)
 --- a/agent/turn_context.py
 +++ b/agent/turn_context.py
 @@ -8,6 +8,7 @@
@@ -92,13 +92,13 @@
          # Structural clone, NOT msg.copy(): in-place transforms below must not reach
          # persisted history via nested containers; see _clone_message_for_send.
          api_msg = _clone_message_for_send(msg)
-@@ -1216,6 +1266,8 @@
+@@ -1225,5 +1275,7 @@
          # (strict OpenAI backends reject unknown keys); _row_id is the durable row id
          # from _rows_to_conversation and only chat-completions strips underscore keys.
          _api_content = api_msg.pop("api_content", None)
 +        if msg.get("role") == "tool":
 +            pending_tool_images.extend(_decode_tool_image_sidecar(_api_content))
-         for key in ("display_kind", "display_metadata", "_row_id"):
+         for key in PERSISTENCE_ONLY_MESSAGE_FIELDS:
              api_msg.pop(key, None)
  
 @@ -1267,6 +1319,8 @@
