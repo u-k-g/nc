@@ -71,6 +71,29 @@
                   provider_source=$(${old.passthru.hermesVenv}/bin/python3 -c 'import providers; print(providers.__file__)')
                   cp -rL "$(dirname "$provider_source")" "$out/share/hermes-agent/python-overlay/providers"
                   ln -s ../plugins "$out/share/hermes-agent/python-overlay/plugins"
+                  site_packages=$(dirname "$(dirname "$provider_source")")
+                  cp -rL "$site_packages/agent" "$out/share/hermes-agent/python-overlay/agent"
+                  cp -rL "$site_packages/tools" "$out/share/hermes-agent/python-overlay/tools"
+                  cp -rL "$site_packages/hermes_cli" "$out/share/hermes-agent/python-overlay/hermes_cli"
+                  # Hermes puts the directory containing hermes_cli at the front
+                  # of sys.path during startup. Keep that root in the overlay so
+                  # the patched agent and tools modules win in real CLI turns.
+                  source_root=$(realpath "$site_packages")
+                  for source_entry in "$source_root"/*; do
+                    target="$out/share/hermes-agent/python-overlay/$(basename "$source_entry")"
+                    if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+                      ln -s "$source_entry" "$target"
+                    fi
+                  done
+                  chmod u+w "$out/share/hermes-agent/python-overlay/hermes_cli"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/tools"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent/tool_executor.py"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent/turn_context.py"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent/models_dev.py"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent/image_routing.py"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/tools/vision_tools.py"
+                  patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-image-bridge.patch}
                   for command in hermes hermes-agent hermes-acp; do
                     wrapProgram "$out/bin/$command" --prefix PYTHONPATH : "$out/share/hermes-agent/python-overlay"
                   done
@@ -155,7 +178,6 @@
             memory.user_profile_enabled = false;
             session_reset.mode = "none";
             display.tool_progress = "all";
-
             # Frozen preferences.
             skills.disabled = [
               "airtable"

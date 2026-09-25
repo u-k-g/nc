@@ -1,0 +1,192 @@
+--- a/agent/tool_executor.py
++++ b/agent/tool_executor.py
+@@ -1098,6 +1098,17 @@
+     # string-safe fallback so a rejected image result never poisons history.
+     _tool_content = agent._tool_result_content_for_active_model(function_name, persisted_result)
+     tool_message = make_tool_result_message(function_name, _tool_content, tool_call_id, effect_disposition=effect_disposition)
++    if (
++        isinstance(_tool_content, str)
++        and _is_multimodal_tool_result(persisted_result)
++        and agent._model_supports_vision()
++    ):
++        # OpenAI-compatible relays may accept image user messages but reject image
++        # tool results. Keep the tool result text-only and replay the image after
++        # the complete tool-result batch as a model-only user message.
++        from agent.turn_context import encode_tool_image_sidecar
++
++        tool_message["api_content"] = encode_tool_image_sidecar(persisted_result["content"])
+     messages.append(tool_message)
+     if not _flush_session_db_after_tool_progress(agent, messages, stage=f"tool result {function_name}"):
+         return None
+--- a/agent/turn_context.py
++++ b/agent/turn_context.py
+@@ -8,6 +8,7 @@
+ 
+ from __future__ import annotations
+ 
++import json
+ import logging
+ import sys
+ import threading
+@@ -29,6 +30,38 @@
+ from agent.turn_author import parse_turn_author
+ 
+ logger = logging.getLogger(__name__)
++
++_TOOL_IMAGE_SIDECAR_PREFIX = "hermes-tool-image-v1:"
++
++
++def encode_tool_image_sidecar(content: list) -> str:
++    """Persist image bytes separately from a text-only tool result for wire replay."""
++    images = [
++        part for part in content
++        if isinstance(part, dict)
++        and part.get("type") == "image_url"
++        and isinstance(part.get("image_url"), dict)
++        and str(part["image_url"].get("url", "")).startswith("data:image/")
++    ]
++    return _TOOL_IMAGE_SIDECAR_PREFIX + json.dumps(images, separators=(",", ":")) if images else ""
++
++
++def _decode_tool_image_sidecar(value: Any) -> list:
++    if not isinstance(value, str) or not value.startswith(_TOOL_IMAGE_SIDECAR_PREFIX):
++        return []
++    try:
++        content = json.loads(value[len(_TOOL_IMAGE_SIDECAR_PREFIX):])
++    except (TypeError, ValueError):
++        return []
++    if not isinstance(content, list):
++        return []
++    return [
++        part for part in content
++        if isinstance(part, dict)
++        and part.get("type") == "image_url"
++        and isinstance(part.get("image_url"), dict)
++        and str(part["image_url"].get("url", "")).startswith("data:image/")
++    ]
+ 
+ 
+ def _str_attr(agent: Any, name: str) -> str:
+@@ -1207,7 +1240,24 @@
+     canonical_messages = canonicalize_replay_history(messages[:split], now=turn_now) + messages[split:]
+ 
+     api_messages = []
++    pending_tool_images = []
++
++    def append_tool_images() -> None:
++        if pending_tool_images and agent._model_supports_vision():
++            api_messages.append({
++                "role": "user",
++                "content": [
++                    {"type": "text", "text": "Attached media from tool results."},
++                    *pending_tool_images,
++                ],
++            })
++        pending_tool_images.clear()
++
+     for idx, msg in enumerate(canonical_messages):
++        # All results for one assistant tool-call batch must precede the media
++        # user message. Some relays reject image parts inside tool results.
++        if msg.get("role") != "tool":
++            append_tool_images()
+         # Structural clone, NOT msg.copy(): in-place transforms below must not reach
+         # persisted history via nested containers; see _clone_message_for_send.
+         api_msg = _clone_message_for_send(msg)
+@@ -1216,6 +1266,8 @@
+         # (strict OpenAI backends reject unknown keys); _row_id is the durable row id
+         # from _rows_to_conversation and only chat-completions strips underscore keys.
+         _api_content = api_msg.pop("api_content", None)
++        if msg.get("role") == "tool":
++            pending_tool_images.extend(_decode_tool_image_sidecar(_api_content))
+         for key in ("display_kind", "display_metadata", "_row_id"):
+             api_msg.pop(key, None)
+ 
+@@ -1267,6 +1319,8 @@
+         # wire for every route that does not replay it (OpenRouter/Nous do).
+         api_messages.append(api_msg)
+ 
++    append_tool_images()
++
+     # Final system message = cached prompt + ephemeral additions (API-time only).
+     # Plugin/recall context goes into the user message, never the system prompt: the
+     # prompt is built ONCE per session and replayed verbatim (stable cache prefix).
+--- a/tools/vision_tools.py
++++ b/tools/vision_tools.py
+@@ -471,9 +471,11 @@
+ 
+ 
+ def _should_use_native_vision_fast_path() -> bool:
+-    """True when image routing resolves to ``native`` AND the provider accepts images in tool
+-    results, or the user set the ``model.supports_vision`` override (escape hatch for
+-    custom/local providers). Any failure → False."""
++    """Use pixels when the main model accepts them in tool or user messages.
++
++    The tool executor bridges image results through a user message for providers
++    whose tool-result channel accepts text only.
++    """
+     try:
+         from agent.auxiliary_client import _read_main_provider, _read_main_model
+         from agent.image_routing import decide_image_input_mode
+@@ -483,7 +485,10 @@
+         cfg = load_config()
+         if decide_image_input_mode(provider, model, cfg) != "native":
+             return False
+-        return _accepts_tool_result_images(provider, model, cfg)
++        if _accepts_tool_result_images(provider, model, cfg):
++            return True
++        from agent.image_routing import _lookup_supports_vision
++        return _lookup_supports_vision(provider, model, cfg) is True
+     except Exception as exc:
+         logger.debug("Native vision fast-path check failed: %s", exc)
+         return False
+--- a/agent/models_dev.py
++++ b/agent/models_dev.py
+@@ -480,6 +480,28 @@
+         return _models_dev_cache
+ 
+ 
++def refresh_stale_models_dev_for_capability() -> bool:
++    """Refresh a stale catalog before trusting a negative capability verdict.
++
++    Normal lookups serve stale data while refreshing in the background. An image
++    routed as text cannot be recovered later, so this path waits for that refresh.
++    The lock and retry deadline avoid duplicate requests and repeated failures.
++    """
++    now = time.time()
++    if not _models_dev_cache or now - _models_dev_cache_time < _MODELS_DEV_CACHE_TTL or now < _models_dev_retry_after:
++        return False
++    with _models_dev_fetch_lock:
++        now = time.time()
++        if not _models_dev_cache:
++            return False
++        if now - _models_dev_cache_time < _MODELS_DEV_CACHE_TTL:
++            return True  # A background refresh completed while we waited.
++        if now < _models_dev_retry_after:
++            return False
++        _refresh_locked("image capability")
++        return True
++
++
+ def _registry_provider(mdev_id: str, allow_network: bool) -> Optional[Dict[str, Any]]:
+     """The raw models.dev provider entry, or None."""
+     # Keep the zero-argument call on the allow_network path: dozens of test sites monkeypatch fetch_models_dev with zero-arg lambdas.
+--- a/agent/image_routing.py
++++ b/agent/image_routing.py
+@@ -279,7 +279,7 @@
+     when an image needs routing, and the text-only-main guard depends on catalog
+     data — a cold cache returning "unknown" would reintroduce attempting the call.
+     The fetch is cached (4h TTL) and backoff-limited."""
+-    from agent.models_dev import get_model_capabilities
++    from agent.models_dev import get_model_capabilities, refresh_stale_models_dev_for_capability
+ 
+     # allow_network=True on purpose: vision-capability lookup runs when an image actually needs routing (not
+     # per turn), and the #31179 text-only-main guard depends on catalog data — a cold cache returning
+@@ -294,6 +294,8 @@
+ 
+         model = strip_codex_context_variant_suffix(model)
+     caps = get_model_capabilities(provider, model, allow_network=True)
++    if (caps is None or caps.supports_vision is not True) and refresh_stale_models_dev_for_capability():
++        caps = get_model_capabilities(provider, model, allow_network=False)
+     return None if caps is None else caps.supports_vision
+ 
+ 

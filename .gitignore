@@ -51,6 +51,7 @@
 !packages/fast-workspace-switch/fast-workspace-switch.swift
 !packages/browser-use/pyproject.toml
 !packages/browser-use/uv.lock
+!packages/hermes-image-bridge.patch
 
 # AGENT SKILLS
 !.agents/
