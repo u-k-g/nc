@@ -32,11 +32,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790372142,
-        "narHash": "sha256-HuhSmmYsaTXChAqn+1m+xDvdqB2DrzNfsPsVtf4Zm3o=",
+        "lastModified": 1790375207,
+        "narHash": "sha256-nDv8P6l7fsLtkE4J2XuHp/SjReVxFNwujo3w0SWlEY4=",
         "owner": "u-k-g",
         "repo": "arura",
-        "rev": "f8bf91b9a86e2b8e5671363e026296524158d5c7",
+        "rev": "25208f195471242b069fdc996dfe35f2826d306a",
         "type": "github"
       },
       "original": {
