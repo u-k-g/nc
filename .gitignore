@@ -52,6 +52,7 @@
 !packages/browser-use/pyproject.toml
 !packages/browser-use/uv.lock
 !packages/hermes-image-bridge.patch
+!packages/hermes-edit-target.patch
 
 # AGENT SKILLS
 !.agents/

@@ -92,8 +92,10 @@
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/turn_context.py"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/models_dev.py"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/image_routing.py"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/agent/agent_runtime_helpers.py"
                   chmod u+w "$out/share/hermes-agent/python-overlay/tools/vision_tools.py"
                   patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-image-bridge.patch}
+                  patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-edit-target.patch}
                   for command in hermes hermes-agent hermes-acp; do
                     wrapProgram "$out/bin/$command" --prefix PYTHONPATH : "$out/share/hermes-agent/python-overlay"
                   done

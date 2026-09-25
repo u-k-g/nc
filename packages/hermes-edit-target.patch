@@ -1,0 +1,24 @@
+diff --git a/agent/agent_runtime_helpers.py b/agent/agent_runtime_helpers.py
+index 76cb67dfc3..4f02246362 100644
+--- a/agent/agent_runtime_helpers.py
++++ b/agent/agent_runtime_helpers.py
+@@ -598,6 +598,19 @@
+             merged_content = (
+                 (prev_content + "\n\n" + new_content) if prev_content and new_content else (prev_content or new_content)
+             )
++            # A display marker followed by the actual prompt is one provider-facing
++            # user turn. Keep the prompt's durable row id and human provenance: an
++            # edit targets that id, while the marker is not an editable user turn.
++            if split_user_originated_turn(prev)[1] is None and split_user_originated_turn(msg)[1] is not None:
++                had_api_sidecar = "api_content" in msg
++                msg["content"] = merged_content
++                drop_stale_api_content(msg)
++                if merged_content != new_content or had_api_sidecar:
++                    msg.pop(_DB_PERSISTED_MARKER, None)
++                _remember_absorbed_row(msg, prev)
++                merged[-1] = msg
++                repairs += 1
++                continue
+             had_api_sidecar = "api_content" in prev
+             prev["content"] = merged_content
+             # Merged content invalidates the api_content sidecar; drop it so replay cannot use stale bytes.
