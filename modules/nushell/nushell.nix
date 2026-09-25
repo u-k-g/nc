@@ -257,7 +257,15 @@ let
       }
 
       let skill = open --raw ${toJSON { } "${home}/.agents/skills/wrtcmtmsg/SKILL.md"}
-      let prompt = $skill + "\n\n" + $diff.stdout
+      let diff_text = (
+        $diff.stdout
+        | into binary
+        | decode utf-8
+        | lines
+        | where { not ($in | str contains "\u{fffd}") }
+        | str join "\n"
+      )
+      let prompt = $skill + "\n\n" + $diff_text
       let run = (^${getExe pkgs.opencode} run --model opencode-go/mimo-v2.6-flash --variant low -- $prompt | complete)
 
       if $run.exit_code != 0 {
