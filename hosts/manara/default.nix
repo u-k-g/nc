@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -37,7 +38,10 @@ in
     local-tools.enable = true;
     browser-cdp.enable = true;
     hostname = "manara.tail4b71d2.ts.net";
+    settings.plugins.enabled = singleton "parallel-search";
   };
+
+  home.users.${config.nc.user.name}.files.".hermes/plugins/parallel-search".source = inputs.parallel-search-mcp;
 
   secrets.hermes-parallel = {
     file = ./hermes-parallel.env.age;

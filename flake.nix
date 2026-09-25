@@ -57,6 +57,11 @@
       flake = false;
     };
 
+    parallel-search-mcp = {
+      url = "github:parallel-web/search-mcp";
+      flake = false;
+    };
+
     t3 = {
       url = "github:pingdotgg/t3code";
       flake = false;

@@ -619,6 +619,22 @@
         "url": "https://github.com/mogenson/PaperWM.spoon.git"
       }
     },
+    "parallel-search-mcp": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790036817,
+        "narHash": "sha256-ztvnI8EtCeR5Ra9EHk/uXAu+AM22/TXLpfyKOWz4o1c=",
+        "owner": "parallel-web",
+        "repo": "search-mcp",
+        "rev": "1f99b9c1a0363d93e5208718bceee850b5cc4e45",
+        "type": "github"
+      },
+      "original": {
+        "owner": "parallel-web",
+        "repo": "search-mcp",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -695,6 +711,7 @@
         "nixpkgs-install-media": "nixpkgs-install-media",
         "paneru": "paneru",
         "paperwm": "paperwm",
+        "parallel-search-mcp": "parallel-search-mcp",
         "t3": "t3",
         "themes": "themes"
       }
