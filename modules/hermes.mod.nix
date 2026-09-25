@@ -345,7 +345,7 @@
           serviceConfig = {
             User = config.nc.user.name;
             WorkingDirectory = config.nc.user.homeDirectory;
-            EnvironmentFile = "-${config.nc.nixos.hermes.home}/dashboard.env";
+            EnvironmentFile = singleton "-${config.nc.nixos.hermes.home}/dashboard.env";
             # Kernel-enforced read-only for everything the dashboard spawns:
             # chat sessions, terminal children and the execute_code kernel all
             # share this mount namespace, so the flake is read-only to the

@@ -6,6 +6,7 @@ let
     elem
     filter
     foldl'
+    isList
     listToAttrs
     match
     pathExists
@@ -18,6 +19,15 @@ let
   singleton = value: [ value ];
   optional = condition: consequence: if condition then [ consequence ] else [ ];
   uniq = foldl' (acc: item: if elem item acc then acc else acc ++ singleton item) [ ];
+
+  hostKeys = host:
+    if keys.hosts ? ${host} then
+      let
+        recipients = keys.hosts.${host};
+      in
+      if isList recipients then recipients else singleton recipients
+    else
+      [ ];
 
   listFilesRecursive =
     base: directory:
@@ -46,7 +56,7 @@ let
     host:
     map (path: {
       name = path;
-      value.publicKeys = uniq (optional (keys.hosts ? ${host}) keys.hosts.${host} ++ keys.admins);
+      value.publicKeys = uniq (hostKeys host ++ keys.admins);
     }) (filter isAge (listFilesRecursive "hosts/${host}" ./hosts/${host}))
   ) (attrNames (readDir ./hosts));
 

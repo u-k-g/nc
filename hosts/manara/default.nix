@@ -39,6 +39,17 @@ in
     hostname = "manara.tail4b71d2.ts.net";
   };
 
+  secrets.hermes-parallel = {
+    file = ./hermes-parallel.env.age;
+    owner = config.nc.user.name;
+    mode = "0400";
+  };
+
+  systemd.services.hermes.serviceConfig.EnvironmentFile = [ config.secrets.hermes-parallel.path ];
+  systemd.services.hermes-gateway.serviceConfig.EnvironmentFile = [ config.secrets.hermes-parallel.path ];
+  systemd.services.hermes.restartTriggers = singleton config.secrets.hermes-parallel.file;
+  systemd.services.hermes-gateway.restartTriggers = singleton config.secrets.hermes-parallel.file;
+
   nc.nixos.arura.enable = true;
 
   nc.radicle.enable = false;

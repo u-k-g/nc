@@ -36,6 +36,32 @@
               "json"
             ];
           };
+          engines = [
+            {
+              name = "bing";
+              disabled = false;
+            }
+            {
+              name = "seznam";
+              disabled = false;
+            }
+            {
+              name = "duckduckgo";
+              disabled = true;
+            }
+            {
+              name = "google cse";
+              disabled = true;
+            }
+            {
+              name = "startpage";
+              disabled = true;
+            }
+            {
+              name = "brave";
+              disabled = true;
+            }
+          ];
         };
 
       initializeSearch = pkgs.writers.writePython3 "searxng-settings" { } /* python */ ''
@@ -48,6 +74,7 @@
 
         state = pathlib.Path(sys.argv[2])
         state.mkdir(mode=0o700, parents=True, exist_ok=True)
+        (state / "cache").mkdir(mode=0o700, exist_ok=True)
         key = state / "secret-key"
         if not key.exists():
             with open(
@@ -89,7 +116,11 @@
 
       config = mkIf (config.nc.nixos.hermes.enable && config.nc.nixos.hermes.local-tools.enable) {
         nc.nixos.hermes.settings = {
-          web.search_backend = "searxng";
+          web = {
+            backend = "parallel";
+            search_backend = "parallel";
+            extract_backend = "parallel";
+          };
           browser.cdp_url = "http://127.0.0.1:${toString config.nc.nixos.hermes.browser-cdp.port}";
           mcp_servers.computer-use-linux = {
             command = getExe config.nc.nixos.hermes.local-tools.computerUsePackage;
@@ -108,12 +139,14 @@
         # config.yaml overlay. Pin the same endpoint in its process environment.
         environment.etc."hermes/.env".text = mkAfter ''
           SEARXNG_URL=http://127.0.0.1:${toString config.nc.nixos.hermes.local-tools.searchPort}
+          PARALLEL_SEARCH_MODE=fast
           BROWSER_CDP_URL=${config.nc.nixos.hermes.settings.browser.cdp_url}
         '';
 
         systemd.services = genAttrs [ "hermes" "hermes-gateway" ] (_: {
           path = singleton config.nc.nixos.hermes.local-tools.browserPackage;
           environment.SEARXNG_URL = "http://127.0.0.1:${toString config.nc.nixos.hermes.local-tools.searchPort}";
+          environment.PARALLEL_SEARCH_MODE = "fast";
           environment.BROWSER_CDP_URL = config.nc.nixos.hermes.settings.browser.cdp_url;
         });
 
@@ -163,6 +196,7 @@
               initializeSearch
             ];
             environment.SEARXNG_SETTINGS_PATH = "%h/.local/state/searxng/settings.json";
+            environment.TMPDIR = "%h/.local/state/searxng/cache";
 
             serviceConfig = {
               ExecStartPre = escapeShellArgs [
