@@ -16,6 +16,7 @@ let
   hex = color: "#${color}";
   heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
   edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+  suzuri = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.suzuri;
   dms = getExe pkgs.dms-shell;
   qtEnvironment = [
     "QT_QPA_PLATFORMTHEME=${config.qt.platformTheme}"
@@ -321,7 +322,7 @@ in
       };
     };
 
-    environment.systemPackages = with pkgs; [
+    environment.systemPackages = (with pkgs; [
       adwaita-icon-theme
       dgop
       dms-shell
@@ -333,6 +334,9 @@ in
       nwg-displays
       sunsetr
       xwayland-satellite
+    ]) ++ [
+      pkgs.t3code
+      suzuri
     ];
 
     environment.sessionVariables = {
@@ -400,8 +404,10 @@ in
               Alt+W repeat=false { spawn "${getExe focusOrLaunch}" "helium" "${getExe heliumBrowser}"; }
               Alt+Semicolon repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
               Alt+Shift+F12 repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
+              Alt+A repeat=false { spawn "${getExe focusOrLaunch}" "suzuri" "${getExe suzuri}"; }
               Alt+Shift+F repeat=false { spawn "${getExe focusOrLaunch}" "dolphin" "${getExe pkgs.kdePackages.dolphin}"; }
               Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe pkgs.opencode-desktop}"; }
+              Alt+T repeat=false { spawn "${getExe focusOrLaunch}" "t3code" "${getExe pkgs.t3code}"; }
               Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe edgePkgs.zed-editor}"; }
 
               Alt+H { focus-column-left; }

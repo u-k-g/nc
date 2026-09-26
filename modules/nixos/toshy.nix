@@ -40,7 +40,7 @@ let
           # character keymaps, which appear later in the upstream config.
           keymap("NC niri Option chords", {
               **{C(f"Alt-{key}"): C(f"Alt-{key}") for key in (
-                  "W", "R", "Z", "H", "J", "K", "L", "F", "S",
+                  "W", "A", "R", "T", "Z", "H", "J", "K", "L", "F", "S",
                   "Semicolon", "1", "2", "3", "4", "5", "6", "7", "8", "9",
               )},
               **{C(f"Alt-Shift-{key}"): C(f"Alt-Shift-{key}") for key in (
