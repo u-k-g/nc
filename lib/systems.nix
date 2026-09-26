@@ -1,6 +1,7 @@
 { self }:
 let
   inherit (self.attrsets) attrValues;
+  inherit (self.lists) singleton;
 in
 {
   systems.darwinSystem =
@@ -38,15 +39,13 @@ in
           self = inputs.self;
         };
 
-        modules = [
-          inputs.blip.nixosModules.default
-          inputs.chaotic.nixosModules.default
-        ]
-        ++ attrValues inputs.self.nixosModules
-        ++ [
-          module
-          { networking.hostName = hostName; }
-        ];
+        modules =
+          singleton inputs.blip.nixosModules.default
+          ++ attrValues inputs.self.nixosModules
+          ++ [
+            module
+            { networking.hostName = hostName; }
+          ];
       };
     };
 }

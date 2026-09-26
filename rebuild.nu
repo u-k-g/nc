@@ -17,6 +17,27 @@ def build [
   $paths | lines | last | str trim
 }
 
+def set-nixos-profile [
+  system: string
+  target?: string
+]: nothing -> nothing {
+  let arguments = [
+    "nix"
+    "build"
+    "--extra-experimental-features"
+    "nix-command"
+    "--profile"
+    "/nix/var/nix/profiles/system"
+    $system
+  ]
+
+  if $target == null {
+    ^sudo ...$arguments
+  } else {
+    ^ssh $target sudo ...$arguments
+  }
+}
+
 # Build and activate a local NixOS or nix-darwin configuration. A different
 # hostname is treated as a remote NixOS deployment unless --local is supplied.
 def main [
@@ -53,6 +74,10 @@ def main [
       return
     }
 
+    if $action in ["boot" "switch"] {
+      set-nixos-profile $system $ssh_target
+    }
+
     ^ssh $ssh_target $"sudo ($system)/bin/switch-to-configuration ($action)"
     return
   }
@@ -82,6 +107,10 @@ def main [
     if $action == "build" {
       print $system
       return
+    }
+
+    if $action in ["boot" "switch"] {
+      set-nixos-profile $system
     }
 
     ^sudo $"($system)/bin/switch-to-configuration" $action
