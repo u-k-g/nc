@@ -8,34 +8,27 @@
 
 let
   inherit (lib.lists) singleton;
-  inherit (lib.meta) getExe;
+  inherit (lib.meta) getExe getExe';
   inherit (lib.modules) mkIf;
-  inherit (lib.strings) replaceStrings;
+  inherit (lib.strings) escapeShellArg;
   user = config.nc.user;
   source = inputs.toshy;
   runtime = inputs.toshy.packages.${pkgs.stdenv.hostPlatform.system}.toshy-runtime;
-  defaultConfig = lib.fileContents (source + /default-toshy-config/toshy_config.py);
   capsMarker = "###  SLICE_MARK_START: user_custom_modmaps  ###  EDITS OUTSIDE THESE MARKS WILL BE LOST ON UPGRADE";
   appsMarker = "###  SLICE_MARK_START: user_apps  ###  EDITS OUTSIDE THESE MARKS WILL BE LOST ON UPGRADE";
-  toshyConfig =
-    assert lib.strings.hasInfix "cnfg = Settings(current_folder_path)" defaultConfig;
-    assert lib.strings.hasInfix capsMarker defaultConfig;
-    assert lib.strings.hasInfix appsMarker defaultConfig;
-    replaceStrings
-      [
-        "cnfg = Settings(current_folder_path)"
-        capsMarker
-        appsMarker
-      ]
-      [
-        ''
+  toshyConfig = pkgs.callPackage (
+    { coreutils, runCommand }:
+    runCommand "toshy-config.py" { } ''
+      ${getExe' coreutils "cp"} ${source}/default-toshy-config/toshy_config.py "$out"
+      substituteInPlace "$out" \
+        --replace-fail ${escapeShellArg "cnfg = Settings(current_folder_path)"} ${escapeShellArg ''
           cnfg = Settings(current_folder_path)
           # Match the Mac's US Option characters and keep Caps available for Hyper.
           cnfg.optspec_layout = 'US'
           cnfg.capslock_mode = 'caps_is_caps'
           cnfg.save_settings()
-        ''
-        ''
+        ''} \
+        --replace-fail ${escapeShellArg capsMarker} ${escapeShellArg ''
           ${capsMarker}
           setup_hyper(
               Key.CAPSLOCK,
@@ -60,8 +53,8 @@ let
               # Cmd+grave already emits Alt+grave for same-app window cycling.
               C("Alt-Grave"): C("Alt-Shift-F12"),
           }, when=lambda ctx: cnfg.screen_has_focus and not ctx_app_is_remote)
-        ''
-        ''
+        ''} \
+        --replace-fail ${escapeShellArg appsMarker} ${escapeShellArg ''
           ${appsMarker}
           keymap("NC Mac and Hyper keys", {
               C("Hyper-h"): C("Left"),
@@ -71,9 +64,9 @@ let
               C("F6"): C("Delete"),
               C("RC-Space"): [iEF2NT(), C("C-Alt-Space")],
           }, when=lambda ctx: cnfg.screen_has_focus and not ctx_app_is_remote)
-        ''
-      ]
-      defaultConfig;
+        ''}
+    ''
+  ) { };
 in
 {
   imports = singleton inputs.toshy.nixosModules.toshy;
@@ -88,7 +81,7 @@ in
       files.".local/state/toshy/runtime".source = runtime;
 
       xdg.config.files = {
-        "toshy/toshy_config.py".text = toshyConfig;
+        "toshy/toshy_config.py".source = toshyConfig;
         "toshy/toshy_common".source = source + /toshy_common;
         "toshy/scripts".source = source + /scripts;
         "toshy/wlroots-dbus-service".source = source + /wlroots-dbus-service;
@@ -104,7 +97,12 @@ in
         description = "Toshy niri window context";
         wantedBy = singleton "graphical-session.target";
         partOf = singleton "graphical-session.target";
-        path = [ pkgs.bash pkgs.coreutils pkgs.procps pkgs.systemd ];
+        path = [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.procps
+          pkgs.systemd
+        ];
         environment.TOSHY_RUNTIME_DIR = "${runtime}";
         serviceConfig = {
           ExecStart = "${getExe pkgs.bash} ${source}/scripts/bin/toshy-wlroots-dbus-service.sh";
@@ -119,7 +117,12 @@ in
         partOf = singleton "graphical-session.target";
         wants = singleton "toshy-wlroots-dbus.service";
         after = singleton "toshy-wlroots-dbus.service";
-        path = [ pkgs.bash pkgs.coreutils pkgs.procps pkgs.systemd ];
+        path = [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.procps
+          pkgs.systemd
+        ];
         environment.TOSHY_RUNTIME_DIR = "${runtime}";
         serviceConfig = {
           Environment = "TERM=xterm";
