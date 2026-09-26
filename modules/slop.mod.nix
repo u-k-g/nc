@@ -1894,56 +1894,53 @@
             ---
             name: whitelist-git-ignore
             disable-model-invocation: true
-            description: Create or update a repository .gitignore as a strict whitelist that ignores everything by default and explicitly admits only approved directories, filenames, extensions, and exceptional paths. Use when the user asks for a whitelist-only, allowlist, deny-by-default, UKG-style, or nc-style .gitignore, or wants a repository to make unexpected files untrackable by default.
+            description: Create or update a deny-by-default repository .gitignore that broadly admits project source file types in source directories while requiring exact paths for docs, scripts, configuration, and local agent files. Use for whitelist-only, allowlist, deny-by-default, UKG-style, or nc-style .gitignore requests.
             ---
 
             # Whitelist Git Ignore
 
-            Create a deny-by-default `.gitignore` in the style used by `/Users/uzair/01-projects/ukg` and `/Users/uzair/nc`. Inspect the target repository and tailor the whitelist; do not blindly copy either repository's entries.
+            Create a deny-by-default `.gitignore` with two kinds of allow rules: scoped source extensions for ordinary project code, and exact paths for files that could be local notes, scripts, agent material, or configuration. New source files in approved source directories can be tracked without editing `.gitignore`; other new files stay ignored until deliberately allowed. Inspect the target repository and tailor the whitelist.
 
             ## Build the whitelist
 
             1. Read repository instructions such as `AGENTS.md` before editing.
-            2. Inspect the existing `.gitignore`, `git status --short`, `git ls-files`, and the repository's top-level structure. Distinguish source/configuration from build outputs, caches, dependencies, secrets, editor files, and other generated state.
+            2. Inspect the existing `.gitignore`, `jj status`, `jj file list`, and the repository's top-level structure. Distinguish source/configuration from build outputs, caches, dependencies, secrets, editor files, and other generated state.
             3. If tracked files already exist, ensure the new rules continue to admit every intentionally tracked file. Treat surprising tracked artifacts as items to flag, not automatically whitelist.
             4. Write rules in this order, with blank lines between groups:
 
             ```gitignore
             *
 
-            !.gitignore
+            !/.gitignore
 
-            !source-directory/
-            !source-directory/**/
+            !/src/
+            !/src/**/
+            !/docs/
 
-            !README.md
-            !project-root-file
+            !/src/**/*.ts
+            !/src/**/*.tsx
 
-            !*.ext
-
-            !path/to/extensionless-file
+            !/README.md
+            !/docs/architecture.md
             ```
 
-            5. Reopen only directories that may contain versioned content. For each admitted directory, include both `!dir/` and `!dir/**/` so Git can traverse nested directories while the initial `*` continues to ignore files unless another rule admits them.
-            6. Admit exact root filenames before extension rules. Use extension rules for file types that are intentionally versioned throughout reopened directories. Put extensionless or unusually named path exceptions last.
-            7. Keep the whitelist narrow. Do not admit broad generated directories such as `.direnv`, `node_modules`, `dist`, `build`, coverage output, caches, or secret material merely because a matching extension exists.
+            5. Reopen source directories and their descendants only where new files of approved source types belong. Scope broad extension rules to those directories, such as `!/src/**/*.ts`; do not use a repository-wide `!*.ts` unless every reopened directory should admit TypeScript files.
+            6. Admit Markdown, Nu, shell scripts, agent skills, local notes, configuration, and shipped assets by exact paths. Do not use broad rules such as `!*.md`, `!*.nu`, or `!*.sh`. Reopen only the exact ancestor directories needed for these files.
+            7. Keep the whitelist narrow. Do not reopen generated directories such as `.direnv`, `node_modules`, `dist`, `build`, coverage output, or caches. Do not admit secrets. A local-only file with an approved source extension belongs outside the broadly admitted source directories.
             8. Preserve intentional comments only when they clarify a non-obvious exception. Keep the file compact and deterministic.
 
             ## Verify the result
 
-            Run `git diff --check` and inspect `git diff -- .gitignore`.
-
-            Use `git check-ignore -v --no-index <path>` on representative allowed and forbidden paths. Remember that `git check-ignore` can print the matching negation rule for an allowed path; use the reported pattern and exit status together, and supplement it with `git status --short --untracked-files=all` when needed.
-
-            Enumerate tracked files and check that none are excluded by the completed rules. Test at least:
+            Inspect `jj diff -- .gitignore` and `jj status`. Enumerate `jj file list` and check that every intended tracked file is covered by either a scoped source rule or an exact path. Test at least:
 
             - an allowed root file;
-            - an allowed file in a nested reopened directory;
-            - a disallowed extension in an otherwise reopened directory;
-            - a file under a directory that must remain ignored;
-            - every explicit extensionless exception.
+            - a new source file with an approved extension in a source directory;
+            - a new Markdown, Nu, or shell file beside an admitted one that remains ignored;
+            - a new agent skill that remains ignored;
+            - a file under a generated directory that remains ignored;
+            - an exact extensionless allowed file.
 
-            Report the whitelist categories added and any intentionally excluded existing files. Do not run `git add`, remove files, or alter tracking state unless the user explicitly asks.
+            Report the source categories and exact paths added, plus any intentionally excluded existing files. Do not change tracking state unless the user explicitly asks.
           '';
 
           ".agents/skills/whitelist-git-ignore/agents/openai.yaml".text = ''
