@@ -158,6 +158,7 @@
         # terminal deny rules guarding the flake. Model/provider, agent tuning
         # and approval mode deliberately stay runtime-configurable in
         # ~/.hermes/config.yaml.
+        environment.etc."hermes/config.yaml".enable = config.nc.nixos.hermes.enable;
         environment.etc."hermes/config.yaml".text =
           mkIf config.nc.nixos.hermes.enable
           <| toJSON { }
@@ -263,6 +264,7 @@
         # tools. Managed scope keeps the agent from relaxing it. Terminal and
         # kernel writes into the flake are blocked at the syscall level by the
         # read-only mounts on the services below.
+        environment.etc."hermes/.env".enable = config.nc.nixos.hermes.enable;
         environment.etc."hermes/.env".text =
           mkIf config.nc.nixos.hermes.enable
           <| ''

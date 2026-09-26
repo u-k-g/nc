@@ -7,7 +7,7 @@
 
 let
   inherit (lib.attrsets) genAttrs;
-  inherit (lib.lists) optionals;
+  inherit (lib.lists) optionals singleton;
   inherit (lib.modules) mkIf;
   inherit (lib.trivial) const flip;
   user = config.nc.user;
@@ -18,7 +18,7 @@ let
       withVencord = true;
     }).overrideAttrs
       (old: {
-        nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.makeWrapper ];
+        nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ singleton pkgs.makeWrapper;
 
         postFixup = ''
           wrapProgram $out/opt/Discord/Discord \

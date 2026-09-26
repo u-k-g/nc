@@ -67,6 +67,11 @@
       flake = false;
     };
 
+    toshy = {
+      url = "github:RedBearAK/Toshy";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixpkgs-install-media.url = "github:NixOS/nixpkgs/a3116115851d68b8952a2a4221cc25a84e56b532";
 
     chaotic = {

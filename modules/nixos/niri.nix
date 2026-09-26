@@ -23,10 +23,6 @@ let
   ];
   focusOrLaunch = pkgs.writers.writeNuBin "nc-focus-or-launch" ''
     def main [pattern: string, ...command: string] {
-      if ($command | is-empty) {
-        exit 64
-      }
-
       let result = (^${getExe pkgs.niri} msg -j windows | complete)
       let windows = if $result.exit_code == 0 {
         try { $result.stdout | from json } catch { [] }
@@ -34,10 +30,16 @@ let
         []
       }
 
-      let id = (try {
-        $windows
+      let focused = (^${getExe pkgs.niri} msg -j focused-window | complete)
+      let focused_id = if $focused.exit_code == 0 {
+        try { $focused.stdout | from json | get id } catch { null }
+      } else {
+        null
+      }
+
+      let matches = ($windows
         | where {|window|
-            (($window | get --optional app_id | default "" | into string | str downcase) =~ $pattern)
+            ($window | get --optional app_id | default "" | into string | str downcase | str contains ($pattern | str downcase))
           }
         | sort-by {|window|
             [
@@ -45,52 +47,40 @@ let
               ($window | get --optional focus_timestamp.nanos | default 0)
             ]
           }
-        | last
-        | get id
-      } catch {
-        null
-      })
+      )
+
+      let candidates = if ($matches | any {|window| $window.id == $focused_id }) {
+        $matches | where {|window| $window.id != $focused_id }
+      } else {
+        $matches | reverse
+      }
+
+      let id = (try {
+        if ($candidates | is-empty) {
+          $matches | first | get id
+        } else {
+          $candidates | first | get id
+        }
+      } catch { null })
 
       if $id != null {
         exec ${getExe pkgs.niri} msg action focus-window --id $id
       }
 
+      if ($command | is-empty) {
+        exit 0
+      }
+
       exec ...$command
     }
   '';
-  macCommandKey = pkgs.writers.writeNuBin "nc-mac-command-key" ''
-    def main [key: string] {
-      let key = ($key | str downcase)
-      if $key not-in [c k t v w] {
-        exit 64
-      }
-
+  cycleFocusedApp = pkgs.writers.writeNuBin "nc-cycle-focused-app" ''
+    def main [] {
       let result = (^${getExe pkgs.niri} msg -j focused-window | complete)
-      let app_id = if $result.exit_code == 0 {
-        try {
-          $result.stdout
-          | from json
-          | get --optional app_id
-          | default ""
-          | into string
-          | str downcase
-        } catch {
-          ""
-        }
-      } else {
-        ""
-      }
-
-      let is_terminal = (
-        [kitty ghostty alacritty wezterm foot terminal]
-        | any {|terminal| $app_id | str contains $terminal }
-      )
-
-      if $is_terminal {
-        exec ${getExe pkgs.wtype} -M ctrl -M shift $key -m shift -m ctrl
-      } else {
-        exec ${getExe pkgs.wtype} -M ctrl $key -m ctrl
-      }
+      if $result.exit_code != 0 { exit 1 }
+      let app_id = (try { $result.stdout | from json | get app_id } catch { "" })
+      if $app_id == "" { exit 1 }
+      exec ${getExe focusOrLaunch} $app_id
     }
   '';
   dmsThemePath = "${user.homeDirectory}/.config/DankMaterialShell/themes/nc-${theme.slug}.json";
@@ -360,6 +350,8 @@ in
       "niri/config.kdl" = {
         type = "copy";
         text = ''
+          spawn-at-startup "${getExe pkgs.niriswitcher}"
+
           input {
               keyboard {
                   numlock
@@ -400,27 +392,15 @@ in
           }
 
           binds {
-              Alt+Slash { show-hotkey-overlay; }
-              Alt+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
-              Alt+Shift+Slash repeat=false { spawn "${dms}" "ipc" "call" "keybinds" "toggle" "niri"; }
-              Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
-              Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
-              Super+C repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "c"; }
-              Super+K repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "k"; }
-              Super+T repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "t"; }
-              Super+V repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "v"; }
-              Super+W repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "w"; }
-              Ctrl+Super+C repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "c"; }
-              Ctrl+Super+K repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "k"; }
-              Ctrl+Super+T repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "t"; }
-              Ctrl+Super+V repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "v"; }
-              Ctrl+Super+W repeat=false allow-inhibiting=false { spawn "${getExe macCommandKey}" "w"; }
-
-              // Match the Darwin/Paneru app launchers. Alt is the physical Cmd/Win-position key after keycode remapping.
+              Ctrl+Alt+Slash { show-hotkey-overlay; }
+              Ctrl+Alt+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+              Ctrl+Alt+Comma repeat=false { spawn "${dms}" "ipc" "call" "settings" "focusOrToggle"; }
+              Ctrl+Alt+X repeat=false { spawn "${dms}" "ipc" "call" "powermenu" "toggle"; }
+              // Toshy makes the physical Option position Alt on PC and Mac keyboards.
               Alt+W repeat=false { spawn "${getExe focusOrLaunch}" "helium" "${getExe heliumBrowser}"; }
-              Alt+O repeat=false { spawn "${getExe focusOrLaunch}" "obsidian" "${getExe pkgs.obsidian}"; }
               Alt+Semicolon repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
-              Alt+C repeat=false { spawn "${getExe focusOrLaunch}" "freecad" "${lib.getExe' pkgs.freecad "freecad"}"; }
+              Alt+Shift+F12 repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
+              Alt+Shift+F repeat=false { spawn "${getExe focusOrLaunch}" "dolphin" "${getExe pkgs.kdePackages.dolphin}"; }
               Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe pkgs.opencode-desktop}"; }
               Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe edgePkgs.zed-editor}"; }
 
@@ -428,15 +408,18 @@ in
               Alt+J { focus-workspace-down; }
               Alt+K { focus-workspace-up; }
               Alt+L { focus-column-right; }
+              Alt+Ctrl+J { focus-window-down; }
+              Alt+Ctrl+K { focus-window-up; }
 
               Alt+Shift+H { move-column-left; }
-              Alt+Shift+J { move-window-down; }
-              Alt+Shift+K { move-window-up; }
+              Alt+Shift+J { move-window-to-workspace-down; }
+              Alt+Shift+K { move-window-to-workspace-up; }
               Alt+Shift+L { move-column-right; }
 
               Alt+Shift+T { consume-window-into-column; }
               Alt+Shift+G { expel-window-from-column; }
               Alt+Ctrl+F { toggle-window-floating; }
+              Alt+Super+F { toggle-window-floating; }
               Alt+F { maximize-column; }
               Alt+S { center-column; }
               Alt+Shift+Minus { set-column-width "-10%"; }
@@ -462,13 +445,13 @@ in
               Alt+Shift+8 { move-window-to-workspace 8; }
               Alt+Shift+9 { move-window-to-workspace 9; }
 
-              Alt+Q repeat=false { close-window; }
-              Alt+M { maximize-window-to-edges; }
-              Alt+V { toggle-window-floating; }
-              Alt+Shift+V { switch-focus-between-floating-and-tiling; }
-              Alt+Tab { focus-workspace-previous; }
-              Alt+Space repeat=false { spawn "${dms}" "ipc" "call" "spotlight" "toggle"; }
-              Alt+Shift+Space { toggle-overview; }
+              Alt+F4 { close-window; }
+              Alt+Tab repeat=false { spawn "${lib.getExe' pkgs.niriswitcher "niriswitcherctl"}" "show" "--window"; }
+              Alt+Shift+Tab repeat=false { spawn "${lib.getExe' pkgs.niriswitcher "niriswitcherctl"}" "show" "--window"; }
+              Alt+Grave repeat=false { spawn "${getExe cycleFocusedApp}"; }
+              Alt+Shift+Grave repeat=false { spawn "${getExe cycleFocusedApp}"; }
+              Ctrl+Alt+Space repeat=false { spawn "${dms}" "ipc" "call" "spotlight" "toggle"; }
+              Ctrl+Alt+Shift+Space { toggle-overview; }
 
               XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1+ -l 1.0"; }
               XF86AudioLowerVolume allow-when-locked=true { spawn-sh "wpctl set-volume @DEFAULT_AUDIO_SINK@ 0.1-"; }
@@ -485,9 +468,8 @@ in
               Ctrl+Print { screenshot-screen; }
               Alt+Print { screenshot-window; }
 
-              Alt+Shift+E { quit; }
               Ctrl+Alt+Delete { quit; }
-              Alt+Shift+P { power-off-monitors; }
+              Ctrl+Alt+Shift+P { power-off-monitors; }
           }
         '';
       };

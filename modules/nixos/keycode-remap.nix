@@ -1,7 +1,7 @@
-{ ... }:
+{ config, lib, ... }:
 
 {
-  services.keyd = {
+  services.keyd = lib.modules.mkIf (!config.nc.nixos.niri.enable) {
     enable = true;
 
     keyboards.default = {
@@ -35,6 +35,7 @@
     };
   };
 
+  environment.etc."libinput/local-overrides.quirks".enable = !config.nc.nixos.niri.enable;
   environment.etc."libinput/local-overrides.quirks".text = ''
     [keyd virtual keyboard]
     MatchUdevType=keyboard

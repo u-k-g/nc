@@ -713,7 +713,8 @@
         "paperwm": "paperwm",
         "parallel-search-mcp": "parallel-search-mcp",
         "t3": "t3",
-        "themes": "themes"
+        "themes": "themes",
+        "toshy": "toshy"
       }
     },
     "systems": {
@@ -759,6 +760,26 @@
       "original": {
         "owner": "RGBCube",
         "repo": "ThemeNix",
+        "type": "github"
+      }
+    },
+    "toshy": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1789727698,
+        "narHash": "sha256-0LXcXTGL8XbgcOVHZOgzhOFVZS+YPf46qwS/w4tQtxc=",
+        "owner": "RedBearAK",
+        "repo": "Toshy",
+        "rev": "354076728e5009e40fb6aa84a658e0e01b5e8faf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "RedBearAK",
+        "repo": "Toshy",
         "type": "github"
       }
     },
