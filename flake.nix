@@ -137,7 +137,7 @@
     };
 
     paneru = {
-      url = "github:u-k-g/paneru";
+      url = "github:u-k-g/paneru/exp";
       inputs.flake-parts.follows = "flake-parts";
       inputs.nix-darwin.follows = "nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
