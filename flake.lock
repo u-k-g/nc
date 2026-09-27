@@ -32,11 +32,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790479477,
-        "narHash": "sha256-OP3JDJ/DbMu20wmQYciiUCkqNUvQrQWdnIfSM418ZJE=",
+        "lastModified": 1790710282,
+        "narHash": "sha256-6xdHu59u2bTpm1y16pSUdhGjLK3TPh6xX1cElw0RFSc=",
         "owner": "u-k-g",
         "repo": "arura",
-        "rev": "c1f3e27bf17369b744adbfc6c3bb313adbe69f55",
+        "rev": "5f7ac85838980ab02999d3236250af099c5c432e",
         "type": "github"
       },
       "original": {
@@ -248,11 +248,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1790479299,
-        "narHash": "sha256-AjVd3hgtZlhnrynjWgGB27j7Uzm46qLkLMxjzn9ymTw=",
+        "lastModified": 1790708757,
+        "narHash": "sha256-OGnIATjkL369gnZUje4COdZAVK+5wgZ865+oRdRKsq8=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "a9109b07f42685f88397008d0d5a6c3d481b3b28",
+        "rev": "dccb84b92401234db294667ec203d3ac3dc1b87f",
         "type": "github"
       },
       "original": {
