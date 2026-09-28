@@ -3219,16 +3219,13 @@
           // {
             ".agents/AGENTS.md".text = ''
               Never use `git`. Always use `jj`.
-
-              Ask before running any VCS command that mutates state, including
-              mutating `jj` commands.
-            '';
+              Only run mutating VCS commands when told to '';
             ".codex/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".config/opencode/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".grok/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".cursor/rules/agents.mdc".text = ''
               ---
-              description: Never use git. Always use jj. Ask before mutating VCS commands.
+              description: Never use git. Always use jj. Only run mutating VCS commands when told.
               alwaysApply: true
               ---
 
