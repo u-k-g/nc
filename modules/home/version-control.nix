@@ -174,7 +174,7 @@ in
         e = ["edit"]
         l = ["log"]
         la = ["log", "--revisions", "::"]
-        s = ["squash"]
+        sq = ["squash"]
         si = ["squash", "--interactive"]
         u = ["undo"]
         fork = ["util", "exec", "--", "${jjFork}"]
