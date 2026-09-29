@@ -15,7 +15,7 @@ index 76cb67dfc3..4f02246362 100644
 +                drop_stale_api_content(msg)
 +                if merged_content != new_content or had_api_sidecar:
 +                    msg.pop(_DB_PERSISTED_MARKER, None)
-+                _remember_absorbed_row(msg, prev)
++                _remember_absorbed_row(msg, prev, folded=True)
 +                merged[-1] = msg
 +                repairs += 1
 +                continue
