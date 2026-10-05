@@ -41,6 +41,7 @@
     login = ./darwin/login.nix;
     menu = ./darwin/menu.nix;
     mullvad-dns = ./darwin/mullvad-dns.nix;
+    nehir = ./darwin/nehir.nix;
     paneru = ./darwin/paneru.nix;
     paperwm = ./darwin/paperwm.nix;
     screencapture = ./darwin/screencapture.nix;

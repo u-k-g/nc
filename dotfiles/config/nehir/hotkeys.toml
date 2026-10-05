@@ -1,0 +1,29 @@
+[workspace]
+next = "Option+J"
+previous = "Option+K"
+switch = "Option+{N}"
+moveTo = "Option+Shift+{N}"
+
+[focus]
+left = "Option+H"
+down = "Option+Command+J"
+up = "Option+Command+K"
+right = "Option+L"
+
+[move]
+columnLeft = "Option+Shift+H"
+columnRight = "Option+Shift+L"
+windowToWorkspaceDown = "Option+Shift+J"
+windowToWorkspaceUp = "Option+Shift+K"
+consumeIntoColumn = "Option+Shift+T"
+expelFromColumn = "Option+Shift+G"
+
+[layout]
+toggleFocusedFloating = "Option+Control+F"
+toggleColumnFullWidth = "Option+F"
+rescueOffscreen = "Option+S"
+decreaseColumnWidth = "Option+Shift+Minus"
+increaseColumnWidth = "Option+Shift+Equal"
+expandColumnToAvailable = "Unassigned"
+decreaseWindowHeight = "Unassigned"
+increaseWindowHeight = "Unassigned"

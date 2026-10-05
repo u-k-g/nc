@@ -42,6 +42,10 @@
 !dotfiles/config/helix/languages.toml
 !dotfiles/config/helix/themes/theme.toml
 !dotfiles/config/karabiner/karabiner.json
+!dotfiles/config/nehir/apprules.d/com-chabomakers-Antinote.toml
+!dotfiles/config/nehir/hotkeys.toml
+!dotfiles/config/nehir/settings.toml
+!dotfiles/config/nehir/workspaces.toml
 !dotfiles/config/sketchybar/plugins/icon_map.data
 !dotfiles/config/sketchybar/sketchybarrc
 !dotfiles/config/zed/keymap.json

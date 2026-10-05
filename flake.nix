@@ -120,6 +120,11 @@
       flake = false;
     };
 
+    homebrew-guria = {
+      url = "github:Guria/homebrew-tap";
+      flake = false;
+    };
+
     homebrew-osx-cross-arm = {
       url = "github:osx-cross/homebrew-arm";
       flake = false;

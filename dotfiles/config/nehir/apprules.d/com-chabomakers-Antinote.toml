@@ -1,0 +1,5 @@
+[match]
+bundleId = "com.chabomakers.Antinote"
+
+[effect]
+layout = "float"

@@ -402,6 +402,22 @@
         "type": "github"
       }
     },
+    "homebrew-guria": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786653846,
+        "narHash": "sha256-ueXHG0aCphl7lfltAvh4b13rI0TD3obscLzpyL5Brs4=",
+        "owner": "Guria",
+        "repo": "homebrew-tap",
+        "rev": "a4e9881c9e5e17464a8162ffecbaf418f1fbca32",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Guria",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "homebrew-osx-cross-arm": {
       "flake": false,
       "locked": {
@@ -667,6 +683,7 @@
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "homebrew-felixkratz": "homebrew-felixkratz",
+        "homebrew-guria": "homebrew-guria",
         "homebrew-osx-cross-arm": "homebrew-osx-cross-arm",
         "homebrew-tinycast": "homebrew-tinycast",
         "nix-darwin": "nix-darwin",

@@ -6,11 +6,16 @@
   ...
 }:
 
+let
+  inherit (lib.options) mkEnableOption;
+in
 {
   imports = [ inputs.paneru.darwinModules.paneru ];
 
-  services.paneru = {
-    enable = true;
+  options.nc.darwin.paneru.enable = mkEnableOption "Paneru window manager";
+
+  config.services.paneru = {
+    enable = config.nc.darwin.paneru.enable;
     package = inputs.self.packages.${pkgs.stdenv.hostPlatform.system}.paneru;
     luaConfig.enable = true;
     config = pkgs.replaceVars ../../dotfiles/config/paneru/init.lua {

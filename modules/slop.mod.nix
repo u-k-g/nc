@@ -3218,7 +3218,7 @@
           skills
           // {
             ".agents/AGENTS.md".text = ''
-              Never use `git`. Always use `jj`.
+              Default to `jj`. only use `git` when there is no other option.
               Only run mutating VCS commands when told to '';
             ".codex/AGENTS.md".source = config.files.".agents/AGENTS.md".target;
             ".config/opencode/AGENTS.md".source = config.files.".agents/AGENTS.md".target;

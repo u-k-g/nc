@@ -15,6 +15,7 @@
       "abue-ammar/homebrew-tinycast" = inputs.homebrew-tinycast;
       "apple/homebrew-apple" = inputs.homebrew-apple;
       "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz;
+      "guria/homebrew-tap" = inputs.homebrew-guria;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "osx-cross/homebrew-arm" = inputs.homebrew-osx-cross-arm;
@@ -36,6 +37,7 @@
       "abue-ammar/tinycast"
       "apple/apple"
       "felixkratz/formulae"
+      "guria/tap"
       "homebrew/cask"
       "homebrew/core"
       "osx-cross/arm"

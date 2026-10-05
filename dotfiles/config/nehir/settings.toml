@@ -1,0 +1,24 @@
+[appearance]
+mode = "@appearanceMode@"
+
+[general]
+ipcEnabled = true
+
+[gaps]
+size = 4.0
+
+[gaps.outer]
+bottom = 4.0
+left = 8.0
+right = 8.0
+top = 4.0
+
+[workspaceBar]
+backgroundOpacity = 0.0
+enabled = true
+height = 37.0
+notchAware = false
+position = "overlappingMenuBar"
+showLabels = true
+windowLevel = "popup"
+xOffset = -550.0

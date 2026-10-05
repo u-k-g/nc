@@ -9,6 +9,8 @@
 
   system.stateVersion = 6;
 
+  nc.darwin.nehir.enable = false;
+  nc.darwin.paneru.enable = true;
   nc.syncthing.enable = true;
   system.primaryUser = config.nc.user.name;
 
