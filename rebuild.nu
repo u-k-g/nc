@@ -17,7 +17,7 @@ def build [
   $paths | lines | last | str trim
 }
 
-def set-nixos-profile [
+def set-system-profile [
   system: string
   target?: string
 ]: nothing -> nothing {
@@ -75,7 +75,7 @@ def main [
     }
 
     if $action in ["boot" "switch"] {
-      set-nixos-profile $system $ssh_target
+      set-system-profile $system $ssh_target
     }
 
     ^ssh $ssh_target $"sudo ($system)/bin/switch-to-configuration ($action)"
@@ -95,6 +95,10 @@ def main [
       return
     }
 
+    if $action == "switch" {
+      set-system-profile $system
+    }
+
     ^sudo $"($system)/sw/bin/darwin-rebuild" activate
   } else {
     if not ($action in ["boot" "build" "dry-activate" "switch" "test"]) {
@@ -110,7 +114,7 @@ def main [
     }
 
     if $action in ["boot" "switch"] {
-      set-nixos-profile $system
+      set-system-profile $system
     }
 
     ^sudo $"($system)/bin/switch-to-configuration" $action

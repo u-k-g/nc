@@ -1,9 +1,13 @@
 {
   config,
   inputs,
+  lib,
   ...
 }:
 
+let
+  inherit (lib.lists) singleton;
+in
 {
   nix-homebrew = {
     enable = true;
@@ -22,6 +26,13 @@
     };
 
     mutableTaps = false;
+
+    trust.casks = singleton "guria/tap/nehir";
+
+    # Homebrew resolves its tap-trust store via $XDG_CONFIG_HOME, but activation
+    # runs brew with a cleared env, so pin it or `brew trust` no-ops and
+    # `brew cleanup` aborts activation on the untrusted guria tap.
+    extraEnv.XDG_CONFIG_HOME = "${config.nc.user.homeDirectory}/.config";
   };
 
   homebrew = {
