@@ -6,7 +6,8 @@
 }:
 
 let
-  inherit (lib.lists) singleton;
+  inherit (lib.attrsets) optionalAttrs;
+  inherit (lib.lists) optional;
 in
 {
   nix-homebrew = {
@@ -15,24 +16,23 @@ in
     enableRosetta = true;
     user = config.nc.user.name;
 
+    # nehir brings its own tap; tap it only when nehir is enabled, or an unused
+    # cask-less tap makes `brew cleanup` abort activation on an untrusted cask.
     taps = {
       "abue-ammar/homebrew-tinycast" = inputs.homebrew-tinycast;
       "apple/homebrew-apple" = inputs.homebrew-apple;
       "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz;
-      "guria/homebrew-tap" = inputs.homebrew-guria;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-core" = inputs.homebrew-core;
       "osx-cross/homebrew-arm" = inputs.homebrew-osx-cross-arm;
+    }
+    // optionalAttrs config.nc.darwin.nehir.enable {
+      "guria/homebrew-tap" = inputs.homebrew-guria;
     };
 
     mutableTaps = false;
 
-    trust.casks = singleton "guria/tap/nehir";
-
-    # Homebrew resolves its tap-trust store via $XDG_CONFIG_HOME, but activation
-    # runs brew with a cleared env, so pin it or `brew trust` no-ops and
-    # `brew cleanup` aborts activation on the untrusted guria tap.
-    extraEnv.XDG_CONFIG_HOME = "${config.nc.user.homeDirectory}/.config";
+    trust.casks = optional config.nc.darwin.nehir.enable "guria/tap/nehir";
   };
 
   homebrew = {
@@ -48,11 +48,11 @@ in
       "abue-ammar/tinycast"
       "apple/apple"
       "felixkratz/formulae"
-      "guria/tap"
       "homebrew/cask"
       "homebrew/core"
       "osx-cross/arm"
-    ];
+    ]
+    ++ optional config.nc.darwin.nehir.enable "guria/tap";
 
     brews = [
       "colima"
