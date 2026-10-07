@@ -112,13 +112,11 @@
      # prompt is built ONCE per session and replayed verbatim (stable cache prefix).
 --- a/tools/vision_tools.py
 +++ b/tools/vision_tools.py
-@@ -471,9 +471,11 @@
+@@ -580,11 +580,23 @@
  
  
  def _should_use_native_vision_fast_path() -> bool:
--    """True when image routing resolves to ``native`` AND the provider accepts images in tool
--    results, or the user set the ``model.supports_vision`` override (escape hatch for
--    custom/local providers). Any failure → False."""
+-    """:func:`_native_tool_result_images` for the active main model; any failure → False."""
 +    """Use pixels when the main model accepts them in tool or user messages.
 +
 +    The tool executor bridges image results through a user message for providers
@@ -126,15 +124,16 @@
 +    """
      try:
          from agent.auxiliary_client import _read_main_provider, _read_main_model
-         from agent.image_routing import decide_image_input_mode
-@@ -483,7 +485,10 @@
-         cfg = load_config()
-         if decide_image_input_mode(provider, model, cfg) != "native":
-             return False
--        return _accepts_tool_result_images(provider, model, cfg)
++        from agent.image_routing import decide_image_input_mode, _lookup_supports_vision
+         from hermes_cli.config import load_config
+-        return _native_tool_result_images(_read_main_provider(), _read_main_model(), load_config())
++        provider = _read_main_provider()
++        model = _read_main_model()
++        cfg = load_config()
++        if decide_image_input_mode(provider, model, cfg) != "native":
++            return False
 +        if _accepts_tool_result_images(provider, model, cfg):
 +            return True
-+        from agent.image_routing import _lookup_supports_vision
 +        return _lookup_supports_vision(provider, model, cfg) is True
      except Exception as exc:
          logger.debug("Native vision fast-path check failed: %s", exc)
