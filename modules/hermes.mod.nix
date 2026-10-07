@@ -11,12 +11,62 @@
     let
       inherit (lib.attrsets) recursiveUpdate;
       inherit (lib.generators) toJSON;
-      inherit (lib.lists) singleton;
+      inherit (lib.lists) concatMap filter singleton;
       inherit (lib.meta) getExe getExe';
       inherit (lib.modules) mkIf;
       inherit (lib.options) mkEnableOption mkOption;
       inherit (lib.strings) escapeShellArgs;
       inherit (lib.types) package port str;
+      # fnmatch has no word boundaries and the match covers the whole command,
+      # including heredoc bodies. A bare "nc" hits function, encoding, and bench;
+      # "cp" hits ".cpp"; "tee" hits AnthraciteExecutor. Verbs stay at a command
+      # position and targets stay on the flake path. Detection folds /home/<user>
+      # to ~/ before matching, so ~/nc also covers the absolute path.
+      flakeDir = "${config.nc.user.homeDirectory}/nc";
+      flakeTargets = [
+        flakeDir
+        "~/nc"
+        "$home/nc"
+        "\${home}/nc"
+        " ./nc"
+        " nc"
+      ];
+      commandVerbs = [
+        "rm"
+        "rmdir"
+        "cp"
+        "mv"
+        "install"
+        "rsync"
+        "ln"
+        "tee"
+        "truncate"
+        "shred"
+        "chmod"
+        "chown"
+        "dd if"
+        "dd of"
+        "sed*-i"
+      ];
+      verbPositions =
+        verb:
+        map (prefix: prefix + verb) [
+          ""
+          "* "
+          "*;"
+          "*&&"
+          "*|"
+        ];
+      denyVerbTarget =
+        verb: target:
+        let
+          positions = verbPositions verb;
+        in
+        map (at: "${at}*${target}*") positions
+        ++ map (at: "*${target}*${at}*") (filter (at: at != verb) positions);
+      flakeDeny =
+        concatMap (target: [ "*>*${target}*" ]) flakeTargets
+        ++ concatMap (verb: concatMap (denyVerbTarget verb) flakeTargets) commandVerbs;
     in
     {
       options.nc.nixos.hermes = {
@@ -224,39 +274,10 @@
             # Deny rules survive --yolo and approvals.mode: off, and managed
             # scope keeps the agent from editing this list back out. Patterns
             # are fnmatch globs over the whole (deobfuscated) command text,
-            # matched case-insensitively; reads are unaffected. rm rules are
-            # word-boundary anchored so hermes.mod.nix / medium / warm never
-            # match, and dd is narrowed to its if=/of= flags for the same
-            # reason.
-            approvals.deny = [
-              # redirects into the flake (covers >, >> and heredoc targets)
-              "*>*nc*"
-              # deletes
-              "rm*nc*"
-              "* rm*nc*"
-              "*;rm*nc*"
-              "*&&rm*nc*"
-              "*|rm*nc*"
-              "*rmdir*nc*"
-              "* rmdir*nc*"
-              "*nc* rm *"
-              # copies, moves, links
-              "*cp*nc*"
-              "*mv*nc*"
-              "*install*nc*"
-              "*rsync*nc*"
-              "*ln*nc*"
-              # in-place edits and byte-level writes
-              "*sed*-i*nc*"
-              "*tee*nc*"
-              "*dd if*nc*"
-              "*dd of*nc*"
-              "*truncate*nc*"
-              "*shred*nc*"
-              # permission and ownership changes
-              "*chmod*nc*"
-              "*chown*nc*"
-            ];
+            # matched case-insensitively. Reads that do not name the flake are
+            # unaffected. The kernel read-only mount is what actually stops a
+            # write; these globs are the clear refusal in front of it.
+            approvals.deny = flakeDeny;
           } config.nc.nixos.hermes.settings;
 
         # write_file/patch sandbox: sessions may only create or modify files in
