@@ -166,7 +166,7 @@
 +        return True
 +
 +
- def _registry_provider(mdev_id: str, allow_network: bool) -> Optional[Dict[str, Any]]:
+ def _registry_provider(mdev_id: str, allow_network: bool) -> Optional[dict[str, Any]]:
      """The raw models.dev provider entry, or None."""
      # Keep the zero-argument call on the allow_network path: dozens of test sites monkeypatch fetch_models_dev with zero-arg lambdas.
 --- a/agent/image_routing.py
