@@ -266,7 +266,7 @@ let
         | str join "\n"
       )
       let prompt = $skill + "\n\n" + $diff_text
-      let run = (^${getExe pkgs.opencode} run --model opencode-go/mimo-v2.6-flash --variant low -- $prompt | complete)
+      let run = (^${getExe pkgs.opencode} run --model opencode-go/glm-5.3-flash --variant low -- $prompt | complete)
 
       if $run.exit_code != 0 {
         error make {
