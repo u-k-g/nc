@@ -1366,6 +1366,51 @@
             Anything you couldn't fully trace or understand. Be honest about gaps.
           '';
 
+          ".agents/skills/nix/SKILL.md".text = ''
+            ---
+            name: nix
+            description: Use when editing *.nix, flakes, NixOS, nix-darwin, Pi deploy, linux-builder, or Nix CLI.
+            ---
+
+            # Nix
+
+            Reference for structure and style: `git@github.com:RGBCube/ncc.git` (local clone `01-projects/02-clones/ncc` if present). Prefer concrete ncc patterns over guesses.
+
+            ## CLI
+
+            - New `nix` CLI only: `nix build`, `nix copy`, `nix profile` / `nix build --profile`. Never `nix-*` (`nix-build`, `nix-env`, `nix-store` except image first-boot `nix-store --load-db`).
+            - Never `nh` or `nixos-rebuild`.
+            - `--builders`, not `--store`, for remote builds.
+            - Long flags in committed scripts.
+            - Never `builtins.getFlake`. Use flake refs on the CLI.
+            - Never `find /nix/store` or anything equivalent. Run `nix flake archive --json` once, then use its literal paths in separate search commands. Do not chain archive and search commands or put the paths in variables.
+            - No `--impure`. No `builtins.getEnv`.
+
+            ## Style
+
+            - Never use `rec`. Worst case, define a custom `fix`.
+            - No `builtins.` in modules; use `lib`.
+            - `let inherit (lib.lists) head;` with full submodule paths. Never `inherit (lib) foo` unless `foo` has no submodule path. Prefer `lib.lists.singleton` over a one-item list.
+            - Dendritic flake-parts: `*.mod.nix` auto-discovery. One concern per file. Packages that are their own tool get their own module with their `perSystem` definition separate from the module that uses them.
+            - Prefer `''${getExe pkgs.something}` (or `getExe'`) over bare command names in shell aliases and scripts. Use `package = getExe pkgs.something` when there are multiple usages.
+            - Never put values in `let` bindings that duplicate module system options. If a value is set through `config.*`, reference it through `config.*`. Hardcoded `let` values that could be overridden via the module system are forbidden. `let` is fine for computed derivations, helper functions, and `getExe` shortcuts.
+            - Prefer destructuring attrset arguments when it improves clarity: `{ home, ... }:` instead of `value: value.home`.
+            - On Linux, use KDE applications (except Plasma). Dolphin over Thunar, Ark over xfce archive tools.
+            - Use `"''${path}"` when the derivation context must survive. Never `toString` for those paths.
+            - Inline packages use `pkgs.callPackage` with destructured args, e.g. `pkgs.callPackage ({ stdenv, writeText }: ...) { }`.
+            - For inline source code in packages, use `writeText` directly in the `src` attribute rather than a separate `let` binding.
+            - `/* lang */` before multiline code strings.
+            - Prefer `mkIf` on the individual option: `foo.bar = mkIf condition value;` rather than `foo = mkIf condition { bar = value; };` when possible.
+            - Prefer `<|` (pipe-last) when the parenthesized expression is the final argument: `mkIf condition <| toJSON { ... }` instead of `mkIf condition (toJSON { ... })`. This does not apply when the parenthesized expression is not the last argument, e.g. `callPackage (...) { }`. `if`, `let`, and lambda expressions on the RHS still need parentheses.
+            - Empty line between unrelated options.
+
+            Do not invent extra deploy wrappers. The deployable is a store path.
+
+            ## Pi appliances
+
+            Read the project's `AGENTS.md` for its appliance policy. Do not copy workstation tooling (`nh`, `dix`, `nom`, desktop modules) onto the drone. Full-system Darwin uses the project's `darwin.linux-builder` VM only for that `nix build`. x86 Linux uses binfmt/`extra-platforms`. The Pi is never a builder.
+          '';
+
           ".agents/skills/opencode-review/SKILL.md".text = ''
             ---
             disable-model-invocation: true
