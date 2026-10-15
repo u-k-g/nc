@@ -194,6 +194,14 @@ let
     mkdir -p "$HOME" "$XDG_CONFIG_HOME"
     ${getExe pkgs.carapace} _carapace nushell > $out
     substituteInPlace $out --replace-quiet '^carapace' '^${getExe pkgs.carapace}'
+    # Nushell 0.116 deprecated the positional `spans` completer input. Carapace
+    # still emits `{|spans| ...}` (fixed upstream but unreleased), which triggers
+    # a deprecation warning. Migrate to the named `place` input while keeping the
+    # existing `$spans` body working, matching carapace's own fix (nushell #18791).
+    substituteInPlace $out --replace-quiet 'let carapace_completer = {|spans|' \
+      'let carapace_completer = {|place|
+      # backwards compatible workaround for positional completer input, see nushell #18791
+      let spans = (if ($place | describe) =~ "record" { $place.command } else { $place })'
   '';
 
   justCompletions = pkgs.runCommand "just-completions.nu" { } ''
