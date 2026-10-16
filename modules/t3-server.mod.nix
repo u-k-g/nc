@@ -12,12 +12,19 @@
       inherit (lib.lists) singleton;
       inherit (lib.meta) getExe;
       inherit (lib.modules) mkIf;
-      inherit (lib.options) mkEnableOption;
+      inherit (lib.options) mkEnableOption mkOption;
       inherit (lib.strings) escapeShellArg makeBinPath;
+      inherit (lib.types) strMatching;
     in
     {
       options.nc.nixos.t3-server = {
         enable = mkEnableOption "headless T3 Code over Tailscale";
+
+        version = mkOption {
+          type = strMatching "[0-9]+[.][0-9]+[.][0-9]+";
+          default = "0.1.0";
+          description = "Exact t3 npm version to install. Changing it restarts the t3code service.";
+        };
       };
 
       config = {
@@ -39,10 +46,10 @@
               ]
             }:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
-            ${getExe pkgs.pnpm} add --global \
+            ${getExe pkgs.pnpm} add --global --save-exact \
               --allow-build=node-pty --allow-build=msgpackr-extract \
               --config.minimumReleaseAge=0 \
-              t3@latest
+              ${escapeShellArg "t3@${config.nc.nixos.t3-server.version}"}
           )
         '';
 
@@ -60,6 +67,7 @@
           wants = singleton "network-online.target";
           requires = singleton "tailscaled.service";
           wantedBy = singleton "multi-user.target";
+          restartTriggers = singleton config.nc.nixos.t3-server.version;
 
           path = [
             "${config.nc.user.homeDirectory}/.local/bin"
