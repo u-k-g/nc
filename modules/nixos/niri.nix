@@ -401,7 +401,6 @@ in
               Alt+Shift+F12 repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
               Alt+A repeat=false { spawn "${getExe focusOrLaunch}" "suzuri" "${getExe suzuri}"; }
               Alt+Shift+F repeat=false { spawn "${getExe focusOrLaunch}" "dolphin" "${getExe pkgs.kdePackages.dolphin}"; }
-              Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe edgePkgs.opencode-desktop}"; }
               Alt+T repeat=false { spawn "${getExe focusOrLaunch}" "t3code" "${getExe edgePkgs.t3code}"; }
               Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe edgePkgs.zed-editor}"; }
 

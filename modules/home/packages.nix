@@ -108,7 +108,6 @@ let
     docker
     docker-buildx
     kicad
-    edgePkgs.opencode-desktop
     unar
   ];
 
