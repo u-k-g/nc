@@ -301,13 +301,6 @@ in
         enable = true;
         quickshell.package = pkgs.quickshell;
         systemd.enable = true;
-
-        enableAudioWavelength = true;
-        enableCalendarEvents = true;
-        enableClipboardPaste = true;
-        enableDynamicTheming = true;
-        enableSystemMonitoring = true;
-        enableVPN = true;
       };
     };
 
@@ -322,22 +315,24 @@ in
       };
     };
 
-    environment.systemPackages = (with pkgs; [
-      adwaita-icon-theme
-      dgop
-      dms-shell
-      dsearch
-      matugen
-      niri
-      niriswitcher
-      nirius
-      nwg-displays
-      sunsetr
-      xwayland-satellite
-    ]) ++ [
-      pkgs.t3code
-      suzuri
-    ];
+    environment.systemPackages =
+      (with pkgs; [
+        adwaita-icon-theme
+        dgop
+        dms-shell
+        dsearch
+        matugen
+        niri
+        niriswitcher
+        nirius
+        nwg-displays
+        sunsetr
+        xwayland-satellite
+      ])
+      ++ [
+        edgePkgs.t3code
+        suzuri
+      ];
 
     environment.sessionVariables = {
       NIXOS_OZONE_WL = "1";
@@ -406,8 +401,8 @@ in
               Alt+Shift+F12 repeat=false { spawn "${getExe focusOrLaunch}" "kitty" "${getExe edgePkgs.kitty}"; }
               Alt+A repeat=false { spawn "${getExe focusOrLaunch}" "suzuri" "${getExe suzuri}"; }
               Alt+Shift+F repeat=false { spawn "${getExe focusOrLaunch}" "dolphin" "${getExe pkgs.kdePackages.dolphin}"; }
-              Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe pkgs.opencode-desktop}"; }
-              Alt+T repeat=false { spawn "${getExe focusOrLaunch}" "t3code" "${getExe pkgs.t3code}"; }
+              Alt+R repeat=false { spawn "${getExe focusOrLaunch}" "opencode" "${getExe edgePkgs.opencode-desktop}"; }
+              Alt+T repeat=false { spawn "${getExe focusOrLaunch}" "t3code" "${getExe edgePkgs.t3code}"; }
               Alt+Z repeat=false { spawn "${getExe focusOrLaunch}" "zed" "${getExe edgePkgs.zed-editor}"; }
 
               Alt+H { focus-column-left; }

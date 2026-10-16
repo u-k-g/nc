@@ -41,7 +41,8 @@ in
     settings.plugins.enabled = singleton "parallel-search";
   };
 
-  home.users.${config.nc.user.name}.files.".hermes/plugins/parallel-search".source = inputs.parallel-search-mcp;
+  home.users.${config.nc.user.name}.files.".hermes/plugins/parallel-search".source =
+    inputs.parallel-search-mcp;
 
   secrets.hermes-parallel = {
     file = ./hermes-parallel.env.age;
@@ -50,13 +51,13 @@ in
   };
 
   systemd.services.hermes.serviceConfig.EnvironmentFile = [ config.secrets.hermes-parallel.path ];
-  systemd.services.hermes-gateway.serviceConfig.EnvironmentFile = [ config.secrets.hermes-parallel.path ];
+  systemd.services.hermes-gateway.serviceConfig.EnvironmentFile = [
+    config.secrets.hermes-parallel.path
+  ];
   systemd.services.hermes.restartTriggers = singleton config.secrets.hermes-parallel.file;
   systemd.services.hermes-gateway.restartTriggers = singleton config.secrets.hermes-parallel.file;
 
   nc.nixos.arura.enable = true;
-
-  nc.radicle.enable = false;
 
   programs.blip.enable = true;
 

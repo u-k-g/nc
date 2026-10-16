@@ -20,7 +20,6 @@
   nc.nixos.niri.enable = true;
   nc.nixos.nvidia.enable = true;
   nc.autolith.enable = false;
-  nc.radicle.enable = false;
 
   programs.blip.enable = true;
 

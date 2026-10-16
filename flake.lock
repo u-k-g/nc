@@ -139,11 +139,11 @@
     },
     "edge": {
       "locked": {
-        "lastModified": 1791813521,
-        "narHash": "sha256-PLxHEosn2vy7HXwVG8+rVfXU94XkjIYs4EyRvhRu4ko=",
+        "lastModified": 1792107647,
+        "narHash": "sha256-+icsk+nelegPpt0adwd3tSCYF2y5+FtU0vVy9W9lafw=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "557e7565673cc7208aeb8c5085a04e3905b6dce9",
+        "rev": "ebbcc0393f8bc32a873e85f20451723c9e2aa4ea",
         "type": "github"
       },
       "original": {
@@ -692,7 +692,6 @@
         "paneru": "paneru",
         "paperwm": "paperwm",
         "parallel-search-mcp": "parallel-search-mcp",
-        "t3": "t3",
         "themes": "themes",
         "toshy": "toshy"
       }
@@ -709,22 +708,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "t3": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1791398178,
-        "narHash": "sha256-sGCF+j0eN7NqSpg9DLSJjRx+tsRIR9ZkEMYMIo/o2Aw=",
-        "owner": "pingdotgg",
-        "repo": "t3code",
-        "rev": "ba0ea3d152150f399827d36a5b4b86c5bbda2d7f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pingdotgg",
-        "repo": "t3code",
         "type": "github"
       }
     },

@@ -20,7 +20,8 @@ let
   optional = condition: consequence: if condition then [ consequence ] else [ ];
   uniq = foldl' (acc: item: if elem item acc then acc else acc ++ singleton item) [ ];
 
-  hostKeys = host:
+  hostKeys =
+    host:
     if keys.hosts ? ${host} then
       let
         recipients = keys.hosts.${host};

@@ -262,407 +262,409 @@ let
   '';
 in
 {
-  home.users.${user.name} = mkIf workstation <| mkMerge [
-    {
-      packages = [
-        (if pkgs.stdenv.hostPlatform.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
-      ]
-      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-        ninb
-        pkgs.waywall
-      ];
-    }
+  home.users.${user.name} =
+    mkIf workstation
+    <| mkMerge [
+      {
+        packages = [
+          (if pkgs.stdenv.hostPlatform.isLinux then prismlauncherGamemode else pkgs.prismlauncher)
+        ]
+        ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+          ninb
+          pkgs.waywall
+        ];
+      }
 
-    (mkIf pkgs.stdenv.hostPlatform.isLinux {
-      xdg.config.files."waywall/init.lua".text = ''
-        local waywall = require("waywall")
-        local helpers = require("waywall.helpers")
+      (mkIf pkgs.stdenv.hostPlatform.isLinux {
+        xdg.config.files."waywall/init.lua".text = ''
+          local waywall = require("waywall")
+          local helpers = require("waywall.helpers")
 
-        local normal_width = 0
-        local normal_height = 0
-        local eye_mirror = nil
-        local eye_overlay = nil
-        local ninb_autoshow_text = nil
-        local ninb_autoshow_serial = 0
+          local normal_width = 0
+          local normal_height = 0
+          local eye_mirror = nil
+          local eye_overlay = nil
+          local ninb_autoshow_text = nil
+          local ninb_autoshow_serial = 0
 
-        local function close_eye_see()
-            if eye_mirror ~= nil then
-                eye_mirror:close()
-                eye_mirror = nil
-            end
+          local function close_eye_see()
+              if eye_mirror ~= nil then
+                  eye_mirror:close()
+                  eye_mirror = nil
+              end
 
-            if eye_overlay ~= nil then
-                eye_overlay:close()
-                eye_overlay = nil
-            end
-        end
+              if eye_overlay ~= nil then
+                  eye_overlay:close()
+                  eye_overlay = nil
+              end
+          end
 
-        local function is_active_res(width, height)
-            local current_width, current_height = waywall.active_res()
-            return current_width == width and current_height == height
-        end
+          local function is_active_res(width, height)
+              local current_width, current_height = waywall.active_res()
+              return current_width == width and current_height == height
+          end
 
-        local function reset_res()
-            close_eye_see()
-            waywall.set_resolution(normal_width, normal_height)
-            waywall.set_sensitivity(${toString godSensWaywallNormal})
-        end
+          local function reset_res()
+              close_eye_see()
+              waywall.set_resolution(normal_width, normal_height)
+              waywall.set_sensitivity(${toString godSensWaywallNormal})
+          end
 
-        local function toggle_res(width, height)
-            close_eye_see()
+          local function toggle_res(width, height)
+              close_eye_see()
 
-            if is_active_res(width, height) then
-                reset_res()
-                return
-            end
+              if is_active_res(width, height) then
+                  reset_res()
+                  return
+              end
 
-            waywall.set_resolution(width, height)
-        end
+              waywall.set_resolution(width, height)
+          end
 
-        local function toggle_eye_measuring()
-            if is_active_res(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight}) then
-                reset_res()
-                return
-            end
+          local function toggle_eye_measuring()
+              if is_active_res(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight}) then
+                  reset_res()
+                  return
+              end
 
-            waywall.set_resolution(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
-            waywall.set_sensitivity(${toString godSensWaywallTall})
-            close_eye_see()
+              waywall.set_resolution(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
+              waywall.set_sensitivity(${toString godSensWaywallTall})
+              close_eye_see()
 
-            local dst = {
-                x = 0,
-                y = ${toString (floor ((monitorHeight - eyeSeeProjectorHeight) / 2.0))},
-                w = ${toString eyeSeeProjectorWidth},
-                h = ${toString eyeSeeProjectorHeight},
-            }
+              local dst = {
+                  x = 0,
+                  y = ${toString (floor ((monitorHeight - eyeSeeProjectorHeight) / 2.0))},
+                  w = ${toString eyeSeeProjectorWidth},
+                  h = ${toString eyeSeeProjectorHeight},
+              }
 
-            eye_mirror = waywall.mirror({
-                src = {
-                    x = ${toString (floor ((eyeMeasuringWidth - eyeSeeSourceWidth) / 2.0))},
-                    y = ${toString (floor ((eyeMeasuringHeight - eyeSeeSourceHeight) / 2.0))},
-                    w = ${toString eyeSeeSourceWidth},
-                    h = ${toString eyeSeeSourceHeight},
-                },
-                dst = dst,
-                depth = 10,
-            })
+              eye_mirror = waywall.mirror({
+                  src = {
+                      x = ${toString (floor ((eyeMeasuringWidth - eyeSeeSourceWidth) / 2.0))},
+                      y = ${toString (floor ((eyeMeasuringHeight - eyeSeeSourceHeight) / 2.0))},
+                      w = ${toString eyeSeeSourceWidth},
+                      h = ${toString eyeSeeSourceHeight},
+                  },
+                  dst = dst,
+                  depth = 10,
+              })
 
-            eye_overlay = waywall.image("${eyeSeeOverlay}", {
-                dst = dst,
-                depth = 11,
-            })
-        end
+              eye_overlay = waywall.image("${eyeSeeOverlay}", {
+                  dst = dst,
+                  depth = 11,
+              })
+          end
 
-        local function set_ninb_autoshow_text(text)
-            if ninb_autoshow_text ~= nil then
-                ninb_autoshow_text:close()
-                ninb_autoshow_text = nil
-            end
+          local function set_ninb_autoshow_text(text)
+              if ninb_autoshow_text ~= nil then
+                  ninb_autoshow_text:close()
+                  ninb_autoshow_text = nil
+              end
 
-            if text == nil then
-                return
-            end
+              if text == nil then
+                  return
+              end
 
-            ninb_autoshow_text = waywall.text(text, {
-                x = ${toString (monitorWidth - 160)},
-                y = ${toString (monitorHeight - 120)},
-                color = "#${theme.base0A}ff",
-                size = 2,
-                depth = 20,
-            })
-        end
+              ninb_autoshow_text = waywall.text(text, {
+                  x = ${toString (monitorWidth - 160)},
+                  y = ${toString (monitorHeight - 120)},
+                  color = "#${theme.base0A}ff",
+                  size = 2,
+                  depth = 20,
+              })
+          end
 
-        local function launch_ninjabrain()
-            waywall.exec("${getExe ninb}")
-            waywall.show_floating(true)
-        end
+          local function launch_ninjabrain()
+              waywall.exec("${getExe ninb}")
+              waywall.show_floating(true)
+          end
 
-        local function toggle_ninjabrain()
-            set_ninb_autoshow_text(nil)
-            ninb_autoshow_serial = ninb_autoshow_serial + 1
-            waywall.show_floating(not waywall.floating_shown())
-        end
+          local function toggle_ninjabrain()
+              set_ninb_autoshow_text(nil)
+              ninb_autoshow_serial = ninb_autoshow_serial + 1
+              waywall.show_floating(not waywall.floating_shown())
+          end
 
-        local function autoshow_ninjabrain()
-            if not waywall.get_key("f3") then
-                return false
-            end
+          local function autoshow_ninjabrain()
+              if not waywall.get_key("f3") then
+                  return false
+              end
 
-            if waywall.floating_shown() and ninb_autoshow_text == nil then
-                return false
-            end
+              if waywall.floating_shown() and ninb_autoshow_text == nil then
+                  return false
+              end
 
-            ninb_autoshow_serial = ninb_autoshow_serial + 1
-            local serial = ninb_autoshow_serial
+              ninb_autoshow_serial = ninb_autoshow_serial + 1
+              local serial = ninb_autoshow_serial
 
-            waywall.press_key("C")
-            waywall.show_floating(true)
+              waywall.press_key("C")
+              waywall.show_floating(true)
 
-            for i = 8, 1, -1 do
-                if serial ~= ninb_autoshow_serial then
-                    return
-                end
+              for i = 8, 1, -1 do
+                  if serial ~= ninb_autoshow_serial then
+                      return
+                  end
 
-                set_ninb_autoshow_text(tostring(i) .. "s")
-                waywall.sleep(1000)
-            end
+                  set_ninb_autoshow_text(tostring(i) .. "s")
+                  waywall.sleep(1000)
+              end
 
-            waywall.show_floating(false)
-            set_ninb_autoshow_text(nil)
-        end
+              waywall.show_floating(false)
+              set_ninb_autoshow_text(nil)
+          end
 
-        local config = {
-            input = {
-                layout = "us",
-                repeat_rate = 40,
-                repeat_delay = 300,
-                sensitivity = ${toString godSensWaywallNormal},
-                confine_pointer = true,
-            },
+          local config = {
+              input = {
+                  layout = "us",
+                  repeat_rate = 40,
+                  repeat_delay = 300,
+                  sensitivity = ${toString godSensWaywallNormal},
+                  confine_pointer = true,
+              },
 
-            theme = {
-                background = "#${theme.base00}ff",
-                ninb_anchor = "right",
-                ninb_opacity = 0.8,
-            },
+              theme = {
+                  background = "#${theme.base00}ff",
+                  ninb_anchor = "right",
+                  ninb_opacity = 0.8,
+              },
 
-            experimental = {
-                tearing = true,
-            },
+              experimental = {
+                  tearing = true,
+              },
 
-            shaders = {
-                f3 = {
-                    fragment = [[
-                        precision highp float;
+              shaders = {
+                  f3 = {
+                      fragment = [[
+                          precision highp float;
 
-                        varying vec2 f_src_pos;
+                          varying vec2 f_src_pos;
 
-                        uniform sampler2D u_texture;
+                          uniform sampler2D u_texture;
 
-                        const vec3 threshold = vec3(0.01);
+                          const vec3 threshold = vec3(0.01);
 
-                        const vec3 unpaused = vec3(0.867);
-                        const vec3 paused = vec3(0.263);
+                          const vec3 unpaused = vec3(0.867);
+                          const vec3 paused = vec3(0.263);
 
-                        void main() {
-                            vec4 color = texture2D(u_texture, f_src_pos);
+                          void main() {
+                              vec4 color = texture2D(u_texture, f_src_pos);
 
-                            if (all(lessThan(abs(color.rgb - unpaused), threshold)) || all(lessThan(abs(color.rgb - paused), threshold))) {
-                                gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-                            } else {
-                                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-                            }
-                        }
-                    ]],
-                },
+                              if (all(lessThan(abs(color.rgb - unpaused), threshold)) || all(lessThan(abs(color.rgb - paused), threshold))) {
+                                  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+                              } else {
+                                  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                              }
+                          }
+                      ]],
+                  },
 
-                pie_chart = {
-                    fragment = [[
-                        precision highp float;
+                  pie_chart = {
+                      fragment = [[
+                          precision highp float;
 
-                        varying vec2 f_src_pos;
+                          varying vec2 f_src_pos;
 
-                        uniform sampler2D u_texture;
+                          uniform sampler2D u_texture;
 
-                        const vec3 threshold = vec3(0.01);
-                        const vec3 pink = vec3(0.882, 0.271, 0.761);
-                        const vec3 pink2 = vec3(0.894, 0.275, 0.769);
-                        const vec3 orange = vec3(0.914, 0.427, 0.302);
-                        const vec3 orange2 = vec3(0.925, 0.431, 0.306);
-                        const vec3 green = vec3(0.271, 0.796, 0.396);
-                        const vec3 green2 = vec3(0.271, 0.800, 0.396);
+                          const vec3 threshold = vec3(0.01);
+                          const vec3 pink = vec3(0.882, 0.271, 0.761);
+                          const vec3 pink2 = vec3(0.894, 0.275, 0.769);
+                          const vec3 orange = vec3(0.914, 0.427, 0.302);
+                          const vec3 orange2 = vec3(0.925, 0.431, 0.306);
+                          const vec3 green = vec3(0.271, 0.796, 0.396);
+                          const vec3 green2 = vec3(0.271, 0.800, 0.396);
 
-                        void main() {
-                            vec4 color = texture2D(u_texture, f_src_pos);
+                          void main() {
+                              vec4 color = texture2D(u_texture, f_src_pos);
 
-                            bool is_pink = all(lessThan(abs(color.rgb - pink), threshold))
-                                || all(lessThan(abs(color.rgb - pink2), threshold));
-                            bool is_orange = all(lessThan(abs(color.rgb - orange), threshold))
-                                || all(lessThan(abs(color.rgb - orange2), threshold));
-                            bool is_green = all(lessThan(abs(color.rgb - green), threshold))
-                                || all(lessThan(abs(color.rgb - green2), threshold));
+                              bool is_pink = all(lessThan(abs(color.rgb - pink), threshold))
+                                  || all(lessThan(abs(color.rgb - pink2), threshold));
+                              bool is_orange = all(lessThan(abs(color.rgb - orange), threshold))
+                                  || all(lessThan(abs(color.rgb - orange2), threshold));
+                              bool is_green = all(lessThan(abs(color.rgb - green), threshold))
+                                  || all(lessThan(abs(color.rgb - green2), threshold));
 
-                            if (is_pink || is_orange || is_green) {
-                                gl_FragColor = color;
-                            } else {
-                                gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-                            }
-                        }
-                    ]],
-                },
-            },
-        }
+                              if (is_pink || is_orange || is_green) {
+                                  gl_FragColor = color;
+                              } else {
+                                  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+                              }
+                          }
+                      ]],
+                  },
+              },
+          }
 
-        local function add_debug_mirrors(width, height, lower_y)
-            helpers.res_mirror({
-                src = { x = 0, y = 28, w = 49, h = 9 },
-                dst = { x = 1120, y = 400, w = 196, h = 36 },
-                shader = "f3",
-                depth = 1,
-            }, width, height)
+          local function add_debug_mirrors(width, height, lower_y)
+              helpers.res_mirror({
+                  src = { x = 0, y = 28, w = 49, h = 9 },
+                  dst = { x = 1120, y = 400, w = 196, h = 36 },
+                  shader = "f3",
+                  depth = 1,
+              }, width, height)
 
-            helpers.res_mirror({
-                src = { x = 0, y = 36, w = 49, h = 9 },
-                dst = { x = 1120, y = 440, w = 196, h = 36 },
-                shader = "f3",
-                depth = 1,
-            }, width, height)
+              helpers.res_mirror({
+                  src = { x = 0, y = 36, w = 49, h = 9 },
+                  dst = { x = 1120, y = 440, w = 196, h = 36 },
+                  shader = "f3",
+                  depth = 1,
+              }, width, height)
 
-            helpers.res_mirror({
-                src = { x = 14, y = 38, w = 5, h = 7 },
-                dst = { x = 930, y = 782, w = 40, h = 56 },
-                shader = "f3",
-                depth = 1,
-            }, width, height)
+              helpers.res_mirror({
+                  src = { x = 14, y = 38, w = 5, h = 7 },
+                  dst = { x = 930, y = 782, w = 40, h = 56 },
+                  shader = "f3",
+                  depth = 1,
+              }, width, height)
 
-            helpers.res_mirror({
-                src = { x = 0, y = lower_y, w = width, h = 260 },
-                dst = { x = 800, y = 586, w = 384, h = 260 },
-                shader = "pie_chart",
-            }, width, height)
+              helpers.res_mirror({
+                  src = { x = 0, y = lower_y, w = width, h = 260 },
+                  dst = { x = 800, y = 586, w = 384, h = 260 },
+                  shader = "pie_chart",
+              }, width, height)
 
-            helpers.res_mirror({
-                src = { x = math.floor(width * 0.71), y = lower_y + 184, w = 40, h = 24 },
-                dst = { x = 1120, y = 600, w = 196, h = 144 },
-            }, width, height)
-        end
+              helpers.res_mirror({
+                  src = { x = math.floor(width * 0.71), y = lower_y + 184, w = 40, h = 24 },
+                  dst = { x = 1120, y = 600, w = 196, h = 144 },
+              }, width, height)
+          end
 
-        add_debug_mirrors(${toString thinBtWidth}, ${toString thinBtHeight}, ${toString (thinBtHeight - 404)})
-        add_debug_mirrors(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight}, ${
-          toString (eyeMeasuringHeight - 404)
-        })
+          add_debug_mirrors(${toString thinBtWidth}, ${toString thinBtHeight}, ${toString (thinBtHeight - 404)})
+          add_debug_mirrors(${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight}, ${
+            toString (eyeMeasuringHeight - 404)
+          })
 
-        helpers.res_mirror({
-            src = { x = ${toString (floor ((eyeMeasuringWidth - 220) / 2.0))}, y = ${
-              toString (eyeMeasuringHeight - 40)
-            }, w = 220, h = 40 },
-            dst = { x = 630, y = 960, w = 660, h = 120 },
-        }, ${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
+          helpers.res_mirror({
+              src = { x = ${toString (floor ((eyeMeasuringWidth - 220) / 2.0))}, y = ${
+                toString (eyeMeasuringHeight - 40)
+              }, w = 220, h = 40 },
+              dst = { x = 630, y = 960, w = 660, h = 120 },
+          }, ${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
 
-        helpers.res_mirror({
-            src = { x = ${toString (eyeMeasuringWidth - 189)}, y = ${
-              toString (eyeMeasuringHeight - 105)
-            }, w = 124, h = 80 },
-            dst = { x = 1545, y = 765, w = 372, h = 240 },
-        }, ${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
+          helpers.res_mirror({
+              src = { x = ${toString (eyeMeasuringWidth - 189)}, y = ${
+                toString (eyeMeasuringHeight - 105)
+              }, w = 124, h = 80 },
+              dst = { x = 1545, y = 765, w = 372, h = 240 },
+          }, ${toString eyeMeasuringWidth}, ${toString eyeMeasuringHeight})
 
-        helpers.res_mirror({
-            src = { x = ${toString (thinBtWidth - 189)}, y = ${toString (thinBtHeight - 105)}, w = 124, h = 80 },
-            dst = { x = 1545, y = 765, w = 372, h = 240 },
-        }, ${toString thinBtWidth}, ${toString thinBtHeight})
+          helpers.res_mirror({
+              src = { x = ${toString (thinBtWidth - 189)}, y = ${toString (thinBtHeight - 105)}, w = 124, h = 80 },
+              dst = { x = 1545, y = 765, w = 372, h = 240 },
+          }, ${toString thinBtWidth}, ${toString thinBtHeight})
 
-        config.actions = {
-            ["V"] = function()
-                toggle_res(${toString thinBtWidth}, ${toString thinBtHeight})
-            end,
+          config.actions = {
+              ["V"] = function()
+                  toggle_res(${toString thinBtWidth}, ${toString thinBtHeight})
+              end,
 
-            ["B"] = function()
-                toggle_res(${toString planarAbuseWidth}, ${toString planarAbuseHeight})
-            end,
+              ["B"] = function()
+                  toggle_res(${toString planarAbuseWidth}, ${toString planarAbuseHeight})
+              end,
 
-            ["J"] = function()
-                toggle_eye_measuring()
-            end,
+              ["J"] = function()
+                  toggle_eye_measuring()
+              end,
 
-            ["Ctrl-Shift-N"] = function()
-                launch_ninjabrain()
-            end,
+              ["Ctrl-Shift-N"] = function()
+                  launch_ninjabrain()
+              end,
 
-            ["backslash"] = function()
-                toggle_ninjabrain()
-            end,
+              ["backslash"] = function()
+                  toggle_ninjabrain()
+              end,
 
-            ["*-C"] = function()
-                return autoshow_ninjabrain()
-            end,
-        }
+              ["*-C"] = function()
+                  return autoshow_ninjabrain()
+              end,
+          }
 
-        waywall.listen("state", function(state)
-            if state.screen ~= "inworld" then
-                reset_res()
-            end
-        end)
+          waywall.listen("state", function(state)
+              if state.screen ~= "inworld" then
+                  reset_res()
+              end
+          end)
 
-        return config
-      '';
-
-      xdg.data.files."applications/org.prismlauncher.PrismLauncher.desktop" = {
-        text = ''
-          [Desktop Entry]
-          Type=Application
-          Name=PrismLauncher
-          GenericName=Minecraft Launcher
-          Comment=Launch PrismLauncher through GameMode
-          Exec=${prismlauncherGamemode}/bin/prismlauncher %u
-          Terminal=false
-          Categories=Game;
-          StartupNotify=true
+          return config
         '';
-      };
 
-      xdg.data.files."applications/org.kde.dolphin.desktop" = {
-        text = ''
-          [Desktop Entry]
-          Type=Application
-          Name=Dolphin
-          GenericName=File Manager
-          Comment=Manage your files
-          Exec=${getExe pkgs.kdePackages.dolphin} %u
-          Icon=org.kde.dolphin
-          Terminal=false
-          Categories=Qt;KDE;System;FileTools;FileManager;
-          MimeType=inode/directory;
-          Actions=minecraft-drag-and-drop;
-          InitialPreference=10
-          StartupWMClass=dolphin
-          X-DBUS-ServiceName=org.kde.dolphin
-          X-DocPath=dolphin/index.html
-          X-KDE-Shortcuts=Meta+E
+        xdg.data.files."applications/org.prismlauncher.PrismLauncher.desktop" = {
+          text = ''
+            [Desktop Entry]
+            Type=Application
+            Name=PrismLauncher
+            GenericName=Minecraft Launcher
+            Comment=Launch PrismLauncher through GameMode
+            Exec=${prismlauncherGamemode}/bin/prismlauncher %u
+            Terminal=false
+            Categories=Game;
+            StartupNotify=true
+          '';
+        };
 
-          [Desktop Action minecraft-drag-and-drop]
-          Name=Open for Minecraft Drag-and-Drop
-          Exec=${getExe pkgs.kdePackages.dolphin} --new-window --platform xcb
-          Icon=org.kde.dolphin
+        xdg.data.files."applications/org.kde.dolphin.desktop" = {
+          text = ''
+            [Desktop Entry]
+            Type=Application
+            Name=Dolphin
+            GenericName=File Manager
+            Comment=Manage your files
+            Exec=${getExe pkgs.kdePackages.dolphin} %u
+            Icon=org.kde.dolphin
+            Terminal=false
+            Categories=Qt;KDE;System;FileTools;FileManager;
+            MimeType=inode/directory;
+            Actions=minecraft-drag-and-drop;
+            InitialPreference=10
+            StartupWMClass=dolphin
+            X-DBUS-ServiceName=org.kde.dolphin
+            X-DocPath=dolphin/index.html
+            X-KDE-Shortcuts=Meta+E
+
+            [Desktop Action minecraft-drag-and-drop]
+            Name=Open for Minecraft Drag-and-Drop
+            Exec=${getExe pkgs.kdePackages.dolphin} --new-window --platform xcb
+            Icon=org.kde.dolphin
+          '';
+        };
+
+        activationScripts.mcsr-standardsettings = ''
+          target=${lib.escapeShellArg mcsrStandardSettingsTarget}
+          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
+          ${pkgs.coreutils}/bin/rm -f "$target"
+          ${pkgs.coreutils}/bin/install -m 0666 ${mcsrStandardSettingsFile} "$target"
         '';
-      };
 
-      activationScripts.mcsr-standardsettings = ''
-        target=${lib.escapeShellArg mcsrStandardSettingsTarget}
-        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-        ${pkgs.coreutils}/bin/rm -f "$target"
-        ${pkgs.coreutils}/bin/install -m 0666 ${mcsrStandardSettingsFile} "$target"
-      '';
+        activationScripts.ninjabrain-prefs = ''
+          target=${lib.escapeShellArg ninjabrainPrefsTarget}
+          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
+          ${pkgs.coreutils}/bin/rm -f "$target"
+          ${pkgs.coreutils}/bin/install -m 0644 ${ninjabrainPrefs} "$target"
+        '';
 
-      activationScripts.ninjabrain-prefs = ''
-        target=${lib.escapeShellArg ninjabrainPrefsTarget}
-        ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$target")"
-        ${pkgs.coreutils}/bin/rm -f "$target"
-        ${pkgs.coreutils}/bin/install -m 0644 ${ninjabrainPrefs} "$target"
-      '';
-
-      activationScripts.mcsr-waywall = ''
-        target=${lib.escapeShellArg mcsrInstanceCfgTarget}
-        if [ -e "$target" ]; then
-          MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
-            s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
-            s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
-            s@^JavaPath=.*@JavaPath=${pkgs.jdk21}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk21}/bin/java\n";
-            s@^IgnoreJavaCompatibility=.*@IgnoreJavaCompatibility=true@m or $_ .= "IgnoreJavaCompatibility=true\n";
-            s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
-            s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
-            s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
-            s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
-            s@^Env=.*\n@@mg;
-            $_ .= "Env=".$ENV{MCSR_ENV}."\n";
-            s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
-            s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
-            s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
-            s@^OverrideNativeWorkarounds=.*@OverrideNativeWorkarounds=true@m or $_ .= "OverrideNativeWorkarounds=true\n";
-            s@^UseNativeGLFW=.*@UseNativeGLFW=true@m or $_ .= "UseNativeGLFW=true\n";
-            s@^CustomGLFWPath=.*@CustomGLFWPath=@m or $_ .= "CustomGLFWPath=\n";
-          ' "$target"
-        fi
-      '';
-    })
-  ];
+        activationScripts.mcsr-waywall = ''
+          target=${lib.escapeShellArg mcsrInstanceCfgTarget}
+          if [ -e "$target" ]; then
+            MCSR_ENV=${lib.escapeShellArg mcsrEnv} ${pkgs.perl}/bin/perl -0pi -e '
+              s@^OverrideCommands=.*@OverrideCommands=true@m or $_ .= "\nOverrideCommands=true\n";
+              s@^WrapperCommand=.*@WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --@m or $_ .= "WrapperCommand=${pkgs.coreutils}/bin/env __GL_THREADED_OPTIMIZATIONS=0 ${pkgs.waywall}/bin/waywall wrap --\n";
+              s@^JavaPath=.*@JavaPath=${pkgs.jdk21}/bin/java@m or $_ .= "JavaPath=${pkgs.jdk21}/bin/java\n";
+              s@^IgnoreJavaCompatibility=.*@IgnoreJavaCompatibility=true@m or $_ .= "IgnoreJavaCompatibility=true\n";
+              s@^JvmArgs=.*@JvmArgs=${mcsrJvmArgs}@m or $_ .= "JvmArgs=${mcsrJvmArgs}\n";
+              s@^MaxMemAlloc=.*@MaxMemAlloc=4096@m or $_ .= "MaxMemAlloc=4096\n";
+              s@^MinMemAlloc=.*@MinMemAlloc=4096@m or $_ .= "MinMemAlloc=4096\n";
+              s@^OverrideEnv=.*@OverrideEnv=true@m or $_ .= "OverrideEnv=true\n";
+              s@^Env=.*\n@@mg;
+              $_ .= "Env=".$ENV{MCSR_ENV}."\n";
+              s@^OverrideJavaArgs=.*@OverrideJavaArgs=true@m or $_ .= "OverrideJavaArgs=true\n";
+              s@^OverrideJavaLocation=.*@OverrideJavaLocation=true@m or $_ .= "OverrideJavaLocation=true\n";
+              s@^OverrideMemory=.*@OverrideMemory=true@m or $_ .= "OverrideMemory=true\n";
+              s@^OverrideNativeWorkarounds=.*@OverrideNativeWorkarounds=true@m or $_ .= "OverrideNativeWorkarounds=true\n";
+              s@^UseNativeGLFW=.*@UseNativeGLFW=true@m or $_ .= "UseNativeGLFW=true\n";
+              s@^CustomGLFWPath=.*@CustomGLFWPath=@m or $_ .= "CustomGLFWPath=\n";
+            ' "$target"
+          fi
+        '';
+      })
+    ];
 }

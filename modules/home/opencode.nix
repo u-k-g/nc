@@ -8,7 +8,7 @@
 let
   inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
-  inherit (lib.modules) mkIf;
+  inherit (lib.strings) makeBinPath optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
   themeName = "nc-${theme.slug}";
@@ -87,11 +87,133 @@ let
     };
   };
 
-  opencodeInstallDir = "${user.homeDirectory}/.opencode/bin";
-  opencodeCliState = "${user.homeDirectory}/.local/state/opencode/cli.source";
+  opencodePnpmHome = "${user.homeDirectory}/.local/share/pnpm";
   opencodeDesktopDataDir = "${user.homeDirectory}/.local/share/opencode";
   opencodeDesktopApp = "${opencodeDesktopDataDir}/OpenCode.app";
   opencodeDesktopState = "${user.homeDirectory}/.local/state/opencode/desktop.source";
+
+  opencodeDesktopInstall = ''
+    (
+      set -euo pipefail
+
+      export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+
+      version="$(
+        "$PNPM_HOME/bin/opencode" --version 2>/dev/null \
+          | ${getExe pkgs.gnugrep} --only-matching --extended-regexp '[0-9]+\.[0-9]+\.[0-9]+'
+      )"
+      if [ -z "$version" ]; then
+        printf 'warning: could not determine the installed OpenCode version; skipping the OpenCode desktop update\n' >&2
+        exit 0
+      fi
+
+      asset_name=opencode-desktop-mac-arm64.dmg
+      asset_url="https://opencode.ai/files/bin/$version/$asset_name"
+      desktop_app=${lib.escapeShellArg opencodeDesktopApp}
+      desktop_data_dir=${lib.escapeShellArg opencodeDesktopDataDir}
+      state_file=${lib.escapeShellArg opencodeDesktopState}
+      new_app="$desktop_data_dir/.OpenCode.app.new"
+      old_app="$desktop_data_dir/.OpenCode.app.old"
+
+      ${pkgs.coreutils}/bin/mkdir --parents ${lib.escapeShellArg "${user.homeDirectory}/Applications"}
+      ${pkgs.coreutils}/bin/ln --symbolic --force --no-dereference "$desktop_app" ${lib.escapeShellArg "${user.homeDirectory}/Applications/OpenCode.app"}
+
+      ${pkgs.coreutils}/bin/mkdir --parents "$desktop_data_dir"
+      if [ ! -e "$desktop_app" ] && [ -e "$old_app" ]; then
+        ${pkgs.coreutils}/bin/mv "$old_app" "$desktop_app"
+      fi
+      ${pkgs.coreutils}/bin/rm -rf "$new_app"
+      if [ -e "$desktop_app" ]; then
+        ${pkgs.coreutils}/bin/rm -rf "$old_app"
+      fi
+
+      app_is_valid() {
+        local app=$1
+        local executable
+
+        [ -f "$app/Contents/Info.plist" ] || return 1
+        executable="$(/usr/bin/plutil -extract CFBundleExecutable raw "$app/Contents/Info.plist")" || return 1
+        [ -x "$app/Contents/MacOS/$executable" ]
+      }
+
+      state_value="$version $asset_name"
+      if app_is_valid "$desktop_app" \
+        && [ -f "$state_file" ] \
+        && [ "$(< "$state_file")" = "$state_value" ]; then
+        installed_version="$(/usr/bin/plutil \
+          -extract CFBundleShortVersionString raw \
+          "$desktop_app/Contents/Info.plist")"
+        printf 'OpenCode Desktop %s is already installed\n' "$installed_version"
+        exit 0
+      fi
+
+      temp_dir="$(${pkgs.coreutils}/bin/mktemp --directory -t opencode-desktop.XXXXXXXXXX)"
+      mount_dir="$temp_dir/mount"
+      mounted=false
+
+      # shellcheck disable=SC2329
+      cleanup() {
+        if [ "$mounted" = true ]; then
+          /usr/bin/hdiutil detach "$mount_dir" >/dev/null || true
+        fi
+        ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
+      }
+      trap cleanup EXIT
+
+      dmg="$temp_dir/$asset_name"
+      printf 'Installing OpenCode Desktop %s from %s\n' "$version" "$asset_url"
+      if ! ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$dmg"; then
+        if app_is_valid "$desktop_app"; then
+          printf 'warning: failed to download OpenCode Desktop %s; keeping the installed version\n' "$version" >&2
+          exit 0
+        fi
+        printf 'error: failed to download OpenCode Desktop %s\n' "$version" >&2
+        exit 1
+      fi
+
+      ${pkgs.coreutils}/bin/mkdir --parents "$mount_dir"
+      /usr/bin/hdiutil attach \
+        -nobrowse \
+        -readonly \
+        -mountpoint "$mount_dir" \
+        "$dmg" >/dev/null
+      mounted=true
+
+      if ! app_is_valid "$mount_dir/OpenCode.app"; then
+        printf 'error: the OpenCode Desktop DMG does not contain a valid OpenCode.app\n' >&2
+        exit 1
+      fi
+
+      /usr/bin/ditto "$mount_dir/OpenCode.app" "$temp_dir/OpenCode.app"
+      /usr/bin/codesign --verify --deep --strict "$temp_dir/OpenCode.app"
+
+      /usr/bin/hdiutil detach "$mount_dir" >/dev/null
+      mounted=false
+
+      ${pkgs.coreutils}/bin/mv "$temp_dir/OpenCode.app" "$new_app"
+
+      if [ -e "$desktop_app" ]; then
+        ${pkgs.coreutils}/bin/mv "$desktop_app" "$old_app"
+      fi
+      if ! ${pkgs.coreutils}/bin/mv "$new_app" "$desktop_app"; then
+        if [ -e "$old_app" ]; then
+          ${pkgs.coreutils}/bin/mv "$old_app" "$desktop_app"
+        fi
+        exit 1
+      fi
+      ${pkgs.coreutils}/bin/rm -rf "$old_app"
+
+      state_dir="$(${pkgs.coreutils}/bin/dirname "$state_file")"
+      ${pkgs.coreutils}/bin/mkdir --parents "$state_dir"
+      printf '%s' "$state_value" > "$state_file.new"
+      ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
+
+      installed_version="$(/usr/bin/plutil \
+        -extract CFBundleShortVersionString raw \
+        "$desktop_app/Contents/Info.plist")"
+      printf 'Installed OpenCode Desktop %s at %s\n' "$installed_version" "$desktop_app"
+    )
+  '';
 in
 
 {
@@ -226,266 +348,26 @@ in
       (
         set -euo pipefail
 
-        export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
+        export PNPM_HOME=${lib.escapeShellArg opencodePnpmHome}
+        export PATH="$PNPM_HOME/bin:${
+          makeBinPath [
+            pkgs.nodejs
+            pkgs.coreutils
+          ]
+        }:$PATH"
 
-        install_dir=${lib.escapeShellArg opencodeInstallDir}
-        state_file=${lib.escapeShellArg opencodeCliState}
-        api=https://api.github.com/repos/anomalyco/opencode/releases/tags/v1.18.31
-
-        ${
-          if pkgs.stdenv.hostPlatform.system == "aarch64-darwin" then
-            ''
-              asset_name=opencode-darwin-arm64.zip
-              opencode_version() {
-                "$1" --version
-              }
-            ''
-          else if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then
-            ''
-              if ${getExe pkgs.gnugrep} --quiet --word-regexp --ignore-case avx2 /proc/cpuinfo; then
-                asset_name=opencode-linux-x64.tar.gz
-              else
-                asset_name=opencode-linux-x64-baseline.tar.gz
-              fi
-
-              opencode_version() {
-                ${pkgs.stdenv.cc.bintools.dynamicLinker} \
-                  --library-path ${
-                    lib.escapeShellArg
-                    <| lib.makeLibraryPath [
-                      pkgs.glibc
-                      pkgs.stdenv.cc.cc.lib
-                    ]
-                  } \
-                  "$1" --version
-              }
-            ''
-          else
-            throw "unsupported OpenCode platform: ${pkgs.stdenv.hostPlatform.system}"
-        }
-
-        temp_dir="$(${pkgs.coreutils}/bin/mktemp --directory -t opencode-cli.XXXXXXXXXX)"
-        cleanup() {
-          ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
-        }
-        trap cleanup EXIT
-
-        release_json="$temp_dir/release.json"
-        if ! ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_json"; then
-          if [ -x "$install_dir/opencode" ] \
-            && installed_version="$(opencode_version "$install_dir/opencode" 2>/dev/null)" \
-            && [ -n "$installed_version" ]; then
-            printf 'warning: failed to check latest OpenCode release; keeping OpenCode %s\n' "$installed_version" >&2
-            exit 0
-          fi
-          printf 'error: failed to check latest OpenCode release; OpenCode is not installed\n' >&2
-          exit 1
-        fi
-
-        tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$release_json")"
-        asset_url="$(${getExe pkgs.jq} --raw-output --arg name "$asset_name" \
-          '.assets[] | select(.name == $name) | .browser_download_url' "$release_json")"
-
-        if [ -z "$tag" ] || [ -z "$asset_url" ]; then
-          printf 'error: failed to resolve OpenCode asset %s from latest release metadata\n' "$asset_name" >&2
-          exit 1
-        fi
-
-        state_value="$tag $asset_name $asset_url"
-
-        if [ -x "$install_dir/opencode" ] \
-          && [ -f "$state_file" ] \
-          && [ "$(< "$state_file")" = "$state_value" ] \
-          && installed_version="$(opencode_version "$install_dir/opencode" 2>/dev/null)" \
-          && [ -n "$installed_version" ]; then
-          printf 'OpenCode %s is already installed\n' "$installed_version"
-          exit 0
-        fi
-
-        archive="$temp_dir/$asset_name"
-        extract_dir="$temp_dir/extract"
-        ${pkgs.coreutils}/bin/mkdir --parents "$extract_dir"
-        printf 'Installing OpenCode %s from %s\n' "$tag" "$asset_url"
-        ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$archive"
-
-        case "$asset_name" in
-          *.zip)
-            ${getExe pkgs.unzip} -q "$archive" -d "$extract_dir"
-            ;;
-          *.tar.gz)
-            ${getExe pkgs.gnutar} \
-              --use-compress-program=${getExe pkgs.gzip} \
-              -xf "$archive" \
-              -C "$extract_dir"
-            ;;
-          *)
-            printf 'error: unsupported OpenCode archive type: %s\n' "$asset_name" >&2
+        if ! ${getExe pkgs.pnpm} add --global \
+          --allow-build=@opencode/cli \
+          @opencode/cli@latest; then
+          if [ ! -x "$PNPM_HOME/bin/opencode" ]; then
+            printf 'error: failed to install OpenCode and none is installed\n' >&2
             exit 1
-            ;;
-        esac
-
-        if [ ! -x "$extract_dir/opencode" ]; then
-          printf 'error: OpenCode archive did not contain an executable opencode file\n' >&2
-          exit 1
+          fi
+          printf 'warning: failed to update OpenCode; keeping the installed version\n' >&2
         fi
 
-        if ! downloaded_version="$(opencode_version "$extract_dir/opencode")"; then
-          printf 'error: downloaded OpenCode binary is not runnable on this system\n' >&2
-          exit 1
-        fi
-        if [ -z "$downloaded_version" ]; then
-          printf 'error: downloaded OpenCode binary did not report a version\n' >&2
-          exit 1
-        fi
-
-        ${pkgs.coreutils}/bin/mkdir --parents "$install_dir"
-        ${pkgs.coreutils}/bin/install --mode 0755 "$extract_dir/opencode" "$install_dir/.opencode.new"
-        ${pkgs.coreutils}/bin/mv --force "$install_dir/.opencode.new" "$install_dir/opencode"
-
-        state_dir="$(${pkgs.coreutils}/bin/dirname "$state_file")"
-        ${pkgs.coreutils}/bin/mkdir --parents "$state_dir"
-        printf '%s' "$state_value" > "$state_file.new"
-        ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
-
-        printf 'Installed OpenCode %s from %s\n' "$downloaded_version" "$asset_url"
+        ${optionalString pkgs.stdenv.hostPlatform.isDarwin opencodeDesktopInstall}
       )
     '';
-
-    activationScripts.opencode-desktop-latest =
-      mkIf pkgs.stdenv.hostPlatform.isDarwin
-      <| ''
-        (
-          set -euo pipefail
-
-          export CURL_CA_BUNDLE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt
-
-          api=https://api.github.com/repos/anomalyco/opencode/releases/tags/v1.18.31
-          asset_name=opencode-desktop-mac-arm64.dmg
-          desktop_app=${lib.escapeShellArg opencodeDesktopApp}
-          desktop_data_dir=${lib.escapeShellArg opencodeDesktopDataDir}
-          state_file=${lib.escapeShellArg opencodeDesktopState}
-          new_app="$desktop_data_dir/.OpenCode.app.new"
-          old_app="$desktop_data_dir/.OpenCode.app.old"
-
-          ${pkgs.coreutils}/bin/mkdir --parents ${lib.escapeShellArg "${user.homeDirectory}/Applications"}
-          ${pkgs.coreutils}/bin/ln --symbolic --force --no-dereference "$desktop_app" ${lib.escapeShellArg "${user.homeDirectory}/Applications/OpenCode.app"}
-
-          ${pkgs.coreutils}/bin/mkdir --parents "$desktop_data_dir"
-          if [ ! -e "$desktop_app" ] && [ -e "$old_app" ]; then
-            ${pkgs.coreutils}/bin/mv "$old_app" "$desktop_app"
-          fi
-          ${pkgs.coreutils}/bin/rm -rf "$new_app"
-          if [ -e "$desktop_app" ]; then
-            ${pkgs.coreutils}/bin/rm -rf "$old_app"
-          fi
-
-          app_is_valid() {
-            local app=$1
-            local executable
-
-            [ -f "$app/Contents/Info.plist" ] || return 1
-            executable="$(/usr/bin/plutil -extract CFBundleExecutable raw "$app/Contents/Info.plist")" || return 1
-            [ -x "$app/Contents/MacOS/$executable" ]
-          }
-
-          if app_is_valid "$desktop_app" \
-            && [ -f "$state_file" ] \
-            && ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$desktop_data_dir/.opencode-desktop-release.json"; then
-            tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$desktop_data_dir/.opencode-desktop-release.json")"
-            asset_url="$(${getExe pkgs.jq} --raw-output --arg name "$asset_name" \
-              '.assets[] | select(.name == $name) | .browser_download_url' "$desktop_data_dir/.opencode-desktop-release.json")"
-            state_value="$tag $asset_name $asset_url"
-            ${pkgs.coreutils}/bin/rm -f "$desktop_data_dir/.opencode-desktop-release.json"
-
-            if [ -n "$tag" ] && [ -n "$asset_url" ] && [ "$(< "$state_file")" = "$state_value" ]; then
-              installed_version="$(/usr/bin/plutil \
-                -extract CFBundleShortVersionString raw \
-                "$desktop_app/Contents/Info.plist")"
-              printf 'OpenCode Desktop %s is already installed\n' "$installed_version"
-              exit 0
-            fi
-          elif app_is_valid "$desktop_app"; then
-            installed_version="$(/usr/bin/plutil \
-              -extract CFBundleShortVersionString raw \
-              "$desktop_app/Contents/Info.plist")"
-            printf 'warning: failed to check latest OpenCode Desktop release; keeping OpenCode Desktop %s\n' "$installed_version" >&2
-            exit 0
-          fi
-
-          temp_dir="$(${pkgs.coreutils}/bin/mktemp --directory -t opencode-desktop.XXXXXXXXXX)"
-          mount_dir="$temp_dir/mount"
-          mounted=false
-
-          # shellcheck disable=SC2329
-          cleanup() {
-            if [ "$mounted" = true ]; then
-              /usr/bin/hdiutil detach "$mount_dir" >/dev/null || true
-            fi
-            ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
-          }
-          trap cleanup EXIT
-
-          release_json="$temp_dir/release.json"
-          if ! ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$api" --output "$release_json"; then
-            printf 'warning: failed to check latest OpenCode Desktop release; skipping OpenCode Desktop install\n' >&2
-            exit 0
-          fi
-          tag="$(${getExe pkgs.jq} --raw-output '.tag_name // empty' "$release_json")"
-          asset_url="$(${getExe pkgs.jq} --raw-output --arg name "$asset_name" \
-            '.assets[] | select(.name == $name) | .browser_download_url' "$release_json")"
-
-          if [ -z "$tag" ] || [ -z "$asset_url" ]; then
-            printf 'error: failed to resolve OpenCode Desktop asset %s from latest release metadata\n' "$asset_name" >&2
-            exit 1
-          fi
-
-          state_value="$tag $asset_name $asset_url"
-          dmg="$temp_dir/$asset_name"
-          ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$dmg"
-
-          ${pkgs.coreutils}/bin/mkdir --parents "$mount_dir"
-          printf 'Installing OpenCode Desktop %s from %s\n' "$tag" "$asset_url"
-          /usr/bin/hdiutil attach \
-            -nobrowse \
-            -readonly \
-            -mountpoint "$mount_dir" \
-            "$dmg" >/dev/null
-          mounted=true
-
-          if ! app_is_valid "$mount_dir/OpenCode.app"; then
-            printf 'error: the OpenCode Desktop DMG does not contain a valid OpenCode.app\n' >&2
-            exit 1
-          fi
-
-          /usr/bin/ditto "$mount_dir/OpenCode.app" "$temp_dir/OpenCode.app"
-          /usr/bin/codesign --verify --deep --strict "$temp_dir/OpenCode.app"
-
-          /usr/bin/hdiutil detach "$mount_dir" >/dev/null
-          mounted=false
-
-          ${pkgs.coreutils}/bin/mv "$temp_dir/OpenCode.app" "$new_app"
-
-          if [ -e "$desktop_app" ]; then
-            ${pkgs.coreutils}/bin/mv "$desktop_app" "$old_app"
-          fi
-          if ! ${pkgs.coreutils}/bin/mv "$new_app" "$desktop_app"; then
-            if [ -e "$old_app" ]; then
-              ${pkgs.coreutils}/bin/mv "$old_app" "$desktop_app"
-            fi
-            exit 1
-          fi
-          ${pkgs.coreutils}/bin/rm -rf "$old_app"
-
-          state_dir="$(${pkgs.coreutils}/bin/dirname "$state_file")"
-          ${pkgs.coreutils}/bin/mkdir --parents "$state_dir"
-          printf '%s' "$state_value" > "$state_file.new"
-          ${pkgs.coreutils}/bin/mv --force "$state_file.new" "$state_file"
-
-          installed_version="$(/usr/bin/plutil \
-            -extract CFBundleShortVersionString raw \
-            "$desktop_app/Contents/Info.plist")"
-          printf 'Installed OpenCode Desktop %s at %s\n' "$installed_version" "$desktop_app"
-        )
-      '';
   };
 }

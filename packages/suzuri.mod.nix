@@ -27,10 +27,13 @@
             '';
             runtime = buildFHSEnv {
               name = "suzuri";
-              targetPkgs = p: p.zed-editor.buildInputs ++ [
-                p.stdenv.cc.cc.lib
-                p.vulkan-loader
-              ];
+              targetPkgs =
+                p:
+                p.zed-editor.buildInputs
+                ++ [
+                  p.stdenv.cc.cc.lib
+                  p.vulkan-loader
+                ];
               runScript = "${files}/suzuri.app/bin/suzuri";
             };
           in

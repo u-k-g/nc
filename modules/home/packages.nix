@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -8,6 +9,7 @@
 let
   inherit (lib.lists) optionals;
   user = config.nc.user;
+  edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
   workstation = pkgs.stdenv.hostPlatform.isDarwin || config.nc.nixos.workstation.enable;
 
   kicadCli = pkgs.writeShellScriptBin "kicad-cli" ''
@@ -106,7 +108,7 @@ let
     docker
     docker-buildx
     kicad
-    opencode-desktop
+    edgePkgs.opencode-desktop
     unar
   ];
 

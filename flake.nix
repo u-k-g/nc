@@ -61,11 +61,6 @@
       flake = false;
     };
 
-    t3 = {
-      url = "github:pingdotgg/t3code";
-      flake = false;
-    };
-
     toshy = {
       url = "github:RedBearAK/Toshy";
       inputs.nixpkgs.follows = "nixpkgs";

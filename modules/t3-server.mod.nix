@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 
 {
   flake.nixosModules.t3-server =
@@ -12,20 +12,12 @@
       inherit (lib.lists) singleton;
       inherit (lib.meta) getExe;
       inherit (lib.modules) mkIf;
-      inherit (lib.options) mkEnableOption mkOption;
+      inherit (lib.options) mkEnableOption;
       inherit (lib.strings) escapeShellArg makeBinPath;
-      inherit (lib.trivial) importJSON;
-      inherit (lib.types) strMatching;
     in
     {
       options.nc.nixos.t3-server = {
         enable = mkEnableOption "headless T3 Code over Tailscale";
-
-        version = mkOption {
-          type = strMatching "[0-9]+[.][0-9]+[.][0-9]+";
-          default = (importJSON "${inputs.t3}/apps/server/package.json").version;
-          description = "Stable T3 npm version declared by the pinned t3 source input.";
-        };
       };
 
       config = {
@@ -47,16 +39,10 @@
               ]
             }:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
-            # A development commit may name a version before it is released.
-            # Keep the installed version unless GitHub confirms a stable release.
-            ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 \
-              ${escapeShellArg "https://api.github.com/repos/pingdotgg/t3code/releases/tags/v${config.nc.nixos.t3-server.version}"} \
-              | ${getExe pkgs.jq} --exit-status \
-                --arg tag ${escapeShellArg "v${config.nc.nixos.t3-server.version}"} \
-                '.tag_name == $tag and .draft == false and .prerelease == false' > /dev/null
-            ${getExe pkgs.pnpm} add --global --save-exact \
+            ${getExe pkgs.pnpm} add --global \
               --allow-build=node-pty --allow-build=msgpackr-extract \
-              ${escapeShellArg "t3@${config.nc.nixos.t3-server.version}"}
+              --config.minimumReleaseAge=0 \
+              t3@latest
           )
         '';
 

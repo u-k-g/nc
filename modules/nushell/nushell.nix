@@ -86,7 +86,6 @@ let
   ++ [
     "${home}/.config/bin"
     "${home}/.local/bin"
-    "${home}/.opencode/bin"
   ]
   ++ optionals pkgs.stdenv.hostPlatform.isDarwin [
     "${home}/.lmstudio/bin"
@@ -274,7 +273,7 @@ let
         | str join "\n"
       )
       let prompt = $skill + "\n\n" + $diff_text
-      let run = (^${getExe pkgs.opencode} run --model opencode-go/glm-5.3-flash --variant low -- $prompt | complete)
+      let run = (^opencode run --model "opencode-go/glm-5.3-flash#low" -- $prompt | complete)
 
       if $run.exit_code != 0 {
         error make {
