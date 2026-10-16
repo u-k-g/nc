@@ -13,6 +13,10 @@ let
   theme = config.nc.theme;
   themeName = "nc-${theme.slug}";
 
+  permissionRule = action: resource: effect: {
+    inherit action resource effect;
+  };
+
   opencodeTheme = {
     "$schema" = "https://opencode.ai/theme.json";
     defs = {
@@ -222,124 +226,97 @@ in
       type = "copy";
       permissions = "644";
       text = toJSON { } {
-        autoupdate = false;
+        "$schema" = "https://opencode.ai/config.json";
+        update = "disable";
         compaction = {
           auto = true;
-          prune = true;
         };
 
-        permission = {
-          edit = {
-            "*" = "allow";
-            ".git" = "deny";
-            ".git/*" = "deny";
-            "*/.git" = "deny";
-            "*/.git/*" = "deny";
-          };
-
-          read = {
-            "*" = "allow";
-            "*.env" = "deny";
-            "*.env.*" = "deny";
-            "*.env.example" = "allow";
-          };
-
-          bash = {
-            "git *" = "deny";
-            "git blame" = "allow";
-            "git blame *" = "allow";
-            "git branch" = "allow";
-            "git branch --list *" = "allow";
-            "git branch -a" = "allow";
-            "git branch -r" = "allow";
-            "git cat-file *" = "allow";
-            "git checkout" = "allow";
-            "git checkout *" = "allow";
-            "git checkout --orphan*" = "deny";
-            "git checkout --track*" = "deny";
-            "git checkout -B *" = "deny";
-            "git checkout -B*" = "deny";
-            "git checkout -b *" = "deny";
-            "git checkout -b*" = "deny";
-            "git checkout -t *" = "deny";
-            "git checkout -t*" = "deny";
-            "git clone *" = "allow";
-            "git config --get *" = "allow";
-            "git config --get-regexp *" = "allow";
-            "git config --list" = "allow";
-            "git describe" = "allow";
-            "git describe *" = "allow";
-            "git diff" = "allow";
-            "git diff *" = "allow";
-            "git diff-tree *" = "allow";
-            "git fetch" = "allow";
-            "git fetch *" = "allow";
-            "git for-each-ref" = "allow";
-            "git for-each-ref *" = "allow";
-            "git gc" = "allow";
-            "git gc *" = "allow";
-            "git grep *" = "allow";
-            "git log" = "allow";
-            "git log *" = "allow";
-            "git ls-remote" = "allow";
-            "git ls-remote *" = "allow";
-            "git ls-tree *" = "allow";
-            "git maintenance" = "allow";
-            "git maintenance *" = "allow";
-            "git ls-files" = "allow";
-            "git ls-files *" = "allow";
-            "git merge-base *" = "allow";
-            "git name-rev *" = "allow";
-            "git prune" = "allow";
-            "git prune *" = "allow";
-            "git pull" = "allow";
-            "git pull *" = "allow";
-            "git reflog" = "allow";
-            "git reflog show *" = "allow";
-            "git remote" = "allow";
-            "git remote -v" = "allow";
-            "git remote get-url *" = "allow";
-            "git remote show *" = "allow";
-            "git rev-list *" = "allow";
-            "git rev-parse" = "allow";
-            "git rev-parse *" = "allow";
-            "git repack" = "allow";
-            "git repack *" = "allow";
-            "git restore" = "deny";
-            "git restore *" = "deny";
-            "git show" = "allow";
-            "git show *" = "allow";
-            "git shortlog" = "allow";
-            "git shortlog *" = "allow";
-            "git stash list" = "allow";
-            "git stash show *" = "allow";
-            "git status" = "allow";
-            "git status *" = "allow";
-            "git submodule" = "allow";
-            "git submodule *" = "allow";
-            "git switch *" = "allow";
-            "git switch --create*" = "deny";
-            "git switch --force-create*" = "deny";
-            "git switch --orphan*" = "deny";
-            "git switch --track*" = "deny";
-            "git switch -C *" = "deny";
-            "git switch -C*" = "deny";
-            "git switch -c *" = "deny";
-            "git switch -c*" = "deny";
-            "git switch -t *" = "deny";
-            "git switch -t*" = "deny";
-            "git tag" = "allow";
-            "git tag --list *" = "allow";
-            "git whatchanged" = "allow";
-            "git whatchanged *" = "allow";
-          };
-        };
+        permissions = [
+          (permissionRule "shell" "*" "ask")
+          (permissionRule "shell" "git *" "deny")
+          (permissionRule "shell" "git blame *" "allow")
+          (permissionRule "shell" "git branch" "allow")
+          (permissionRule "shell" "git branch --list *" "allow")
+          (permissionRule "shell" "git branch -a" "allow")
+          (permissionRule "shell" "git branch -r" "allow")
+          (permissionRule "shell" "git cat-file *" "allow")
+          (permissionRule "shell" "git checkout *" "allow")
+          (permissionRule "shell" "git clone *" "allow")
+          (permissionRule "shell" "git config --get *" "allow")
+          (permissionRule "shell" "git config --get-regexp *" "allow")
+          (permissionRule "shell" "git config --list" "allow")
+          (permissionRule "shell" "git describe *" "allow")
+          (permissionRule "shell" "git diff *" "allow")
+          (permissionRule "shell" "git diff-tree *" "allow")
+          (permissionRule "shell" "git fetch *" "allow")
+          (permissionRule "shell" "git for-each-ref *" "allow")
+          (permissionRule "shell" "git gc *" "allow")
+          (permissionRule "shell" "git grep *" "allow")
+          (permissionRule "shell" "git log *" "allow")
+          (permissionRule "shell" "git ls-files *" "allow")
+          (permissionRule "shell" "git ls-remote *" "allow")
+          (permissionRule "shell" "git ls-tree *" "allow")
+          (permissionRule "shell" "git maintenance *" "allow")
+          (permissionRule "shell" "git merge-base *" "allow")
+          (permissionRule "shell" "git name-rev *" "allow")
+          (permissionRule "shell" "git prune *" "allow")
+          (permissionRule "shell" "git pull *" "allow")
+          (permissionRule "shell" "git reflog" "allow")
+          (permissionRule "shell" "git reflog show *" "allow")
+          (permissionRule "shell" "git remote" "allow")
+          (permissionRule "shell" "git remote -v" "allow")
+          (permissionRule "shell" "git remote get-url *" "allow")
+          (permissionRule "shell" "git remote show *" "allow")
+          (permissionRule "shell" "git repack *" "allow")
+          (permissionRule "shell" "git rev-list *" "allow")
+          (permissionRule "shell" "git rev-parse *" "allow")
+          (permissionRule "shell" "git show *" "allow")
+          (permissionRule "shell" "git shortlog *" "allow")
+          (permissionRule "shell" "git stash list" "allow")
+          (permissionRule "shell" "git stash show *" "allow")
+          (permissionRule "shell" "git status *" "allow")
+          (permissionRule "shell" "git submodule" "allow")
+          (permissionRule "shell" "git submodule *" "allow")
+          (permissionRule "shell" "git switch *" "allow")
+          (permissionRule "shell" "git tag" "allow")
+          (permissionRule "shell" "git tag --list *" "allow")
+          (permissionRule "shell" "git whatchanged *" "allow")
+          (permissionRule "shell" "git checkout --orphan*" "deny")
+          (permissionRule "shell" "git checkout --track*" "deny")
+          (permissionRule "shell" "git checkout -B*" "deny")
+          (permissionRule "shell" "git checkout -b*" "deny")
+          (permissionRule "shell" "git checkout -t*" "deny")
+          (permissionRule "shell" "git restore" "deny")
+          (permissionRule "shell" "git restore *" "deny")
+          (permissionRule "shell" "git switch --create*" "deny")
+          (permissionRule "shell" "git switch --force-create*" "deny")
+          (permissionRule "shell" "git switch --orphan*" "deny")
+          (permissionRule "shell" "git switch --track*" "deny")
+          (permissionRule "shell" "git switch -C*" "deny")
+          (permissionRule "shell" "git switch -c*" "deny")
+          (permissionRule "shell" "git switch -t*" "deny")
+          (permissionRule "edit" "*" "allow")
+          (permissionRule "edit" ".git" "deny")
+          (permissionRule "edit" ".git/*" "deny")
+          (permissionRule "edit" "*/.git" "deny")
+          (permissionRule "edit" "*/.git/*" "deny")
+          (permissionRule "read" "*" "allow")
+          (permissionRule "read" "*.env" "deny")
+          (permissionRule "read" "*.env.*" "deny")
+          (permissionRule "read" "*.env.example" "allow")
+        ];
       };
     };
 
-    xdg.config.files."opencode/tui.json".text = toJSON { } {
-      theme = themeName;
-      scroll_speed = 4;
+    xdg.config.files."opencode/cli.json".text = toJSON { } {
+      "$schema" = "https://opencode.ai/v2/cli.json";
+      theme = {
+        name = themeName;
+      };
+      scroll = {
+        speed = 4;
+      };
     };
 
     xdg.config.files."opencode/themes/${themeName}.json".text = toJSON { } opencodeTheme;
