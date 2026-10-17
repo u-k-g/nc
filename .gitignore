@@ -57,6 +57,7 @@
 !packages/browser-use/uv.lock
 !packages/hermes-image-bridge.patch
 !packages/hermes-edit-target.patch
+!packages/hermes-acp-model-config.patch
 
 # AGENT SKILLS
 !.agents/

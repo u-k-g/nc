@@ -125,6 +125,8 @@
                   cp -rL "$site_packages/agent" "$out/share/hermes-agent/python-overlay/agent"
                   cp -rL "$site_packages/tools" "$out/share/hermes-agent/python-overlay/tools"
                   cp -rL "$site_packages/hermes_cli" "$out/share/hermes-agent/python-overlay/hermes_cli"
+                  # Copied (not symlinked) so the ACP model-config patch below can edit it.
+                  cp -rL "$site_packages/acp_adapter" "$out/share/hermes-agent/python-overlay/acp_adapter"
                   # Hermes puts the directory containing hermes_cli at the front
                   # of sys.path during startup. Keep that root in the overlay so
                   # the patched agent and tools modules win in real CLI turns.
@@ -138,6 +140,7 @@
                   chmod u+w "$out/share/hermes-agent/python-overlay/hermes_cli"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent"
                   chmod u+w "$out/share/hermes-agent/python-overlay/tools"
+                  chmod u+w "$out/share/hermes-agent/python-overlay/acp_adapter"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/tool_executor.py"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/turn_context.py"
                   chmod u+w "$out/share/hermes-agent/python-overlay/agent/models_dev.py"
@@ -146,6 +149,7 @@
                   chmod u+w "$out/share/hermes-agent/python-overlay/tools/vision_tools.py"
                   patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-image-bridge.patch}
                   patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-edit-target.patch}
+                  patch -p1 -d "$out/share/hermes-agent/python-overlay" -i ${../packages/hermes-acp-model-config.patch}
                   for command in hermes hermes-agent hermes-acp; do
                     wrapProgram "$out/bin/$command" --prefix PYTHONPATH : "$out/share/hermes-agent/python-overlay"
                   done

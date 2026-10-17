@@ -1,0 +1,112 @@
+--- a/acp_adapter/server.py
++++ b/acp_adapter/server.py
+@@ -19,8 +19,9 @@
+     AgentCapabilities, AgentMessageChunk, AuthenticateResponse, ClientCapabilities, ForkSessionResponse,
+     Implementation, InitializeResponse, ListSessionsResponse, LoadSessionResponse, McpServerHttp, McpServerSse,
+     McpServerStdio, ModelInfo, NewSessionResponse, PromptCapabilities, PromptResponse, ResumeSessionResponse,
+-    SessionCapabilities, SessionForkCapabilities, SessionInfo, SessionInfoUpdate, SessionListCapabilities,
+-    SessionMode, SessionModeState, SessionModelState, SessionResumeCapabilities, SetSessionConfigOptionResponse,
++    SessionCapabilities, SessionConfigOptionSelect, SessionConfigSelectOption, SessionForkCapabilities,
++    SessionInfo, SessionInfoUpdate, SessionListCapabilities, SessionMode, SessionModeState, SessionModelState,
++    SessionResumeCapabilities, SetSessionConfigOptionResponse,
+     SetSessionModeResponse, SetSessionModelResponse, TextContentBlock, Usage, UsageUpdate, UserMessageChunk,
+ )
+ 
+@@ -235,6 +236,7 @@
+ 
+     _EDIT_APPROVAL_POLICY_CONFIG_ID = "edit_approval_policy"
+     _EDIT_APPROVAL_POLICY_DEFAULT = "ask"
++    _MODEL_CONFIG_ID = "model"
+     _MODE_DEFAULT = "default"
+     # mode id -> (edit approval policy, display name, description)
+     _MODES: dict[str, tuple[str, str, str]] = {
+@@ -312,6 +314,36 @@
+         choice = encode_model_choice(provider, model)
+         return SessionModelState(available_models=[ModelInfo(model_id=choice, name=model)], current_model_id=choice)
+ 
++    def _session_config_options(self, state: SessionState) -> list[SessionConfigOptionSelect]:
++        """Model inventory as an ACP ``config_options`` model select.
++
++        T3 Code and newer ACP clients discover selectable models only from typed
++        ``config_options``; the legacy ``models`` state alone leaves their picker with a
++        lone default. Publish the same inventory ``_build_model_state`` advertises so
++        ``session/set_config_option`` can drive Hermes' validated ``switch_model``
++        resolution. Clients that read ``models``/``modes`` (Zed, Claude, Codex) do not
++        need this and keep working unchanged."""
++        picker = self._build_model_state(state)
++        if picker is None or not picker.available_models:
++            return []
++        options = [
++            SessionConfigSelectOption(value=m.model_id, name=m.name, description=m.description)
++            for m in picker.available_models
++        ]
++        current = picker.current_model_id or options[0].value
++        if current not in {option.value for option in options}:
++            current = options[0].value
++        return [
++            SessionConfigOptionSelect(
++                id=self._MODEL_CONFIG_ID,
++                name="Model",
++                category="model",
++                type="select",
++                current_value=current,
++                options=options,
++            )
++        ]
++
+     def _switch_model(
+         self, state: SessionState, raw_model: str, *, keep_endpoint: bool = False
+     ) -> tuple[str | None, str, str]:
+@@ -603,6 +635,7 @@
+         self._schedule_available_commands_update(state.session_id)
+         self._schedule_soon(lambda: self._send_usage_update(state))
+         return {
++            "config_options": self._session_config_options(state),
+             "models": self._build_model_state(state),
+             "modes": self._session_modes(state),
+             "field_meta": self._provenance_meta(state.session_id, getattr(state.agent, "session_id", state.session_id)),
+@@ -674,7 +707,10 @@
+         logger.info("Forked session %s -> %s", session_id, state.session_id)
+         self._schedule_available_commands_update(state.session_id)
+         return ForkSessionResponse(
+-            session_id=state.session_id, models=self._build_model_state(state), modes=self._session_modes(state)
++            session_id=state.session_id,
++            config_options=self._session_config_options(state),
++            models=self._build_model_state(state),
++            modes=self._session_modes(state),
+         )
+ 
+     async def list_sessions(
+@@ -1074,20 +1110,28 @@
+     async def set_config_option(
+         self, config_id: str, session_id: str, value: str, **kwargs: Any
+     ) -> SetSessionConfigOptionResponse | None:
+-        """Accept ACP config option updates even when Hermes has no typed ACP config surface yet."""
++        """Apply an ACP config option update.
++
++        The model select routes through ``set_session_model`` so the typed picker and the
++        legacy ``session/set_model`` path share Hermes' validated ``switch_model``
++        resolution. Other ids keep Hermes' idempotent store-and-ack behavior."""
+         state = await asyncio.to_thread(self.session_manager.get_session, session_id)
+         if state is None:
+             logger.warning("Session %s: config update requested for missing session", session_id)
+             return None
+ 
+-        if str(config_id) == self._EDIT_APPROVAL_POLICY_CONFIG_ID:
++        if str(config_id) == self._MODEL_CONFIG_ID:
++            if await self.set_session_model(str(value), session_id) is None:
++                return None
++        elif str(config_id) == self._EDIT_APPROVAL_POLICY_CONFIG_ID:
+             state.mode = self._EDIT_APPROVAL_POLICY_TO_MODE.get(str(value), self._MODE_DEFAULT)
++            self.session_manager.save_session(session_id)
+         else:
+             options = getattr(state, "config_options", None)
+             if not isinstance(options, dict):
+                 options = {}
+             options[str(config_id)] = value
+             state.config_options = options
+-        self.session_manager.save_session(session_id)
++            self.session_manager.save_session(session_id)
+         logger.info("Session %s: config option %s updated", session_id, config_id)
+-        return SetSessionConfigOptionResponse(config_options=[])
++        return SetSessionConfigOptionResponse(config_options=self._session_config_options(state))
