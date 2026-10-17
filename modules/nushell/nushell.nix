@@ -343,6 +343,24 @@ let
     "source ${zoxideInit}"
     wrtcmtmsgConfig
   ];
+
+  pkillBin =
+    if pkgs.stdenv.hostPlatform.isDarwin then
+      "/usr/bin/pkill"
+    else
+      "${pkgs.procps}/bin/pkill";
+
+  # Kitty sends SIGHUP to the process it started. Nushell panics and spins if
+  # that arrives while a background job exists, so this parent turns the
+  # hangup into SIGKILL. See nu-hup/src/main.rs.
+  nuHup = pkgs.rustPlatform.buildRustPackage {
+    pname = "nu-hup";
+    version = "0";
+    src = ./nu-hup;
+    cargoLock.lockFile = ./nu-hup/Cargo.lock;
+    PKILL = pkillBin;
+    meta.mainProgram = "nu-hup";
+  };
 in
 {
   nixpkgs.overlays = singleton (
@@ -448,7 +466,9 @@ in
 
             if [ -z "$INTELLIJ_ENVIRONMENT_READER" ]; then
               export SHELL='${getExe pkgs.nushell}'
-              exec '${getExe pkgs.nushell}' --login --config '${home}/.config/nushell/config.nu'
+              # nu-hup keeps Nushell in the foreground and SIGKILLs it on SIGHUP.
+              # A closed window otherwise leaves Nushell spinning on a background job.
+              exec '${getExe nuHup}' '${getExe pkgs.nushell}' --login --config '${home}/.config/nushell/config.nu'
             fi
           '';
         };

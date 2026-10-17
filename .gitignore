@@ -53,6 +53,9 @@
 !dotfiles/home/.gitconfig
 !dotfiles/home/.gitignore_global
 !packages/fast-workspace-switch/fast-workspace-switch.swift
+!modules/nushell/nu-hup/Cargo.toml
+!modules/nushell/nu-hup/Cargo.lock
+!modules/nushell/nu-hup/src/main.rs
 !packages/browser-use/pyproject.toml
 !packages/browser-use/uv.lock
 !packages/hermes-image-bridge.patch
