@@ -51,11 +51,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1790158551,
-        "narHash": "sha256-I4cAVH/dlB33QY31FmEYeOFY58/W89oAYwRF2WhT5bk=",
+        "lastModified": 1792195636,
+        "narHash": "sha256-/YKF4LQfpSxOn1+Z1slzkL+HIu7JdXYmvtaKWDo79qU=",
         "owner": "lambda-symbolics",
         "repo": "autolith",
-        "rev": "e5f6610b6a67b3f9b31285a06efd6e714db95810",
+        "rev": "2e498adf008f5216a3a25fb80376f58088151a1a",
         "type": "github"
       },
       "original": {

@@ -34,6 +34,10 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     edge.url = "github:NixOS/nixpkgs/master";
 
+    # Autolith pins an exact SBCL and a Quicklisp set generated against a
+    # matching nixpkgs, so it keeps its own nixpkgs. Do not add
+    # `inputs.nixpkgs.follows`; bump nixpkgs inside the input in lockstep with
+    # sbcl.version instead.
     autolith.url = "github:lambda-symbolics/autolith";
 
     blip = {

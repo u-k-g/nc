@@ -1,28 +1,12 @@
 { inputs, ... }:
 
 {
-  commonModules.autolith =
+  # Autolith is declared for the user in modules/home/autolith.nix. This module
+  # only wires its upstream startup check into `nix flake check`, so a bad input
+  # bump fails the flake instead of surfacing at runtime.
+  perSystem =
+    { system, ... }:
     {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
-    let
-      inherit (lib.lists) singleton;
-      inherit (lib.modules) mkIf;
-      inherit (lib.options) mkOption;
-      inherit (lib.types) bool;
-    in
-    {
-      options.nc.autolith.enable = mkOption {
-        type = bool;
-        default = true;
-        description = "Whether to install Autolith system-wide.";
-      };
-
-      config.environment.systemPackages =
-        mkIf config.nc.autolith.enable
-        <| singleton inputs.autolith.packages.${pkgs.stdenv.hostPlatform.system}.default;
+      checks.autolith = inputs.autolith.checks.${system}.startup;
     };
 }

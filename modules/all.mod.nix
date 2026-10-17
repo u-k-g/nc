@@ -9,6 +9,7 @@
     user = ./common/user.nix;
 
     apps = ./home/apps.nix;
+    autolith = ./home/autolith.nix;
     bat = ./home/bat.nix;
     btop = ./home/btop.nix;
     codex = ./home/codex.nix;

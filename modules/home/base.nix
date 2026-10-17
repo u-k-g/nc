@@ -16,7 +16,6 @@ in
     XDG_CONFIG_HOME = "${config.directory}/.config";
     XDG_DATA_HOME = "${config.directory}/.local/share";
     XDG_STATE_HOME = "${config.directory}/.local/state";
-    OPENCODE_DB = "opencode-stable.db";
     ZDOTDIR = "${config.directory}/.config/zsh";
   };
 }
