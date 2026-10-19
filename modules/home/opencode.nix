@@ -8,7 +8,7 @@
 let
   inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) makeBinPath optionalString;
+  inherit (lib.strings) optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
   themeName = "nc-${theme.slug}";
@@ -92,6 +92,15 @@ let
   };
 
   opencodePnpmHome = "${user.homeDirectory}/.local/share/pnpm";
+
+  # pnpm runs lifecycle scripts as `sh -c` and resolves `node` for them from
+  # PATH, neither of which the activation environment provides.
+  pnpm = lib.mkExtraPath pkgs pkgs.pnpm [
+    pkgs.nodejs
+    pkgs.coreutils
+    pkgs.bashInteractive
+  ];
+
   opencodeDesktopDataDir = "${user.homeDirectory}/.local/share/opencode";
   opencodeDesktopApp = "${opencodeDesktopDataDir}/OpenCode.app";
   opencodeDesktopState = "${user.homeDirectory}/.local/state/opencode/desktop.source";
@@ -326,14 +335,11 @@ in
         set -euo pipefail
 
         export PNPM_HOME=${lib.escapeShellArg opencodePnpmHome}
-        export PATH="$PNPM_HOME/bin:${
-          makeBinPath [
-            pkgs.nodejs
-            pkgs.coreutils
-          ]
-        }:$PATH"
 
-        if ! ${getExe pkgs.pnpm} add --global \
+        # pnpm refuses to install globally unless its bin directory is on PATH.
+        export PATH="$PNPM_HOME/bin:$PATH"
+
+        if ! ${getExe pnpm} add --global \
           --allow-build=@opencode/cli \
           @opencode/cli@latest; then
           if [ ! -x "$PNPM_HOME/bin/opencode" ]; then

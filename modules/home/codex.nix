@@ -8,10 +8,18 @@
 let
   inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
-  inherit (lib.strings) concatMapStringsSep escapeShellArg makeBinPath;
+  inherit (lib.strings) concatMapStringsSep escapeShellArg;
 
   codexHookDir = "/etc/codex/hooks";
   codexGitPolicyName = "codex-git-policy.py";
+
+  # pnpm runs lifecycle scripts as `sh -c` and resolves `node` for them from
+  # PATH, neither of which the activation environment provides.
+  pnpm = lib.mkExtraPath pkgs pkgs.pnpm [
+    pkgs.nodejs
+    pkgs.coreutils
+    pkgs.bashInteractive
+  ];
 
   blockedGitSubcommands = [
     "am"
@@ -695,14 +703,9 @@ in
       (
         set -euo pipefail
         export PNPM_HOME=${escapeShellArg "${config.nc.user.homeDirectory}/.local/share/pnpm"}
-        export PATH="$PNPM_HOME/bin:$PNPM_HOME:${
-          makeBinPath [
-            pkgs.nodejs
-            pkgs.coreutils
-          ]
-        }:$PATH"
+        export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
         export SHELL=${getExe pkgs.bashInteractive}
-        ${getExe pkgs.pnpm} add --global @openai/codex@latest
+        ${getExe pnpm} add --global @openai/codex@latest
         # GUI provider probes may not inherit the Nix profile's PATH.
         ${getExe pkgs.gnused} --in-place \
           ${escapeShellArg "s|exec node |exec ${getExe pkgs.nodejs} |g"} \

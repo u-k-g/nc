@@ -13,8 +13,20 @@
       inherit (lib.meta) getExe;
       inherit (lib.modules) mkIf;
       inherit (lib.options) mkEnableOption mkOption;
-      inherit (lib.strings) escapeShellArg makeBinPath;
+      inherit (lib.strings) escapeShellArg;
       inherit (lib.types) strMatching;
+
+      # node-pty compiles native code through node-gyp, so keep the toolchain
+      # next to the interpreter and shell pnpm's lifecycle scripts need.
+      pnpm = lib.mkExtraPath pkgs pkgs.pnpm [
+        pkgs.nodejs
+        pkgs.bashInteractive
+        pkgs.coreutils
+        pkgs.gnused
+        pkgs.python3
+        pkgs.gnumake
+        pkgs.stdenv.cc
+      ];
     in
     {
       options.nc.nixos.t3-server = {
@@ -34,19 +46,9 @@
           (
             set -euo pipefail
             export PNPM_HOME=${escapeShellArg config.systemd.services.t3code.environment.PNPM_HOME}
-            export PATH="$PNPM_HOME/bin:$PNPM_HOME:${
-              makeBinPath [
-                pkgs.nodejs
-                pkgs.bashInteractive
-                pkgs.coreutils
-                pkgs.gnused
-                pkgs.python3
-                pkgs.gnumake
-                pkgs.stdenv.cc
-              ]
-            }:$PATH"
+            export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
-            ${getExe pkgs.pnpm} add --global --save-exact \
+            ${getExe pnpm} add --global --save-exact \
               --allow-build=node-pty --allow-build=msgpackr-extract \
               --config.minimumReleaseAge=0 \
               ${escapeShellArg "t3@${config.nc.nixos.t3-server.version}"}
