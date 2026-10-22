@@ -692,6 +692,7 @@
         "paneru": "paneru",
         "paperwm": "paperwm",
         "parallel-search-mcp": "parallel-search-mcp",
+        "taste-skill": "taste-skill",
         "themes": "themes",
         "toshy": "toshy"
       }
@@ -708,6 +709,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "taste-skill": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792521486,
+        "narHash": "sha256-25Hc9DiKiDSq+Ae3bTwv9nnk7KziP0cp3Q8srpXE47U=",
+        "owner": "leonxlnx",
+        "repo": "taste-skill",
+        "rev": "6010f91a9935f1c167dfc500fb1a475681892e6b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "leonxlnx",
+        "repo": "taste-skill",
         "type": "github"
       }
     },

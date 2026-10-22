@@ -65,6 +65,11 @@
       flake = false;
     };
 
+    taste-skill = {
+      url = "github:leonxlnx/taste-skill";
+      flake = false;
+    };
+
     toshy = {
       url = "github:RedBearAK/Toshy";
       inputs.nixpkgs.follows = "nixpkgs";
