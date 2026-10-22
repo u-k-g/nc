@@ -70,6 +70,11 @@
       flake = false;
     };
 
+    pstack = {
+      url = "github:backnotprop/pstack";
+      flake = false;
+    };
+
     toshy = {
       url = "github:RedBearAK/Toshy";
       inputs.nixpkgs.follows = "nixpkgs";

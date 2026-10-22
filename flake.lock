@@ -615,6 +615,22 @@
         "type": "github"
       }
     },
+    "pstack": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792523844,
+        "narHash": "sha256-D2MTX3kirzLjS5hz46iyjBW2lUh9w5AUy9H2arIJy6U=",
+        "owner": "backnotprop",
+        "repo": "pstack",
+        "rev": "e44668c2aad92eacf4e84df47984121fefb11b82",
+        "type": "github"
+      },
+      "original": {
+        "owner": "backnotprop",
+        "repo": "pstack",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
       "inputs": {
         "nixpkgs": [
@@ -692,6 +708,7 @@
         "paneru": "paneru",
         "paperwm": "paperwm",
         "parallel-search-mcp": "parallel-search-mcp",
+        "pstack": "pstack",
         "taste-skill": "taste-skill",
         "themes": "themes",
         "toshy": "toshy"

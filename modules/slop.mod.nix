@@ -18,6 +18,38 @@
         removeSuffix
         splitString
         ;
+
+      # pstack marks every skill explicit-only. Strip that flag at build time so
+      # these fire on their own, like the rest of the set. Everything else in the
+      # skill files comes from the repo untouched.
+      pstackSkills = [
+        "correct"
+        "principle-boundary-discipline"
+        "principle-encode-lessons-in-structure"
+        "principle-fix-root-causes"
+        "principle-foundational-thinking"
+        "principle-guard-the-context-window"
+        "principle-laziness-protocol"
+        "principle-minimize-reader-load"
+        "principle-subtract-before-you-add"
+      ];
+
+      pstackSkill =
+        name:
+        let
+          dir = inputs.pstack + "/skills/${name}";
+          skillMd =
+            lib.replaceStrings [ "\ndisable-model-invocation: true\n" ] [ "\n" ]
+              (builtins.readFile (dir + "/SKILL.md"));
+        in
+        pkgs.runCommand "agent-skill-${name}" { }
+        <| ''
+          mkdir -p "$out"
+          cp -r ${dir}/. "$out"/
+          chmod -R u+w "$out"
+          rm -f "$out/SKILL.md"
+          cp ${pkgs.writeText "SKILL.md" skillMd} "$out/SKILL.md"
+        '';
     in
     {
       # Generate each skill as real files rather than symlinks so every harness reads them.
@@ -407,40 +439,6 @@
             Use `--json` only when another command or program will process the results; use normal text output for direct inspection.
           '';
 
-          ".agents/skills/correct/SKILL.md".text = ''
-            ---
-            name: correct
-            description: "Find the mistakes agents keep repeating in this repo and make each one impossible. Try architecture first, then types, then a lint whose error names the fix, then a test, and write docs last. Prove each check fails on a real past mistake. Repeat this each time the operator corrects you. Use for /correct."
-            ---
-
-            # Correct
-
-            The operator keeps correcting agents in this repo for the same mistakes. Change the repo so the next agent can't make them.
-
-            Assume every contributor is an agent that sees only the files it opened, copies the nearest example, and takes the shortest path that compiles. Design the repo so a change that looks right from one file is right for the whole repo.
-
-            ## Find the mistake classes
-
-            First, read recent commits, reverts, review comments, agent instruction files, and comments that explain workarounds. Group the mistakes into classes. A class counts once it has happened twice.
-
-            ## Fix each class at the highest level that works
-
-            1. **Eliminate it with architecture.** Give each piece of state one owner and each task one supported way. Hide internals so the wrong import fails. Replace hand-synced lists with one source of truth. Delete old ways and dead code an agent would copy.
-            2. **Enforce it with types so the bad state can't be written.** If bad code still compiles, add a lint or CI check whose error names the file, type, or function to use instead. If the pattern is already common, fail only when a change adds more.
-            3. **Test the behavior.** Fix or delete any test that still passes when the behavior it checks breaks, or that fails when only the internals change.
-            4. **Write docs or agent rules last, only for judgment calls.** Nothing fails when an agent skips them.
-
-            ## Fix and prove
-
-            Then fix the most frequent classes now, one commit each. Prove each new check fails on a real past mistake. Run the same command locally and in CI. Exceptions go on the offending line with a reason, an expiry date, and a human's approval.
-
-            ## Keep the rule table
-
-            Last, keep a table in the agent instruction file that pairs each rule with what enforces it. When the operator corrects you, fix the mistake and add the rule. If the rule was already there and nothing enforces it, that's a repeat, so fix it at the highest level in the same change. Drop a rule once its mistake can't happen.
-
-            **Reply:** each class with its evidence, the level you picked, and why a higher level didn't work.
-          '';
-
 
           ".agents/skills/handoff/SKILL.md".text = ''
             ---
@@ -504,167 +502,6 @@
             ## Pi appliances
 
             Read the project's `AGENTS.md` for its appliance policy. Do not copy workstation tooling (`nh`, `dix`, `nom`, desktop modules) onto the drone. Full-system Darwin uses the project's `darwin.linux-builder` VM only for that `nix build`. x86 Linux uses binfmt/`extra-platforms`. The Pi is never a builder.
-          '';
-
-          ".agents/skills/principle-boundary-discipline/SKILL.md".text = ''
-            ---
-            name: principle-boundary-discipline
-            description: "Apply when wiring validation, error handling, or framework adapters. Concentrate guards at system boundaries (CLI, config, network, external APIs); trust internal types and keep business logic in pure functions."
-            ---
-
-            # Boundary Discipline
-
-            Place validation, type narrowing, and error handling at system boundaries. Trust internal code unconditionally. Business logic lives in pure functions. The shell is thin and mechanical.
-
-            **Why:** Scattered validation is noisy, redundant, and gives a false sense of safety. Keep logic out of framework wiring so it can be tested without the framework.
-
-            **The pattern:**
-            - **At boundaries** (CLI args, config files, external APIs, network protocols): validate, return errors, handle defensively.
-            - **Inside the system:** typed data, error propagation, no re-validation. Trust the types.
-            - **Across the boundary.** Expose domain concepts, not the boundary's private representation. Keep general-purpose mechanism inside and special-purpose policy at the edge.
-
-            **Applications:**
-
-            Validation and error handling:
-            - Validate config at parse time (the boundary), not inside business logic
-            - Parse raw data into domain types at the boundary
-            - Do not re-export transport, storage, framework, or wire types through the public surface
-            - No redundant nil checks deep in call chains if the boundary already validated
-
-            Code organization:
-            - Business logic in pure functions with no framework dependencies
-            - Parse functions: pure transforms from raw bytes to typed state
-            - Prompt construction: structured state in, string out
-            - Scoring and assessment: pure transforms from state to results
-
-            **The tests:**
-            - "Is this data crossing a system boundary right now?" If not, validation is redundant.
-            - "Can this be a pure function that the shell just calls?" If yes, extract it.
-          '';
-
-          ".agents/skills/principle-encode-lessons-in-structure/SKILL.md".text = ''
-            ---
-            name: principle-encode-lessons-in-structure
-            description: "Apply when you catch yourself writing the same instruction a second time, or notice a recurring correction. Encode the rule as a lint, metadata flag, runtime check, or script instead of more text."
-            ---
-
-            # Encode Lessons in Structure
-
-            If the lesson needs judgment and cannot be encoded, make the instruction more prominent and add an example of the failure mode.
-
-            **Corollary:** If the fix is structural, only use the structural fix. The instruction is the symptom.
-          '';
-
-          ".agents/skills/principle-fix-root-causes/SKILL.md".text = ''
-            ---
-            name: principle-fix-root-causes
-            description: "Apply when debugging. Trace each symptom back to the first place the system went wrong and fix it there. A guard is a fix only when the state it handles is legitimate."
-            ---
-
-            # Fix Root Causes
-
-            When debugging, fix the fault, not the place where it surfaced. The symptom is where a wrong state became visible. The root cause is the first place the system did something it should not do, or failed to handle a state it should handle.
-
-            **Why:** A symptom fix hides the evidence and leaves the fault free to surface somewhere else. Each one makes the system harder to reason about, because the code now carries a workaround for a bug that nobody named.
-
-            **Pattern:**
-            - Reproduce first.
-            - Ask "why" at each step until the answer is a wrong decision in the code, not a consequence of an earlier one.
-            - When stuck, instrument. Read the actual error and the actual state. Do not guess.
-            - Ask whether the state that triggered the symptom is legitimate. If the system may be in that state, the code that broke on it is the root cause, and handling the state there is the fix. If the state should never exist, a check where it broke hides the bug. Find what produced the state. Guards, retries, swallowed errors, clamped values, and discarded state are the usual ways to hide a bug.
-            - When something fails only after a restart, suspect persisted state first: config files, caches, lock files, serialized state.
-            - Check for the pattern, not just the instance. Find every place with the same fault and fix them all.
-            - If a workaround needs a paragraph-long comment to justify it, the code is wrong. Fix the code, not the comment.
-            - If the deciding fact took a deep dig to find, propose the cheap, always-on signal that would have shown it at first look.
-          '';
-
-          ".agents/skills/principle-foundational-thinking/SKILL.md".text = ''
-            ---
-            name: principle-foundational-thinking
-            description: "Apply before writing logic: choosing core types and data structures, sequencing scaffold-vs-feature work, asking what concurrent actors share. Get the data structures right so downstream code becomes obvious."
-            ---
-
-            # Foundational Thinking
-
-            **Structural decisions** protect option value. **Code-level decisions** protect simplicity.
-
-            **Data structures first.** Get the data shape right before writing logic. Define core types early, trace every access pattern, and choose structures that match the dominant paths.
-
-            At code level, DRY the structure, not every line. Types and data models should converge. Three similar statements still beat a premature abstraction. Prefer explicit over clever. Test behavior and edge cases, not line counts.
-
-            **Concurrency corollary.** Before sharing state between actors, ask "what happens if another actor modifies this concurrently?" If not "nothing", isolate.
-
-            **Scaffold first.** If something helps every later phase, do it first. Ask "does every subsequent phase benefit from this existing?" CI, linting, test infrastructure, and shared types are scaffold. Sequence for option value: setup before features, tests before fixes. Keep commits small and single-purpose.
-
-            Each increment should land a coherent abstraction or deepen one that exists. Do not spread a new capability across callers as special-case coordination.
-
-            Subtraction comes before scaffolding. Remove dead code first, then lay foundations.
-          '';
-
-          ".agents/skills/principle-guard-the-context-window/SKILL.md".text = ''
-            ---
-            name: principle-guard-the-context-window
-            description: "Apply when context is filling up: large outputs, long files, repeated reads, fan-out planning. Route bulk to subagents; keep summaries in the main thread, not raw payloads."
-            ---
-
-            # Guard the Context Window
-
-            **Why:** Context overflow degrades reasoning quality, creates compression artifacts, and halts progress.
-
-            **Pattern:**
-            - **Size phases and cap scope.** Limit files per phase, set turn budgets, account for mechanism costs.
-          '';
-
-          ".agents/skills/principle-laziness-protocol/SKILL.md".text = ''
-            ---
-            name: principle-laziness-protocol
-            description: "Apply when refactoring, evaluating diff size, or tempted to add abstractions, layers, or signal threading. Bias toward deletion and the smallest change that solves the problem."
-            ---
-
-            # Laziness Protocol
-
-            - **Consolidate decisions.** Do not repeat the same choice in several places. Put it behind one source of truth and pass the result as a simple flag.
-            - **Minimize the diff.** Make the smallest change that solves the problem. Fewer lines beat "elegant" boilerplate.
-          '';
-
-          ".agents/skills/principle-minimize-reader-load/SKILL.md".text = ''
-            ---
-            name: principle-minimize-reader-load
-            description: "Apply when reviewing or shaping code that's hard to trace. Count layers between question and answer, and hidden state in the reader's head; collapse one-caller wrappers and shrink mutable scope."
-            ---
-
-            # Minimize Reader Load
-
-            Maintainability is the work a reader must do to understand code. Track two axes: **layers to trace** (indirections between the question and the answer) and **state to hold** (hidden or mutable context the reader must keep in their head). LOC, cyclomatic complexity, and "clean architecture" are proxies. Reader load is the thing that matters. The two axes are independent. A flat file with 50 globals can be as hard to reason about as a 6-layer adapter stack. Guard both. This is the human analog of [Guard the Context Window](../principle-guard-the-context-window/SKILL.md). Working memory is finite for readers too.
-
-            - **Collapse layers** that cost more than they save: wrappers with one caller, adapters with no second implementation, speculative indirection that was never needed. Inline them.
-            - **Make adjacent layers change the abstraction.** A layer that repeats the same methods and arguments adds reader load without compression. Collapse pass-through layers.
-            - **Demand interface compression.** A broad interface that hides little complexity makes readers learn both the surface and the implementation. Prefer boundaries that hide meaningful decisions.
-            - **Shrink state scope:** prefer pure functions (returns over mutations), locals over fields, fields over module state, and module state over globals. Derive instead of sync.
-            - **Name the invariant at the boundary,** not in every consumer, so the reader learns it once.
-            - Before adding a layer or a piece of state, ask: does it reduce reader load elsewhere by at least as much?
-
-            **The test:** can a new reader answer "where does X come from?" and "what can change X?" in under 30 seconds? If not, cut layers or cut state.
-          '';
-
-          ".agents/skills/principle-subtract-before-you-add/SKILL.md".text = ''
-            ---
-            name: principle-subtract-before-you-add
-            description: "Apply when sequencing an addition, refactor, or rewrite. Remove dead code, redundant validators, and stub references first, then build on the simpler base."
-            ---
-
-            # Subtract Before You Add
-
-            When evolving a system, remove complexity first, then build. Default to subtraction.
-
-            Make simplification a continual investment. Leave the design slightly simpler and more capable behind the same or smaller surface than you found it.
-
-            - Sequence removal before construction
-            - Cut before you polish (get to the minimum before investing in quality)
-            - Design for observed usage, not speculative edge cases
-            - No speculative validators, parsers, or guards beyond what the spec demands
-            - Simplify prompts (remove redundant instructions, excessive templates)
-            - When a reference has no novel content, delete it rather than leaving a stub
           '';
 
           ".agents/skills/whitelist-git-ignore/SKILL.md".text = ''
@@ -789,6 +626,10 @@
         |> (
           skills:
           skills
+          // lib.listToAttrs (
+            map (name: nameValuePair ".agents/skills/${name}" { source = pstackSkill name; })
+              pstackSkills
+          )
           // {
             ".agents/skills/design-taste-frontend".source =
               pkgs.runCommand "agent-skill-design-taste-frontend" { }
