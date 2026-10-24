@@ -153,7 +153,7 @@ in
         [ui]
         editor = "hx"
         diff-editor = ":builtin"
-        diff-formatter = ["${getExe config.nc.difftastic.package}", "--color", "auto", "$left", "$right"]
+        diff-formatter = ["${getExe config.nc.difftastic.package}", "--color", "always", "$left", "$right"]
         conflict-marker-style = "snapshot"
         default-command = "log"
         merge-editor = "mergiraf"
