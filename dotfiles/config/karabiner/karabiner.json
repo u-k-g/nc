@@ -45,7 +45,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b net.imput.helium"
+                    "shell_command": "/usr/bin/open \"$HOME/Applications/Nix User Apps/Helium.app\""
                   }
                 ]
               },
@@ -88,7 +88,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b net.kovidgoyal.kitty"
+                    "shell_command": "/usr/bin/open \"$HOME/Applications/Nix User Apps/kitty.app\""
                   }
                 ]
               },
@@ -131,7 +131,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b net.kovidgoyal.kitty"
+                    "shell_command": "/usr/bin/open \"$HOME/Applications/Nix User Apps/kitty.app\""
                   }
                 ]
               },
@@ -174,7 +174,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b app.suzuri.Suzuri"
+                    "shell_command": "/usr/bin/open \"$HOME/Applications/Suzuri.app\""
                   }
                 ]
               },
@@ -305,7 +305,7 @@
                 },
                 "to": [
                   {
-                    "shell_command": "/usr/bin/open -b com.t3tools.t3code"
+                    "shell_command": "/usr/bin/open \"$HOME/Applications/T3 Code.app\""
                   }
                 ]
               },
