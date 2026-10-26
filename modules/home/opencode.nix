@@ -241,7 +241,12 @@ in
           auto = true;
         };
 
+        websearch = {
+          provider = "exa";
+        };
+
         permissions = [
+          (permissionRule "websearch" "*" "allow")
           (permissionRule "shell" "*" "ask")
           (permissionRule "shell" "git *" "deny")
           (permissionRule "shell" "git blame *" "allow")
