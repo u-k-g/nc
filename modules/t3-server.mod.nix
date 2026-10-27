@@ -12,9 +12,8 @@
       inherit (lib.lists) singleton;
       inherit (lib.meta) getExe;
       inherit (lib.modules) mkIf;
-      inherit (lib.options) mkEnableOption mkOption;
+      inherit (lib.options) mkEnableOption;
       inherit (lib.strings) escapeShellArg;
-      inherit (lib.types) strMatching;
 
       # node-pty compiles native code through node-gyp, so keep the toolchain
       # next to the interpreter and shell pnpm's lifecycle scripts need.
@@ -32,15 +31,10 @@
       options.nc.nixos.t3-server = {
         enable = mkEnableOption "headless T3 Code over Tailscale";
 
-        version = mkOption {
-          type = strMatching "[0-9]+[.][0-9]+[.][0-9]+";
-          default = "0.1.0";
-          description = "Exact t3 npm version to install. Changing it restarts the t3code service.";
-        };
       };
 
       config = {
-        # Install as the host user during activation. PNPM_HOME is already on
+        # Install the latest release as the host user during activation. PNPM_HOME is already on
         # the Nushell PATH, so the same t3 command is available over SSH.
         nc.userActivationScripts.t3-install = mkIf config.nc.nixos.t3-server.enable /* bash */ ''
           (
@@ -48,12 +42,19 @@
             export PNPM_HOME=${escapeShellArg config.systemd.services.t3code.environment.PNPM_HOME}
             export PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
-            ${getExe pnpm} add --global --save-exact \
+            ${getExe pnpm} add --global \
               --allow-build=node-pty --allow-build=msgpackr-extract \
               --config.minimumReleaseAge=0 \
-              ${escapeShellArg "t3@${config.nc.nixos.t3-server.version}"}
+              t3@latest
           )
         '';
+
+        system.activationScripts.t3-restart = mkIf config.nc.nixos.t3-server.enable {
+          deps = singleton "nc-user";
+          text = ''
+            echo t3code.service >> /run/nixos/activation-restart-list
+          '';
+        };
 
         services.tailscale.enable = mkIf config.nc.nixos.t3-server.enable true;
         services.tailscale.extraSetFlags =
@@ -69,7 +70,6 @@
           wants = singleton "network-online.target";
           requires = singleton "tailscaled.service";
           wantedBy = singleton "multi-user.target";
-          restartTriggers = singleton config.nc.nixos.t3-server.version;
 
           path = [
             "${config.nc.user.homeDirectory}/.local/bin"
