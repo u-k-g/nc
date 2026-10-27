@@ -641,6 +641,10 @@
               Default to `jj`. only use `git` when there is no other option.
               Only run mutating VCS commands when told to
 
+              ## Shell
+
+              The user runs nushell. Commands you hand them must be nushell.
+
               ## Writing
 
               Rules for text you create: replies, commit messages, comments, docs, PR descriptions.
