@@ -47,19 +47,21 @@
     },
     "autolith": {
       "inputs": {
+        "crane": "crane",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1792195636,
-        "narHash": "sha256-/YKF4LQfpSxOn1+Z1slzkL+HIu7JdXYmvtaKWDo79qU=",
-        "owner": "lambda-symbolics",
+        "lastModified": 1793211520,
+        "narHash": "sha256-s2/gp69gnlO+9CpeaYB/ztLfk3vVsxuDAmBUbqb+ihw=",
+        "owner": "u-k-g",
         "repo": "autolith",
-        "rev": "2e498adf008f5216a3a25fb80376f58088151a1a",
+        "rev": "334d1d0d84fc21bce8d3bcd9f293119f57a443bc",
         "type": "github"
       },
       "original": {
-        "owner": "lambda-symbolics",
+        "owner": "u-k-g",
+        "ref": "acpv2",
         "repo": "autolith",
         "type": "github"
       }
@@ -102,6 +104,21 @@
       }
     },
     "crane": {
+      "locked": {
+        "lastModified": 1791754810,
+        "narHash": "sha256-cN0Mgk+sQtCJcGWs9H4M0CnLRAuC4I8aCwiBTcBJs6E=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "bd63bf1d0a0f6dcacd7549c714a671ee63b0db6a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
+    "crane_2": {
       "locked": {
         "lastModified": 1785541369,
         "narHash": "sha256-6VCYI5xashcnAR1lambqt9FGh0F6kYhg1P2Z0VDlr48=",
@@ -556,7 +573,7 @@
     },
     "paneru": {
       "inputs": {
-        "crane": "crane",
+        "crane": "crane_2",
         "flake-parts": [
           "flake-parts"
         ],

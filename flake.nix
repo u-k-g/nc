@@ -38,7 +38,7 @@
     # matching nixpkgs, so it keeps its own nixpkgs. Do not add
     # `inputs.nixpkgs.follows`; bump nixpkgs inside the input in lockstep with
     # sbcl.version instead.
-    autolith.url = "github:lambda-symbolics/autolith";
+    autolith.url = "github:u-k-g/autolith/acpv2";
 
     blip = {
       url = "github:blip-net/nix";
