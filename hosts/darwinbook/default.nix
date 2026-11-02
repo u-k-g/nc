@@ -12,6 +12,10 @@
   nc.darwin.nehir.enable = false;
   nc.darwin.paneru.enable = true;
   nc.syncthing.enable = true;
+
+  # Autolith only runs on manara.
+  nc.autolith.enable = false;
+
   system.primaryUser = config.nc.user.name;
 
   nixpkgs.hostPlatform = "aarch64-darwin";
