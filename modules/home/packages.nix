@@ -86,7 +86,6 @@ let
     dix
 
     ffsend
-    handy
 
     lua
 
