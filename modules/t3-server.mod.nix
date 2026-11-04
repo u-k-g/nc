@@ -10,7 +10,7 @@
     }:
     let
       inherit (lib.lists) singleton;
-      inherit (lib.meta) getExe;
+      inherit (lib.meta) getExe getExe';
       inherit (lib.modules) mkIf;
       inherit (lib.options) mkEnableOption;
       inherit (lib.strings) escapeShellArg;
@@ -48,6 +48,27 @@
               t3@latest
           )
         '';
+
+        # `t3 service install` writes a user unit whose ExecStart pins a
+        # versioned runtime path. Keeping it alongside this module's system
+        # unit makes both units claim 127.0.0.1:3773 and ~/.t3/userdata, and
+        # the pinned path goes stale on every t3 upgrade. Remove it so the
+        # system unit is the only owner.
+        nc.userActivationScripts.t3-user-service-cleanup =
+          mkIf config.nc.nixos.t3-server.enable /* bash */ ''
+            unit_dir="$HOME/.config/systemd/user"
+            unit="$unit_dir/t3code.service"
+            wants="$unit_dir/default.target.wants/t3code.service"
+            if [ -e "$unit" ] || [ -L "$wants" ]; then
+              export XDG_RUNTIME_DIR="/run/user/$(${pkgs.coreutils}/bin/id -u)"
+              export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+              ${getExe' pkgs.systemd "systemctl"} --user disable --now t3code.service || true
+              ${pkgs.coreutils}/bin/rm -f "$unit" "$wants"
+              ${pkgs.coreutils}/bin/rm -rf "$unit_dir/t3code.service.d"
+              ${getExe' pkgs.systemd "systemctl"} --user daemon-reload || true
+              ${getExe' pkgs.systemd "systemctl"} --user reset-failed t3code.service || true
+            fi
+          '';
 
         system.activationScripts.t3-restart = mkIf config.nc.nixos.t3-server.enable {
           deps = singleton "nc-user";
