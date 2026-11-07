@@ -167,7 +167,7 @@ let
       # shellcheck disable=SC2329
       cleanup() {
         if [ "$mounted" = true ]; then
-          /usr/bin/diskutil eject "$mount_dir" >/dev/null || true
+          /usr/sbin/diskutil eject "$mount_dir" >/dev/null || true
         fi
         ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
       }
@@ -185,7 +185,7 @@ let
       fi
 
       ${pkgs.coreutils}/bin/mkdir --parents "$mount_dir"
-      /usr/bin/diskutil image attach \
+      /usr/sbin/diskutil image attach \
         --readOnly \
         --nobrowse \
         --mountPoint "$mount_dir" \
@@ -200,7 +200,7 @@ let
       /usr/bin/ditto "$mount_dir/OpenCode.app" "$temp_dir/OpenCode.app"
       /usr/bin/codesign --verify --deep --strict "$temp_dir/OpenCode.app"
 
-      /usr/bin/diskutil eject "$mount_dir" >/dev/null
+      /usr/sbin/diskutil eject "$mount_dir" >/dev/null
       mounted=false
 
       ${pkgs.coreutils}/bin/mv "$temp_dir/OpenCode.app" "$new_app"

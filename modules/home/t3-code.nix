@@ -106,7 +106,7 @@ in
           mounted=false
           cleanup() {
             if [ "$mounted" = true ]; then
-              /usr/bin/diskutil eject "$mount_dir" >/dev/null || true
+              /usr/sbin/diskutil eject "$mount_dir" >/dev/null || true
             fi
             ${pkgs.coreutils}/bin/rm -rf "$temp_dir"
           }
@@ -117,7 +117,7 @@ in
           ${getExe pkgs.curl} --fail --location --silent --show-error --retry 3 "$asset_url" --output "$dmg"
 
           ${pkgs.coreutils}/bin/mkdir --parents "$mount_dir"
-          /usr/bin/diskutil image attach \
+          /usr/sbin/diskutil image attach \
             --readOnly \
             --nobrowse \
             --mountPoint "$mount_dir" \
@@ -142,7 +142,7 @@ in
           /usr/bin/ditto "$source_app" "$new_app"
           /usr/bin/codesign --verify --deep --strict "$new_app"
 
-          /usr/bin/diskutil eject "$mount_dir" >/dev/null
+          /usr/sbin/diskutil eject "$mount_dir" >/dev/null
           mounted=false
 
           if [ -e "$t3_code_app" ]; then
