@@ -2,12 +2,6 @@
   "ui_font_family": "SF Pro",
   "buffer_font_family": "Lilex Nerd Font Mono",
   "agent_servers": {
-    "codex-acp": {
-      "default_config_options": {
-        "mode": "agent-full-access"
-      },
-      "type": "registry"
-    },
     "opencode": {
       "default_config_options": {
         "model": "opencode-go/deepseek-v4.1-flash"

@@ -12,7 +12,6 @@
     autolith = ./home/autolith.nix;
     bat = ./home/bat.nix;
     btop = ./home/btop.nix;
-    codex = ./home/codex.nix;
     communication = ./home/communication.nix;
     desktop-theme = ./home/desktop-theme.nix;
     difftastic = ./home/difftastic.nix;

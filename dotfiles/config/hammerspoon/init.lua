@@ -14,7 +14,6 @@ hs.hotkey.bind({ "alt" }, "o", launch("Obsidian"))
 hs.hotkey.bind({ "alt" }, "g", launch("Ghostty"))
 hs.hotkey.bind({ "alt" }, "y", launch("Finder"))
 hs.hotkey.bind({ "alt" }, "c", launch("FreeCAD"))
-hs.hotkey.bind({ "alt" }, "r", launch("Codex"))
 hs.hotkey.bind({ "alt" }, "z", launch("Zed"))
 
 local fastWorkspaceSwitchPath = os.getenv("HOME") .. "/.config/paperwm/fast-workspace-switch"
