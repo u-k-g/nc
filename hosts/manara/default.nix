@@ -65,7 +65,36 @@ in
 
   networking.hostName = "manara";
 
-  programs.nix-ld.enable = true;
+  # T3 Code renders HTML with a downloaded chrome-headless-shell, which is a
+  # generic Linux binary. nix-ld supplies the loader and these are its libs.
+  programs.nix-ld = {
+    enable = true;
+    libraries = with pkgs; [
+      alsa-lib
+      at-spi2-atk
+      at-spi2-core
+      cairo
+      cups
+      dbus
+      expat
+      glib
+      gtk3
+      libdrm
+      libgbm
+      libxkbcommon
+      nspr
+      nss
+      pango
+      systemd
+      xorg.libX11
+      xorg.libXcomposite
+      xorg.libXdamage
+      xorg.libXext
+      xorg.libXfixes
+      xorg.libXrandr
+      xorg.libxcb
+    ];
+  };
 
   disko.devices.disk.main = {
     device = "/dev/nvme0n1";

@@ -109,6 +109,11 @@
             T3CODE_PORT = "3773";
             T3CODE_TAILSCALE_SERVE = "true";
             OPENCODE_DISABLE_AUTOUPDATE = "true";
+            # nix-ld only reads its library path from the environment, and
+            # systemd services do not inherit environment.variables. Without
+            # this the downloaded chrome-headless-shell cannot start, so
+            # html_render fails with a list of missing libraries.
+            NIX_LD_LIBRARY_PATH = lib.makeLibraryPath config.programs.nix-ld.libraries;
           };
 
           serviceConfig = {
