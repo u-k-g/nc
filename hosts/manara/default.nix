@@ -174,9 +174,12 @@ in
     };
   };
 
+  # 12 cores, but most of a system rebuild is single-threaded python and node
+  # builds. Two jobs used two cores and left the rest idle, which is what made
+  # the 2026-11-12 nixpkgs bump (310 locally built paths) take two hours.
   nix.settings = {
-    cores = 4;
-    max-jobs = 2;
+    cores = 2;
+    max-jobs = 6;
   };
 
   # Replace systemd's default tmp.conf instead of adding duplicate path rules.
