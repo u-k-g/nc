@@ -23,6 +23,18 @@ let
     else
       pkgs.dix;
 
+  # Node ships with an npm whose global prefix is the read-only Nix store, so
+  # `npm install -g` fails. Shadow the binary with hiPrio so every caller,
+  # scripts included, lands on pnpm instead; `npx` maps to `pnpm dlx`. pnpm
+  # is not a drop-in clone: it has no `npm ci`, and it skips dependency build
+  # scripts that are not allowed, with a warning.
+  npmIsPnpm = lib.hiPrio (pkgs.writeShellScriptBin "npm" ''
+    exec pnpm "$@"
+  '');
+  npxIsPnpm = lib.hiPrio (pkgs.writeShellScriptBin "npx" ''
+    exec pnpm dlx "$@"
+  '');
+
   essentialPackages = with pkgs; [
     bash
     nushell
@@ -78,7 +90,11 @@ let
     uv
 
     nodejs
-    pnpm
+    npmIsPnpm
+    npxIsPnpm
+    # nixpkgs' pnpm 11 ignores minimumReleaseAgeExclude; edge tracks pnpm 12,
+    # which resolves browse to the newest release as the pnpm config declares.
+    edgePkgs.pnpm
     tio
   ];
 
@@ -120,6 +136,9 @@ in
     xdg.config.files."pnpm/config.yaml" = {
       generator = (pkgs.formats.yaml { }).generate "pnpm-config.yaml";
       value.minimumReleaseAge = 72 * 60;
+      # browse ships fresh releases and prebuilt platform binaries that pnpm
+      # resolves alongside it, so both need to skip the release-age guard.
+      value.minimumReleaseAgeExclude = [ "@opencode/browse*" ];
     };
 
     packages =

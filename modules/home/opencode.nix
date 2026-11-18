@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -93,9 +94,14 @@ let
 
   opencodePnpmHome = "${user.homeDirectory}/.local/share/pnpm";
 
+  # edge tracks pnpm 12, which understands minimumReleaseAgeExclude; nixpkgs'
+  # pnpm 11 silently ignores it and resolves browse back to the last release
+  # older than the guard.
+  edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+
   # pnpm runs lifecycle scripts as `sh -c` and resolves `node` for them from
   # PATH, neither of which the activation environment provides.
-  pnpm = lib.mkExtraPath pkgs pkgs.pnpm [
+  pnpm = lib.mkExtraPath pkgs edgePkgs.pnpm [
     pkgs.nodejs
     pkgs.coreutils
     pkgs.bashInteractive
@@ -245,6 +251,14 @@ in
           provider = "exa";
         };
 
+        mcp.servers.browse = {
+          type = "local";
+          command = [ "browse" "mcp" ];
+          cwd = "~";
+          pool = true;
+          environment.OPENCODE_BROWSER_RUNTIME = "auto-update";
+        };
+
         permissions = [
           (permissionRule "websearch" "*" "allow")
           (permissionRule "shell" "*" "ask")
@@ -355,6 +369,25 @@ in
         fi
 
         ${optionalString pkgs.stdenv.hostPlatform.isDarwin opencodeDesktopInstall}
+      )
+    '';
+
+    activationScripts.browse-latest = ''
+      (
+        set -euo pipefail
+
+        export PNPM_HOME=${lib.escapeShellArg opencodePnpmHome}
+
+        # pnpm refuses to install globally unless its bin directory is on PATH.
+        export PATH="$PNPM_HOME/bin:$PATH"
+
+        if ! ${getExe pnpm} add --global @opencode/browse@latest; then
+          if [ ! -x "$PNPM_HOME/bin/browse" ]; then
+            printf 'error: failed to install browse and none is installed\n' >&2
+            exit 1
+          fi
+          printf 'warning: failed to update browse; keeping the installed version\n' >&2
+        fi
       )
     '';
   };

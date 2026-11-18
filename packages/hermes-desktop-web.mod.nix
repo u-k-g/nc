@@ -1,11 +1,16 @@
 { inputs, ... }:
 {
-  perSystem = { pkgs, ... }: {
+  perSystem = { pkgs, ... }:
+  let
+    # The upstream lockfile is lockfileVersion 9.0, which pnpm 11 and 12 both
+    # read and write; edge keeps this in step with the interactive pnpm.
+    edgePnpm = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system}.pnpm;
+  in
+  {
     packages.hermes-desktop-web = pkgs.callPackage (
       {
         stdenv,
         nodejs,
-        pnpm_11,
         pnpmConfigHook,
         fetchPnpmDeps,
       }:
@@ -15,12 +20,12 @@
         src = inputs.hermes-desktop-web;
         nativeBuildInputs = [
           nodejs
-          pnpm_11
+          edgePnpm
           pnpmConfigHook
         ];
         pnpmDeps = fetchPnpmDeps {
           inherit (final) pname version src;
-          pnpm = pnpm_11;
+          pnpm = edgePnpm;
           fetcherVersion = 4;
           hash = "sha256-VKzMEcusCX0TOBQrN/TmKKqc59nbcDgSs8FgJORZtWE=";
         };

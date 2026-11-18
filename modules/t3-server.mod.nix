@@ -4,6 +4,7 @@
   flake.nixosModules.t3-server =
     {
       config,
+      inputs,
       lib,
       pkgs,
       ...
@@ -19,9 +20,13 @@
       pnpmHome = "${home}/.local/share/pnpm";
       stateDir = "${home}/.local/state/nc";
 
+      # edge tracks pnpm 12, the same pnpm the interactive profile and the
+      # OpenCode activation scripts use; nixpkgs' pnpm 11 is a version behind.
+      edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+
       # node-pty compiles native code through node-gyp, so keep the toolchain
       # next to the interpreter and shell pnpm's lifecycle scripts need.
-      pnpm = lib.mkExtraPath pkgs pkgs.pnpm [
+      pnpm = lib.mkExtraPath pkgs edgePkgs.pnpm [
         pkgs.nodejs
         pkgs.bashInteractive
         pkgs.coreutils
