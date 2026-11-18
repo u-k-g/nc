@@ -253,7 +253,8 @@ in
 
         mcp.servers.browse = {
           type = "local";
-          command = [ "browse" "mcp" ];
+          # Pin the binary: a GUI-launched OpenCode has no pnpm bin on PATH.
+          command = [ "${opencodePnpmHome}/bin/browse" "mcp" ];
           cwd = "~";
           pool = true;
           environment.OPENCODE_BROWSER_RUNTIME = "auto-update";
