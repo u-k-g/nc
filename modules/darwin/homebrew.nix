@@ -21,6 +21,7 @@ in
     taps = {
       "abue-ammar/homebrew-tinycast" = inputs.homebrew-tinycast;
       "apple/homebrew-apple" = inputs.homebrew-apple;
+      "ardia-browser/homebrew-tap" = inputs.homebrew-ardia;
       "felixkratz/homebrew-formulae" = inputs.homebrew-felixkratz;
       "homebrew/homebrew-cask" = inputs.homebrew-cask;
       "homebrew/homebrew-core" = inputs.homebrew-core;
@@ -32,7 +33,7 @@ in
 
     mutableTaps = false;
 
-    trust.casks = optional config.nc.darwin.nehir.enable "guria/tap/nehir";
+    trust.casks = [ "ardia-browser/tap/ardia" ] ++ optional config.nc.darwin.nehir.enable "guria/tap/nehir";
   };
 
   homebrew = {
@@ -47,6 +48,7 @@ in
     taps = [
       "abue-ammar/tinycast"
       "apple/apple"
+      "ardia-browser/tap"
       "felixkratz/formulae"
       "homebrew/cask"
       "homebrew/core"
@@ -72,6 +74,7 @@ in
 
     casks = [
       "abue-ammar/tinycast/tinycast@beta"
+      "ardia-browser/tap/ardia"
       "battery"
       "blip"
       "font-sketchybar-app-font"

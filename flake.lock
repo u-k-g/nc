@@ -371,6 +371,22 @@
         "type": "github"
       }
     },
+    "homebrew-ardia": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794600145,
+        "narHash": "sha256-eh5JsSsNRsYljBSO2nnRzNt0pge6MpaTno/cjMdCPm4=",
+        "owner": "ardia-browser",
+        "repo": "homebrew-tap",
+        "rev": "b01be4242714ce93a533efd3238707e0aa39f9a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ardia-browser",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "homebrew-cask": {
       "flake": false,
       "locked": {
@@ -713,6 +729,7 @@
         "hjem": "hjem",
         "homebrew": "homebrew",
         "homebrew-apple": "homebrew-apple",
+        "homebrew-ardia": "homebrew-ardia",
         "homebrew-cask": "homebrew-cask",
         "homebrew-core": "homebrew-core",
         "homebrew-felixkratz": "homebrew-felixkratz",

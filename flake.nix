@@ -109,6 +109,11 @@
 
     homebrew.url = "github:zhaofengli/nix-homebrew";
 
+    homebrew-ardia = {
+      url = "github:ardia-browser/homebrew-tap";
+      flake = false;
+    };
+
     homebrew-core = {
       url = "github:homebrew/homebrew-core";
       flake = false;
