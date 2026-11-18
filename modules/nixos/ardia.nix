@@ -172,8 +172,11 @@ in
       };
       serviceConfig = {
         Type = "simple";
+        # The client runs through an absolute shell path because the systemd
+        # user environment has no shell on PATH, and native Wayland because
+        # cosmic's own Xwayland owns display :0.
         ExecStart = pkgs.writeShellScript "ardia-kiosk" ''
-          exec ${getExe pkgs.cage} -- sh -c '${getExe pkgs.wayvnc} 127.0.0.1 5900 & exec ${ardia} --no-first-run'
+          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c '${getExe pkgs.wayvnc} 127.0.0.1 5900 & exec ${ardia} --no-first-run --ozone-platform=wayland'
         '';
         Restart = "on-failure";
         RestartSec = "5s";
