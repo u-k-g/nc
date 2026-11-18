@@ -17,6 +17,11 @@ let
   installDir = "${home}/.local/share/ardia";
   current = "${installDir}/current";
   ardia = "${current}/ardia/bin/ardia";
+  # The launcher scripts use #!/usr/bin/env sh, which the systemd user
+  # environment cannot resolve; the kiosk execs the Chromium binary itself.
+  # Its sandbox check passes on NixOS, where unprivileged user namespaces are
+  # the kernel default.
+  ardiaChrome = "${current}/ardia/lib/ardia/chrome";
 
   browseExtensionId = "mfnicocicmmlkpjnaffgihfjhdgjkdjg";
   browseCrxUrl = "https://clients2.google.com/service/update2/crx";
@@ -176,7 +181,7 @@ in
         # user environment has no shell on PATH, and native Wayland because
         # cosmic's own Xwayland owns display :0.
         ExecStart = pkgs.writeShellScript "ardia-kiosk" ''
-          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c '${getExe pkgs.wayvnc} 127.0.0.1 5900 & exec ${ardia} --no-first-run --ozone-platform=wayland'
+          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c '${getExe pkgs.wayvnc} 127.0.0.1 5900 & exec ${ardiaChrome} --no-first-run --ozone-platform=wayland'
         '';
         Restart = "on-failure";
         RestartSec = "5s";
