@@ -51,7 +51,7 @@
             set -euo pipefail
 
             export PNPM_HOME=${escapeShellArg pnpmHome}
-            export PATH="$PNPM_HOME/bin:${pkgs.nodejs}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:$PATH"
+            export PATH="$PNPM_HOME/bin:${pkgs.nodejs}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:${pkgs.gnutar}/bin:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
 
             # --config.allowBuilds.<pkg>=true overrides any "ignored" entry a
@@ -71,13 +71,17 @@
 
             # Restart the unit only when the version actually moved, so a
             # rebuild that changes nothing else leaves running sessions alone.
-            # The shim needs node and coreutils on PATH, hence the export above.
+            # The shim needs node, coreutils and tar on PATH (the runtime
+            # tarball is extracted on first run), hence the export above.
             version="$("$PNPM_HOME/bin/t3" --version 2>/dev/null \
               | ${getExe' pkgs.gnugrep "grep"} --only-matching --extended-regexp '[0-9]+\.[0-9]+\.[0-9]+' || true)"
             ${pkgs.coreutils}/bin/mkdir --parents ${escapeShellArg stateDir}
             if [ -z "$version" ]; then
-              printf 'warning: could not read the t3 version; restarting t3code.service\n' >&2
-              printf 'unknown' > ${escapeShellArg "${stateDir}/t3-restart-pending"}
+              # A t3 that cannot even print its version is never restarted:
+              # the running service keeps the version it already loaded, and
+              # the next switch retries. Restarting onto a broken shim is
+              # what took the unit down for good.
+              printf 'warning: could not read the t3 version; leaving t3code.service alone\n' >&2
             else
               previous="$(${pkgs.coreutils}/bin/cat ${escapeShellArg "${stateDir}/t3-version"} 2>/dev/null || true)"
               printf '%s' "$version" > ${escapeShellArg "${stateDir}/t3-version"}
@@ -144,6 +148,10 @@
             pkgs.nodejs
             pkgs.git
             pkgs.tailscale
+            # t3 extracts its runtime tarball on first launch; without tar
+            # the service crash-loops downloading 170MB per restart.
+            pkgs.coreutils
+            pkgs.gnutar
           ];
 
           environment = {
