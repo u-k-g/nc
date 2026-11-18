@@ -4,15 +4,16 @@
   let
     # The upstream lockfile is lockfileVersion 9.0, which pnpm 11 and 12 both
     # read and write; edge keeps this in step with the interactive pnpm.
-    edgePnpm = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system}.pnpm;
+    # nixpkgs' pnpm hooks predate pnpm 12's supply-chain verification pass and
+    # pass an empty --registry to it, so the hooks come from edge as well.
+    edgePkgs = inputs.edge.legacyPackages.${pkgs.stdenv.hostPlatform.system};
+    edgePnpm = edgePkgs.pnpm;
   in
   {
     packages.hermes-desktop-web = pkgs.callPackage (
       {
         stdenv,
         nodejs,
-        pnpmConfigHook,
-        fetchPnpmDeps,
       }:
       stdenv.mkDerivation (final: {
         pname = "hermes-desktop-web";
@@ -21,13 +22,13 @@
         nativeBuildInputs = [
           nodejs
           edgePnpm
-          pnpmConfigHook
+          edgePkgs.pnpmConfigHook
         ];
-        pnpmDeps = fetchPnpmDeps {
+        pnpmDeps = edgePkgs.fetchPnpmDeps {
           inherit (final) pname version src;
           pnpm = edgePnpm;
-          fetcherVersion = 4;
-          hash = "sha256-VKzMEcusCX0TOBQrN/TmKKqc59nbcDgSs8FgJORZtWE=";
+          fetcherVersion = 5;
+          hash = "sha256-BkuwGcHF9uMeJg0rXxMaElpF5z76Wu/yu3NOcCrRBzA=";
         };
         buildPhase = /* bash */ ''
           runHook preBuild
