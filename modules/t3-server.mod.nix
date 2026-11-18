@@ -54,8 +54,12 @@
             export PATH="$PNPM_HOME/bin:${pkgs.nodejs}/bin:${pkgs.coreutils}/bin:${pkgs.gnused}/bin:$PATH"
             export SHELL=${getExe pkgs.bashInteractive}
 
+            # --config.allowBuilds.<pkg>=true overrides any "ignored" entry a
+            # past manual install wrote to the global pnpm-workspace.yaml;
+            # --allow-build hard-errors against such an entry instead.
             if ! ${getExe pnpm} add --global \
-              --allow-build=node-pty --allow-build=msgpackr-extract \
+              --config.allowBuilds.node-pty=true \
+              --config.allowBuilds.msgpackr-extract=true \
               --config.minimumReleaseAge=0 \
               t3@latest; then
               if [ ! -x "$PNPM_HOME/bin/t3" ]; then
