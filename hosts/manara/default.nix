@@ -32,7 +32,7 @@ in
   nc.nixos.cosmic.enable = true;
   nc.nixos.server.enable = true;
   nc.nixos.t3-server.enable = true;
-  nc.nixos.ardia.enable = true;
+  nc.nixos.browse-kiosk.enable = true;
 
   nc.nixos.hermes = {
     enable = true;

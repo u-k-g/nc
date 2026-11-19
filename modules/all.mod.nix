@@ -52,7 +52,7 @@
   };
 
   flake.nixosModules = {
-    ardia = ./nixos/ardia.nix;
+    browse-kiosk = ./nixos/browse-kiosk.nix;
     audio = ./nixos/audio.nix;
     cosmic = ./nixos/cosmic.nix;
     desktop = ./nixos/desktop.nix;
