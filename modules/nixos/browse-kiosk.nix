@@ -94,7 +94,7 @@ in
             | ${pkgs.coreutils}/bin/sha256sum --check --quiet
 
           staging="$temp_dir/unpacked"
-          ${getExe' pkgs.unzip "unzip"} --quiet "$temp_dir/extension.zip" -d "$staging"
+          ${getExe' pkgs.unzip "unzip"} -q "$temp_dir/extension.zip" -d "$staging"
 
           # The zip unpacks into a top-level folder; the browser loads the
           # folder that holds manifest.json.
