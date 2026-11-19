@@ -15,7 +15,7 @@ let
   user = config.nc.user;
   home = user.homeDirectory;
   stateDir = "${home}/.local/state/nc";
-  browse = "${home}/.local/share/pnpm/bin/browse";
+  browseBin = "${home}/.local/share/pnpm/bin/browse";
   extensionDir = "${home}/.cache/browse/extension";
 
   # The niri and apps modules already take it this way.
@@ -58,7 +58,7 @@ in
 
         extension_dir=${escapeShellArg extensionDir}
         state_file=${escapeShellArg "${stateDir}/browse-extension-version"}
-        browse=${escapeShellArg browse}
+        browse_bin=${escapeShellArg browseBin}
 
         ${pkgs.coreutils}/bin/mkdir --parents "$extension_dir" ${escapeShellArg stateDir}
 
@@ -115,16 +115,19 @@ in
           # Chromium loads an unpacked extension only at startup, so a kiosk
           # that is already running (first boot races the activation script;
           # later updates land while it runs) has to restart to pick it up.
-          systemctl --user try-restart browse-kiosk.service || true
+          ${getExe' pkgs.systemd "systemctl"} --user try-restart browse-kiosk.service || true
         fi
 
         # Pairing: the relay keeps codes as slow hashes with a one-hour life
         # and burns each after one use, so a code in the folder is worth
         # nothing once the extension redeemed it. The token it gets back
         # persists in the browser profile, so this whole block is a no-op
-        # after the first successful handshake.
-        if "$browse" pair --list | ${getExe' pkgs.gnugrep "grep"} --quiet 'No paired browsers'; then
-          code_line="$("$browse" pair --wait-seconds 1 || true)"
+        # after the first successful handshake. The pnpm shim execs node, and
+        # the activation environment has neither it nor a resolver on PATH,
+        # so node goes on PATH explicitly.
+        if PATH="${pkgs.nodejs}/bin:$PATH" "$browse_bin" pair --list \
+          | ${getExe' pkgs.gnugrep "grep"} --quiet 'No paired browsers'; then
+          code_line="$(PATH="${pkgs.nodejs}/bin:$PATH" "$browse_bin" pair --wait-seconds 1 || true)"
           code="$(printf '%s' "$code_line" | ${getExe' pkgs.gnugrep "grep"} --only-matching --extended-regexp '[A-HJKMNP-TV-Z0-9]{4}-[A-HJKMNP-TV-Z0-9]{4}' | head -1 || true)"
           if [ -n "$code" ]; then
             printf '{"code": "%s", "port": 19988}\n' "$code" > "$extension_dir/relay-pairing.json"
