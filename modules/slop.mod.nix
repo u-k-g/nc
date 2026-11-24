@@ -10,6 +10,7 @@
     }:
     let
       inherit (lib.attrsets) mapAttrs' mapAttrsToList nameValuePair;
+      inherit (lib.generators) toJSON;
       inherit (lib.lists) elemAt groupBy;
       inherit (lib.strings)
         concatMapStringsSep
@@ -285,6 +286,35 @@
           ) (lib.filterAttrs (path: _: lib.hasPrefix ".agents/skills/" path) files)
           // {
             ".claude/CLAUDE.md".source = config.files.".agents/AGENTS.md".target;
+
+            # Copy rather than link so Claude Code can still write to it; activation resets it.
+            ".claude/settings.json" = {
+              type = "copy";
+              permissions = "644";
+              generator = toJSON { };
+              value = {
+                "$schema" = "https://json.schemastore.org/claude-code-settings.json";
+
+                theme = "auto";
+
+                # Keep transcripts so old sessions stay resumable; the default deletes them after 30 days.
+                cleanupPeriodDays = 365;
+
+                skipWebFetchPreflight = true;
+
+                env = {
+                  CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY = "1";
+                  DISABLE_ERROR_REPORTING = "1";
+                  DISABLE_TELEMETRY = "1";
+                };
+
+                # Empty strings drop the Co-Authored-By trailer and the "Generated with Claude Code" PR line.
+                attribution = {
+                  commit = "";
+                  pr = "";
+                };
+              };
+            };
           }
         );
     };
