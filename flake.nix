@@ -107,7 +107,13 @@
       inputs.nixpkgs.follows = "edge";
     };
 
-    homebrew.url = "github:zhaofengli/nix-homebrew";
+    homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+
+      # nix-homebrew 7.0.11 predates the bottle manifest API used by current
+      # homebrew-core formulae.
+      inputs.brew-src.url = "github:Homebrew/brew/7.0.16";
+    };
 
     homebrew-ardia = {
       url = "github:ardia-browser/homebrew-tap";
