@@ -9,8 +9,6 @@
 let
   inherit (lib.generators) toJSON;
   inherit (lib.meta) getExe;
-  inherit (lib.options) mkOption;
-  inherit (lib.types) enum;
   inherit (lib.strings) optionalString;
   user = config.nc.user;
   theme = config.nc.theme;
@@ -238,16 +236,7 @@ let
 in
 
 {
-  options.nc.browse.channel = mkOption {
-    type = enum [
-      "latest"
-      "dev"
-    ];
-    default = "latest";
-    description = "npm dist-tag that the browse CLI and its relay install from.";
-  };
-
-  config.home.users.${user.name} = {
+  home.users.${user.name} = {
     xdg.config.files."opencode/opencode.json" = {
       type = "copy";
       permissions = "644";
@@ -384,7 +373,7 @@ in
       )
     '';
 
-    activationScripts.browse = ''
+    activationScripts.browse-latest = ''
       (
         set -euo pipefail
 
@@ -393,7 +382,7 @@ in
         # pnpm refuses to install globally unless its bin directory is on PATH.
         export PATH="$PNPM_HOME/bin:$PATH"
 
-        if ! ${getExe pnpm} add --global @opencode/browse@${config.nc.browse.channel}; then
+        if ! ${getExe pnpm} add --global @opencode/browse@latest; then
           if [ ! -x "$PNPM_HOME/bin/browse" ]; then
             printf 'error: failed to install browse and none is installed\n' >&2
             exit 1

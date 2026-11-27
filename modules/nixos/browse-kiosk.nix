@@ -15,7 +15,6 @@ let
   user = config.nc.user;
   home = user.homeDirectory;
   stateDir = "${home}/.local/state/nc";
-  browseBin = "${home}/.local/share/pnpm/bin/browse";
   extensionDir = "${home}/.cache/browse/extension";
   profileDir = "${home}/.local/share/browse-kiosk-profile";
 
@@ -36,34 +35,20 @@ let
 in
 {
   options.nc.nixos.browse-kiosk = {
-    enable = mkEnableOption "the Helium browser in a cage kiosk, paired with browse";
+    enable = mkEnableOption "the Helium browser in a headless sway kiosk, with the browse extension";
   };
 
   config = mkIf config.nc.nixos.browse-kiosk.enable {
     programs.nix-ld.libraries = guiLibraries;
 
-    # The relay has to speak the dev-channel extension's protocol: a 0.1.5
-    # relay from latest kept the 0.1.6 dev extension at "No relay answered".
-    nc.browse.channel = "dev";
-
-    home.users.${user.name} = {
-      # The browse relay treats the pairing code as secret material (it is
-      # stored only as a slow hash), so keep the extension folder private.
-      files.".cache/browse/extension/.keep".text = "";
-    };
-
-    # Install the newest dev-channel extension and, on a browser that has not
-    # paired yet, mint a one-time code and leave it in the extension's folder:
-    # the extension's service worker exchanges it for its own token during the
-    # next relay handshake, with no person involved. A failed download keeps
-    # the installed extension, the same way the other activation scripts do.
+    # Install the newest dev-channel extension. A failed download keeps the
+    # installed extension, the same way the other activation scripts do.
     nc.userActivationScripts.browse-kiosk = /* bash */ ''
       (
         set -euo pipefail
 
         extension_dir=${escapeShellArg extensionDir}
         state_file=${escapeShellArg "${stateDir}/browse-extension-version"}
-        browse_bin=${escapeShellArg browseBin}
 
         ${pkgs.coreutils}/bin/mkdir --parents "$extension_dir" ${escapeShellArg stateDir}
 
@@ -122,52 +107,50 @@ in
           # later updates land while it runs) has to restart to pick it up.
           ${getExe' pkgs.systemd "systemctl"} --user try-restart browse-kiosk.service || true
         fi
-
-        # Pairing: the relay keeps codes as slow hashes with a one-hour life
-        # and burns each after one use, so a code in the folder is worth
-        # nothing once the extension redeemed it. The token it gets back
-        # persists in the browser profile, so this whole block is a no-op
-        # after the first successful handshake. The pnpm shim execs node, and
-        # the activation environment has neither it nor a resolver on PATH,
-        # so node goes on PATH explicitly.
-        if PATH="${pkgs.nodejs}/bin:$PATH" "$browse_bin" pair --list \
-          | ${getExe' pkgs.gnugrep "grep"} --quiet 'No paired browsers'; then
-          code_line="$(PATH="${pkgs.nodejs}/bin:$PATH" "$browse_bin" pair --wait-seconds 1 || true)"
-          code="$(printf '%s' "$code_line" | ${getExe' pkgs.gnugrep "grep"} --only-matching --extended-regexp '[A-HJKMNP-TV-Z0-9]{4}-[A-HJKMNP-TV-Z0-9]{4}' | head -1 || true)"
-          if [ -n "$code" ]; then
-            printf '{"code": "%s", "port": 19988}\n' "$code" > "$extension_dir/relay-pairing.json"
-            printf 'Left a pairing code for the browse extension\n'
-          else
-            printf 'warning: could not mint a pairing code; the extension stays unpaired\n' >&2
-          fi
-        fi
       )
     '';
 
-    # cage is a kiosk compositor that exists only to host the browser: it
-    # boots with the machine, needs no display, seat, greeter or login, and
-    # restarts on failure. wayvnc starts once the compositor's socket exists
-    # and serves the screen on loopback for handoffs. It runs in a loop
-    # because it can crash on a client's encoding request (neatvnc's raw
-    # encoder did on 2026-11-25) while cage and the browser keep running.
+    # sway runs headless as a one-window kiosk: it boots with the machine and
+    # needs no display, seat, greeter or login. wlroots picks the GPU render
+    # node on its own and falls back to pixman without one. sway, unlike cage,
+    # has wlr-data-control, which wayvnc needs to sync the clipboard with VNC
+    # viewers. wayvnc runs in a loop because it can crash on a client's
+    # encoding request (neatvnc's raw encoder did on 2026-11-25) while the
+    # browser keeps running. Closing Helium exits sway, and systemd restarts
+    # the whole kiosk.
     systemd.user.services.browse-kiosk = {
-      description = "Helium browser in a cage kiosk compositor, paired with browse";
+      description = "Helium browser in a headless sway kiosk, with the browse extension";
       wantedBy = [ "default.target" ];
       environment = {
         WLR_BACKENDS = "headless";
-        WLR_RENDERER = "pixman";
         WLR_LIBINPUT_NO_DEVICES = "1";
         NIX_LD = config.environment.sessionVariables.NIX_LD;
         NIX_LD_LIBRARY_PATH = config.environment.sessionVariables.NIX_LD_LIBRARY_PATH;
       };
+      # sway runs `exec` lines through sh, and the systemd user environment
+      # has no shell on PATH.
+      path = [ pkgs.bash ];
       serviceConfig = {
         Type = "simple";
-        # The client runs through an absolute shell path because the systemd
-        # user environment has no shell on PATH.
-        ExecStart = pkgs.writeShellScript "browse-kiosk" ''
-          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c 'while :; do ${getExe pkgs.wayvnc} --render-cursor 127.0.0.1 5900; ${getExe' pkgs.coreutils "sleep"} 1; done & exec ${getExe heliumBrowser} --user-data-dir=${profileDir} --no-first-run --load-extension=${extensionDir}'
-        '';
-        Restart = "on-failure";
+        ExecStart = "${getExe pkgs.sway} --config ${pkgs.writeText "browse-kiosk-sway.conf" /* swayconfig */ ''
+          output HEADLESS-1 resolution 1920x1080
+          default_border none
+          default_floating_border none
+          xwayland disable
+          for_window [app_id=".*"] fullscreen enable
+
+          exec ${pkgs.writeShellScript "browse-kiosk-wayvnc" ''
+            while :; do
+              ${getExe pkgs.wayvnc} --render-cursor 127.0.0.1 5900
+              ${getExe' pkgs.coreutils "sleep"} 1
+            done
+          ''}
+          exec ${pkgs.writeShellScript "browse-kiosk-helium" ''
+            ${getExe heliumBrowser} --user-data-dir=${profileDir} --no-first-run --load-extension=${extensionDir}
+            ${getExe' pkgs.sway "swaymsg"} exit
+          ''}
+        ''}";
+        Restart = "always";
         RestartSec = "5s";
       };
     };

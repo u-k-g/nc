@@ -129,6 +129,8 @@ let
   darwinPackages = [
     kicadCli
     pkgs.clang
+    # VNC viewer for the manara kiosk, with clipboard sync.
+    pkgs.tigervnc
   ];
 in
 {
