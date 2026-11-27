@@ -110,7 +110,7 @@ in
       )
     '';
 
-    # sway runs headless as a one-window kiosk: it boots with the machine and
+    # sway runs headless as a kiosk: it boots with the machine and
     # needs no display, seat, greeter or login. wlroots picks the GPU render
     # node on its own and falls back to pixman without one. sway, unlike cage,
     # has wlr-data-control, which wayvnc needs to sync the clipboard with VNC
@@ -137,7 +137,6 @@ in
           default_border none
           default_floating_border none
           xwayland disable
-          for_window [app_id=".*"] fullscreen enable
 
           exec ${pkgs.writeShellScript "browse-kiosk-wayvnc" ''
             while :; do
