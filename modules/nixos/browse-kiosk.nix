@@ -17,6 +17,7 @@ let
   stateDir = "${home}/.local/state/nc";
   browseBin = "${home}/.local/share/pnpm/bin/browse";
   extensionDir = "${home}/.cache/browse/extension";
+  profileDir = "${home}/.local/share/browse-kiosk-profile";
 
   # The niri and apps modules already take it this way.
   heliumBrowser = inputs.helium.packages.${pkgs.stdenv.hostPlatform.system}.helium-widevine;
@@ -142,7 +143,9 @@ in
     # cage is a kiosk compositor that exists only to host the browser: it
     # boots with the machine, needs no display, seat, greeter or login, and
     # restarts on failure. wayvnc starts once the compositor's socket exists
-    # and serves the screen on loopback for handoffs.
+    # and serves the screen on loopback for handoffs. It runs in a loop
+    # because it can crash on a client's encoding request (neatvnc's raw
+    # encoder did on 2026-11-25) while cage and the browser keep running.
     systemd.user.services.browse-kiosk = {
       description = "Helium browser in a cage kiosk compositor, paired with browse";
       wantedBy = [ "default.target" ];
@@ -158,8 +161,24 @@ in
         # The client runs through an absolute shell path because the systemd
         # user environment has no shell on PATH.
         ExecStart = pkgs.writeShellScript "browse-kiosk" ''
-          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c '${getExe pkgs.wayvnc} 127.0.0.1 5900 & exec ${getExe heliumBrowser} --load-extension=${extensionDir}'
+          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c 'while :; do ${getExe pkgs.wayvnc} 127.0.0.1 5900; ${getExe' pkgs.coreutils "sleep"} 1; done & exec ${getExe heliumBrowser} --user-data-dir=${profileDir} --no-first-run --load-extension=${extensionDir}'
         '';
+        Restart = "on-failure";
+        RestartSec = "5s";
+      };
+    };
+
+    # noVNC in a browser tab: websockify serves the noVNC page and bridges its
+    # WebSocket to wayvnc. It listens on every interface, and the firewall
+    # admits it only on the trusted tailscale0, so the kiosk opens at
+    # http://manara:6080/vnc.html from the tailnet.
+    systemd.user.services.browse-kiosk-novnc = {
+      description = "noVNC web client for the browse kiosk";
+      wantedBy = [ "default.target" ];
+      after = [ "browse-kiosk.service" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${getExe' pkgs.python3Packages.websockify "websockify"} --web ${pkgs.novnc}/share/webapps/novnc 0.0.0.0:6080 127.0.0.1:5900";
         Restart = "on-failure";
         RestartSec = "5s";
       };

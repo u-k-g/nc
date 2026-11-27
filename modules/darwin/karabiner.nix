@@ -17,6 +17,9 @@ in
   '';
 
   home.users.${user.name} = {
-    xdg.config.files."karabiner/karabiner.json".source = dotfiles + /config/karabiner/karabiner.json;
+    xdg.config.files."karabiner/karabiner.json" = {
+      source = dotfiles + /config/karabiner/karabiner.json;
+      type = "copy";
+    };
   };
 }
