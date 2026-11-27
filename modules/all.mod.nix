@@ -36,6 +36,7 @@
     freecad = ./darwin/freecad.nix;
     homebrew = ./darwin/homebrew.nix;
     karabiner = ./darwin/karabiner.nix;
+    launchd-env = ./darwin/launchd-env.nix;
     login = ./darwin/login.nix;
     menu = ./darwin/menu.nix;
     mullvad-dns = ./darwin/mullvad-dns.nix;

@@ -161,7 +161,7 @@ in
         # The client runs through an absolute shell path because the systemd
         # user environment has no shell on PATH.
         ExecStart = pkgs.writeShellScript "browse-kiosk" ''
-          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c 'while :; do ${getExe pkgs.wayvnc} 127.0.0.1 5900; ${getExe' pkgs.coreutils "sleep"} 1; done & exec ${getExe heliumBrowser} --user-data-dir=${profileDir} --no-first-run --load-extension=${extensionDir}'
+          exec ${getExe pkgs.cage} -- ${pkgs.runtimeShell} -c 'while :; do ${getExe pkgs.wayvnc} --render-cursor 127.0.0.1 5900; ${getExe' pkgs.coreutils "sleep"} 1; done & exec ${getExe heliumBrowser} --user-data-dir=${profileDir} --no-first-run --load-extension=${extensionDir}'
         '';
         Restart = "on-failure";
         RestartSec = "5s";
