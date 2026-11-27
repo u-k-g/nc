@@ -42,6 +42,10 @@ in
   config = mkIf config.nc.nixos.browse-kiosk.enable {
     programs.nix-ld.libraries = guiLibraries;
 
+    # The relay has to speak the dev-channel extension's protocol: a 0.1.5
+    # relay from latest kept the 0.1.6 dev extension at "No relay answered".
+    nc.browse.channel = "dev";
+
     home.users.${user.name} = {
       # The browse relay treats the pairing code as secret material (it is
       # stored only as a slow hash), so keep the extension folder private.
