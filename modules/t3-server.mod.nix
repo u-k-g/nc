@@ -148,10 +148,11 @@
             pkgs.nodejs
             pkgs.git
             pkgs.tailscale
-            # t3 extracts its runtime tarball on first launch; without tar
-            # the service crash-loops downloading 170MB per restart.
+            # t3 extracts its runtime tarball on first launch; without tar and
+            # gzip the service crash-loops downloading 170MB per restart.
             pkgs.coreutils
             pkgs.gnutar
+            pkgs.gzip
           ];
 
           environment = {
